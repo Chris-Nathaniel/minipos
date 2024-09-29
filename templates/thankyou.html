@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+<title>thankyou</title>
+{% endblock %}
+
+{% block main %}
+
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card text-center p-4 shadow-lg thankYouWrapper" style="max-width: 500px;">
+        <img src="static/images/thankyoucat.png" alt="Thank You" class="img-fluid mx-auto" style="width: 150px;">
+        <div class="card-body">
+            <h5 class="card-text">Thank You for Your Order!</h5>
+            <p class="card-text">Your order number is <strong>{{ orderNumber }}</strong>.</p>
+            <p class="card-text">{{ message }}</p>
+            <div class="button-container d-flex justify-content-center mt-4">
+                <form action="/" method="post" class="mx-2">
+                    <button class="btn btn-dark print-receipt" title="Print" data-order="{{ orderNumber }}" type="button">Print Receipt</button>
+                </form>
+                <form action="/" method="get" class="mx-2">
+                    <button class="btn btn-dark" type="submit">Make New Order</button>
+                </form>
+                <form action="/orders?type=dinein" method="get" class="mx-2">
+                    <button class="btn btn-dark" type="submit">View Order</button>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+</div>
+<div class="data d-none">
+
+</div>
+{% endblock %}

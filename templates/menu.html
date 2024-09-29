@@ -1,0 +1,38 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+<title>menu</title>
+{% endblock %}
+
+{% block main %}
+    {% include 'modal.html' %}
+
+    {% include 'category.html' %}
+    <div class="articles mt-2">
+        
+        {% for item in main %}
+        <div class='card menu-card'>
+            <div class='card-image'>
+                <img src='{{item["image_url"]}}' style="width:100%" data-item-id="{{ item['id'] }}" data-item-name="{{ item['item_name'] }}" data-item-quantity="1" data-item-price="{{ '{:,.0f}'.format(item['price']) }}" data-item-image="{{ item['image_url'] }}" class="add-to-cart">
+            </div>
+            <div class='card-title'>
+                <h4 class="title">{{ item['item_name'] }}</h4>
+            </div>
+            <div class='card-body'>
+                <p>Rp {{ '{:,.0f}'.format(item['price']) }}</p>
+            </div>
+        </div>
+        {% endfor %}
+        <div class="card" style="opacity: 40%; padding: 0; margin: 0; display: block;">
+            <a href="/customization">
+                <img src="https://placehold.jp/bababa/ffffff/350x460.png?text=%2B&css=%7B%22%22%3A%2215px%22%7D" style="width: 100%; height: 100%;">
+            </a>
+        </div>        
+    </div>
+    {% if finish_edit_order == true %}
+        {% include 'edit_order.html' %}
+    {% else %}
+        {% include 'billing.html' %}
+    {% endif %}
+
+{% endblock %}

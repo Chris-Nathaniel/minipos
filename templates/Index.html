@@ -1,0 +1,28 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+    <title>Choose Option</title>
+{% endblock %}
+
+{% block main %}
+    <div class="container-fluid d-flex flex-column justify-content-center align-items-center" style="min-height: 94vh;">
+        <h2 class="mb-5 text-center" style="color: #343434;">Mini Cafe</h2>
+        <div class="row">
+            <!-- Dine In Option -->
+            <div class="col-md-6 mb-4">
+                <a href="?dinein" class="btn btn-light border border-dark rounded-lg p-5 w-100 d-flex flex-column align-items-center shadow-sm" style="height: 200px;">
+                    <i class="fas fa-utensils fa-3x mb-3" style="color: #2f2e2d;;"></i>
+                    <span class="h4" style="color: #2f2e2d;">Dine In</span>
+                </a>
+            </div>
+            <!-- Take Away Option -->
+            <div class="col-md-6 mb-4">
+                <a href="?takeout" class="btn btn-light border border-dark rounded-lg p-5 w-100 d-flex flex-column align-items-center shadow-sm" style="height: 200px;">
+                    <i class="fas fa-shopping-bag fa-3x mb-3" style="color:  #2a2a2a;"></i>
+                    <span class="h4" style="color:  #2a2a2a;">Take Out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

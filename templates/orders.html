@@ -1,0 +1,133 @@
+{% extends 'layout.html' %}
+
+{% block title %}
+<title>orders</title>
+{% endblock %}
+
+
+{% block main %}
+{% include 'modal.html' %}
+<div class="mycontainer">
+    <div class="firstcol">
+        <div class="tableWrapper mt-0 mx-0 mb-0" style="background-color: #92a0a9; min-height: 95vh; width:100%; border-radius: 10px;">
+            <div class="container mx-0" style="max-width: 100vw;">
+                <div class="arrow-nav">
+                    <a class="arrow-item {{ 'active' if orderType == 'dine in' else '' }}" href="/orders?type=dine in">
+                        <div class="nav-link" style="overflow-x: auto;">Dine in</div>
+                    </a>
+                    <a class="arrow-item {{'active' if orderType == 'take out' else '' }}" href="/orders?type=take out">
+                        <div class="nav-link" style="overflow-x: auto;">Takeout</div>
+                    </a>
+                    <a class="arrow-item {{'active' if status == 'completed' else '' }}" href="/orders?status=completed">
+                        <div class="nav-link" style="overflow-x: auto;">Completed</div>
+                    </a>
+                    <a class="arrow-item {{'active' if status == 'cancelled' else '' }}" href="/orders?status=cancelled">
+                        <div class="nav-link" style="overflow-x: auto;">Cancelled</div>
+                    </a>          
+                </div>
+                <table class="table table-bordered table-hover order-table">
+                    <thead>
+                        <tr>
+                            <th>Table</th>
+                            <th>Order</th>
+                            <th>Time</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="orderstable table-responsive" id="orderstable" >
+                    <table class="table table-bordered table-hover order-table">
+                        <tbody>
+                            {% for order in orders %}
+                            <tr class="orderitem" data-item="{{ order['order_number'] }}">
+                                <td>{{ order['table_number']}}</td>
+                                <td>{{ order['order_number'] }}</td>
+                                <td>{{ order['order_date'].split(' ')[1] }}</td> 
+                                <td>Rp. {{ '{:,.0f}'.format(order['total_amount']) }}</td>
+                                <td style="padding: 0!important;">
+                                    <div class="action-buttons d-flex flex-md-row justify-content-center align-items-left gap-1">
+                                        {% if order['payment_status'] == 'unpaid' and order['status'] == 'new' %}
+                                        <a href="/orders?payment={{ order['order_number'] }}&type={{order['type']}}">
+                                            <button class="btn btn-light pay-now-btn" type="button" title="Pay Now">
+                                                <i class="fas fa-money-bill-wave m-0"></i>  Pay now
+                                            </button>
+                                        </a>
+                                        {% elif order['status'] == 'cancelled' %}
+                                            <span class="badge" style="font-weight:400; background-color: #495057;">{{order['status']|title}}</span>
+                                        {% elif order['payment_status'] == 'pending' %}
+                                            <span class="badge" style="font-weight:400; background-color: #b0ac38;">{{order['payment_status']|title}}</span>
+                                        {% else %}
+                                            <span class="badge bg-success" style="font-weight:400;">{{order['payment_status']|title}}</span>
+                                        {% endif %}    
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="dropdown" style="position:relative; right:3px;">
+                                        <button class="btn btn-update dropdown-toggle" type="button" id="actionMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="actionMenuButton">
+                                            <li>
+                                                {% if order['payment_status'] == 'unpaid' and order['status'] == 'new' %}
+                                                <a href="/edit_order?orders={{ order['order_number'] }}" style="text-decoration: none;">
+                                                    <button class="dropdown-item edit-order" type="button" data-order="{{ order['order_number'] }}">
+                                                        <i class="fas fa-pen"></i> Edit Order
+                                                    </button>
+                                                </a>
+                                                {% endif %}
+                                            </li>                                            
+                                            <li>
+                                                <button class="dropdown-item view-button" type="button" data-order="{{ order['order_number'] }}">
+                                                    <i class="fas fa-eye"></i> View Order
+                                                </button>
+                                            </li>
+                                            <li></li>
+                                                <button class="dropdown-item receipt-button" type="button" data-order="{{ order['order_number'] }}">
+                                                    <i class="fas fa-eye"></i> View Receipt
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item print-order" type="button" data-order="{{ order['order_number'] }}">
+                                                    <i class="fas fa-print"></i> Print Order
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button class="dropdown-item print-receipt" type="button" data-order="{{ order['order_number'] }}">
+                                                    <i class="fas fa-print"></i> Print Receipt
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <a href="/sync_payment/{{order['order_number']}} " style="text-decoration: none;">
+                                                    <button class="dropdown-item sync-payment" type="button" data-order="{{ order['order_number'] }}">
+                                                        <i class="fas fa-sync-alt"></i> sync Payment
+                                                    </button>
+                                                </a>
+                                            </li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item" href="/update/{{ order['order_number'] }}/completed">
+                                                    <i class="fas fa-check"></i> Complete Order
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="/update/{{ order['order_number'] }}/cancelled">
+                                                    <i class="fas fa-times"></i> Cancel Order
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>     
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% include 'billing.html' %}
+
+
+{% endblock %}
+

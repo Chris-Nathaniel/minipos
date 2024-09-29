@@ -1,0 +1,177 @@
+</div>
+<div class="secondcol">
+    <div class="cart-menu" data-edit-order={{finish_edit_order}}>
+        <div class="col-md-11">
+            <h3 class="text-center my-3">Edit Order</h3>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul>
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+            <hr>
+            <form id="paymentForm" action="{% if finish_edit_order %}/finish_edit_order {% elif  cart and cart[0]['order_number'] %}/complete_payment {% else %}/process_order{% endif %}" method="post">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <label for="table-no" class="me-2 mb-0">Table no:</label>
+                        {% if deliveryType == 'Dine in' and not tableNumber %}
+                            <select id="table-no" class="form-select" name="table" style="width: 100px;">
+                                {% for table_no in range(1, 11) %}
+                                    <option value="{{ table_no }}">{{ table_no }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elif deliveryType == 'Take out' %}
+                            <p class="mb-0"><strong>-</strong></p>
+                        {% elif tableNumber %}
+                            <p class="mb-0"><strong>{{ tableNumber }}</strong></p>
+                        {% else %}
+                            <p class="mb-0"><strong>-</strong></p>
+                        {% endif %}
+                    </div>
+                    <p class="mb-0 ms-auto">Order type: <strong>{{ '-' if not deliveryType else deliveryType }}</strong></p>
+                </div>
+                <hr>
+                <div class="list-group" id="cart-items">
+                    {% if not cart%}
+                    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; width: auto; padding: 5px 5px; border: 1px solid var(--lg);">
+                        <img src="/static/images/sadcat.png" style="width:100px; align-self: center;">
+                        <p class="text-center lead">Cart is empty..</p>
+                    </div>
+                    {% endif %}
+                    <h5>Previous orders</h5>
+                    {% for item in cart %}
+                    {% if item['order_time'] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="listimg">
+                            <img src='{{item["item_image"]}}' alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
+                        </div>
+                        <div class="listname">
+                            <span class="mx-0">{{ item['item_name'] }}</span>
+                        </div>
+                        <div class="listquantity">
+                            <span class="mx-0"> x {{ item['item_quantity'] }} </span>
+                        </div>
+                        <div class="listtotal">
+                            <span class="mx-0">Rp {{ item['total'] }}</span>
+                        </div>
+                        <div class="listbutton">
+                            <button class="btn btn-sm remove-from-cart" 
+                                    data-item-id="{{item['item_id']}}" 
+                                    data-item-image="{{item['item_image']}}" 
+                                    data-item-name="{{ item['item_name'] }}" 
+                                    data-item-price="{{ item['item_price'] }}"  
+                                    data-item-quantity="{{item['item_quantity']}}"  
+                                    data-item-total="{{item['total']}}">
+                                <img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/> 
+                            </button>
+                        </div> 
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    <br>
+                    <h5>Additional orders</h5>
+                    {% for item in cart %}
+                    {% if not item['order_time'] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="listimg">
+                            <img src='{{item["item_image"]}}' alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
+                        </div>
+                        <div class="listname">
+                            <span class="mx-0">{{ item['item_name'] }}</span>
+                        </div>
+                        <div class="listquantity">
+                            <span class="mx-0"> x {{ item['item_quantity'] }} </span>
+                        </div>
+                        <div class="listtotal">
+                            <span class="mx-0">Rp {{ item['total'] }}</span>
+                        </div>
+                        <div class="listbutton">
+                            <button class="btn btn-danger btn-sm remove-from-cart"  data-item-id="{{item['item_id']}}" data-item-image="{{item['item_image']}}" data-item-name="{{ item['item_name'] }}" data-item-price="{{ item['item_price'] }}"  data-item-quantity="{{item['item_quantity']}}"  data-item-total="{{item['total']}}" data-item-ordertime="{{item['order_time']}}"><i class="fas fa-trash"></i></button>
+                        </div> 
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <br>
+                <div class="list-group">
+                    <div class="list-group-item" >
+                        <div id="cart-other">
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-end align-items-end">
+                                        <div class="col d-flex justify-content-end align-items-end">
+                                            <span class="mx-2">Discount:</span>
+                                        </div>
+                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                            <span class="mx-2">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-end align-items-end">
+                                        <div class="col d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1">Tax:</span>
+                                        </div>
+                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1">{{ tax }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div>
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-end align-items-end">
+                                        <div class="col d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1">Paid Amount:</span>
+                                        </div>
+                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1 cash_payment">{{ cash }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 d-flex justify-content-end align-items-end">
+                                        <div class="col d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1">Change:</span>
+                                        </div>
+                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                            <span class="mx-2 mt-1 change">{{ change }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>      
+                    </div>
+                </div>               
+                <br>
+                <div class="list-group" id="cart-total">
+                    <div class="list-group-item">    
+                        <div class="row">
+                            <div class="d-flex justify-content-end align-items-end">
+                                <div class="col d-flex justify-content-end align-items-end">
+                                    <span class="mx-2 mt-1">Grand Total:</span>
+                                </div>
+                                <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                    <span class="mx-2 mt-1">{{ total }}</span>
+                                </div>
+                            </div>
+                        </div>              
+                    </div>
+                </div>
+                <div class="d-flex flex-row gap-3">
+                    <button class="btn btn-dark btn-block mt-3 w-100 confirm-changes" type="submit">Confirm Changes</button> 
+                </div>
+            </form>
+            <form id="edit-order-form" action="/edit_order" method="POST">
+                <input type='hidden' name='cancel' value='true'>
+                <button id="cancel-btn" class="btn btn-danger btn-block mt-3 w-100 cancel-changes" type="submit">Cancel Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
