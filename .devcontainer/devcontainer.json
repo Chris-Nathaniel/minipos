@@ -2,12 +2,6 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
   },
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python"
-      ]
-    }
-  },
-  "postCreateCommand": "pip3 install -r requirements.txt",
+  
+  "postCreateCommand": "pip3 install -r requirements.txt"
 }
