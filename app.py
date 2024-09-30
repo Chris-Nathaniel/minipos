@@ -47,7 +47,7 @@ def choose_option():
 def menu():
     # check if customer have chosen order type
     if 'type' not in session or not session['type']:
-        return redirect("/")
+        return redirect("/")    
     # fetch menu list
     main = db.execute('SELECT * FROM menu_list').fetchall()
     categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()

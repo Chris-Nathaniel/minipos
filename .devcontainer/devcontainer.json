@@ -1,7 +1,16 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
+    "python": {
+      "version": "3.12.6"
+    }
   },
-  
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/conda/bin/python"
+      }
+    }
+  },
   "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt"
 }
