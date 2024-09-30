@@ -2,12 +2,17 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
   },
-  "customizations": {
-    "vscode": {
-      "settings": {
-        "python.defaultInterpreterPath": "/opt/conda/bin/python"
-      }
-    }
-  },
+  "customizations":{
+        "vscode": {
+            "extensions":[
+                "ms-python.python",
+                "ms-python.vscode-pylance"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/opt/conda/bin/python"
+            }
+        }
+    },
+  
   "postCreateCommand": "pip install -r requirements.txt"
 }
