@@ -1,18 +1,16 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "features": {
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/conda/bin/python"
+      }
+    }
   },
-  "customizations":{
-        "vscode": {
-            "extensions":[
-                "ms-python.python",
-                "ms-python.vscode-pylance"
-            ],
-            "settings": {
-                "python.defaultInterpreterPath": "/opt/conda/bin/python"
-            }
-        }
-    },
-  
-  "postCreateCommand": "pip install -r requirements.txt"
+  "postCreateCommand": "/opt/conda/bin/python -m pip install -r requirements.txt"
 }
