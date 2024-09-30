@@ -1,6 +1,9 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.13.0-alpha"  // Specify Python 3.13 pre-release here
+    }
   },
   "customizations": {
     "vscode": {
@@ -9,6 +12,5 @@
       ]
     }
   },
-  "postCreateCommand":
-    "pip3 install -r requirements.txt"
+  "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt"
 }
