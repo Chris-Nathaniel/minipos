@@ -1,9 +1,6 @@
 {
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
-    "python": {
-      "version": "3.12.6"
-    }
   },
   "customizations": {
     "vscode": {
@@ -12,5 +9,5 @@
       }
     }
   },
-  "postCreateCommand": "pip install --upgrade pip && pip install -r requirements.txt"
+  "postCreateCommand": "pip install -r requirements.txt"
 }
