@@ -1,7 +1,10 @@
 </div>
 <div class="secondcol">
     <div class="cart-menu" data-edit-order={{finish_edit_order}}>
-        <div class="col-md-11">
+        <div class="col-md-11 cart-wrapper">
+            <div class="close-button-wrapper" style="text-align: right;">
+                <img src="/static/images/close.jpg" class="close-button" alt="Close">
+            </div>
             <h3 class="text-center my-3">Edit Order</h3>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -173,5 +176,8 @@
             </form>
         </div>
     </div>
+</div>
+<div class="shoppingCart">
+
 </div>
 </div>

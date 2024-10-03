@@ -5,12 +5,6 @@
 <div class="mycontainer">
     <div class="firstcol" style="padding:10px;">
         <div class="left-menu p-4">
-            <div class="d-flex justify-content-end me-2">
-                <form action="/customization" method="GET" class="form-inline d-flex flex-row gap-1">
-                    <input class="form-control" type="search" name="search" placeholder="Search" aria-label="Search" style="height:33px; margin-top: 2px; font-size: 1.8vmin;">
-                    <button class="btn search-btn mt-1" style="border-radius:3px!important" type="submit">Search</button>
-                </form>
-            </div>      
             <div class="d-flex justify-content-between align-items-end ms-3 me-3 mt-4">
                 <h3>Menu Customization</h3>
                 <span>{{ main | length }} items</span>
@@ -64,8 +58,11 @@
     </div>
     <div class="secondcol">
         <div class="right-menu">
-            <div class="small menu p-2">
-                <select id="choice" class="form-select" name="category" style="background-color: #385060; color: rgb(255, 255, 255); border: 3px solid var(--lg);" onchange="toggleForm()">
+            <div class="small menu p-2 justify-content-between d-flex">
+                <button class="btn btn-dark back-button">
+                    ❮ Back
+                </button>
+                <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
                     <option value="Add Menu">New Menu</option>
                     <option value="Add Category">Add Categories</option>
                     <option value="Edit Menu">Edit Menu</option>
@@ -109,7 +106,7 @@
                     </div>
                     
                     <!--Submit button-->
-                    <div class="mb-3">
+                    <div class="mb-3 justify-content-left d-flex mt-4">
                         <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Menu Item</button>
                     </div>
                 </form>
@@ -124,7 +121,7 @@
                         <input type="text" id="categoryTitle" name="category_title" class="form-control" placeholder="Enter category title" required style="border: 1px solid var(--lg);">
                     </div>
                     
-                    <div class="mb-5">
+                    <div class="mb-5 d-flex justify-content-end mt-2">
                         <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Category</button>
                     </div>
                 </form>

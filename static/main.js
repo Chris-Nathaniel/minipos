@@ -790,6 +790,8 @@ function checkPaymentStatus(orderNumber) {
 
     document.addEventListener("DOMContentLoaded", function() {
         const editButtons = document.querySelectorAll('.edit');
+        const secondCol = document.querySelector(".secondcol");
+        const backButton = document.querySelector(".back-button");
     
         editButtons.forEach(button => {
             button.addEventListener('click', (event) => {
@@ -825,7 +827,30 @@ function checkPaymentStatus(orderNumber) {
                 // Set the choice to "Edit Menu" and show the form
                 document.getElementById('choice').value = "Edit Menu";
                 toggleForm();
+                secondCol.classList.toggle('clicked')
+                if (backButton){
+                    backButton.addEventListener('click', () => {
+                        secondCol.classList.remove('clicked');
+                })};
             });
         });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const secondCol = document.querySelector(".secondcol");
+        const shoppingCart = document.querySelector(".shoppingCart");
+        const closeButton = document.querySelector(".close-button-wrapper");
+        if (shoppingCart) {
+            shoppingCart.addEventListener('click', () => {
+                secondCol.classList.toggle('clicked');
+                shoppingCart.classList.add('d-none');
+            });
+        }
+
+        if (closeButton){
+            closeButton.addEventListener('click', () => {
+                secondCol.classList.toggle('clicked');
+                shoppingCart.classList.remove('d-none');
+        })};
     });
     
