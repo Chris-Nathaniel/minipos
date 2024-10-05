@@ -3,8 +3,8 @@
 {% block main %}
 {% include 'modal.html' %}
 <div class="mycontainer">
-    <div class="firstcol" style="padding:5px;">
-        <div class="left-menu p-2">
+    <div class="firstcol" style="padding:10px;">
+        <div class="left-menu p-4">
             <div class="d-flex justify-content-between align-items-end ms-3 me-3 mt-4">
                 <h3>Menu Customization</h3>
                 <span>{{ main | length }} items</span>
@@ -58,21 +58,21 @@
     </div>
     <div class="secondcol">
         <div class="right-menu">
-            <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
-                <h4 style="color: #ffffff;">Add New Menu</h4>
-            </div>
-            <div class="small-menu  p-3 justify-content-between d-flex">
-                <button class="btn btn-dark back-button">
-                    ❮ Back
-                </button>
-                <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
-                    <option value="Add Menu">New Menu</option>
-                    <option value="Add Category">Add Categories</option>
-                    <option value="Edit Menu">Edit Menu</option>
-                </select>
-            </div>
             <div id="addMenuForm" class="wrapper {{'d-none' if name == 'category' else ''}}" style="background-color: #ffffff; height: 100vh;">
+                <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
+                    <h4 style="color: #ffffff;">Add New Menu</h4>
+                </div>
                 <div class="content p-3">
+                    <div class="small-menu  pb-5 justify-content-between d-flex">
+                        <button class="btn btn-dark back-button">
+                            ❮ Back
+                        </button>
+                        <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
+                            <option value="Add Menu">New Menu</option>
+                            <option value="Add Category">Add Categories</option>
+                            <option value="Edit Menu">Edit Menu</option>
+                        </select>
+                    </div>
                     <form action="/add_menu" method="POST" enctype="multipart/form-data">
                         <!--Product title-->
                         <div class="mb-3">
@@ -116,9 +116,20 @@
                 </div>
             </div>
             <div id="addCategoryForm" class="wrapper {{'d-none' if name == 'menu' else ''}}" style="border: 1px solid var(--lg); background-color: #ffffff; height: 100vh;">
-               
+                <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
+                    <h4 style="color: #ffffff;">Manage Categories</h4>
+                </div>
                 <div class="content p-3">
-                
+                    <div class="small-menu  pb-5 justify-content-between d-flex">
+                        <button class="btn btn-dark back-button">
+                            ❮ Back
+                        </button>
+                        <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
+                            <option value="Add Menu">New Menu</option>
+                            <option value="Add Category">Add Categories</option>
+                            <option value="Edit Menu">Edit Menu</option>
+                        </select>
+                    </div>
                     <!-- Add Category Form -->
                     <form action="/add_category" method="POST">
                         <div class="mb-3">
@@ -147,9 +158,20 @@
                 </div>
             </div>
             <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">
-                
+                <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
+                    <h4 style="color: #ffffff;">Edit Menu</h4>
+                </div>
                 <div class="content p-3">
-                    
+                    <div class="small-menu  pb-5 justify-content-between d-flex">
+                        <button class="btn btn-dark back-button">
+                            ❮ Back
+                        </button>
+                        <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
+                            <option value="Add Menu">New Menu</option>
+                            <option value="Add Category">Add Categories</option>
+                            <option value="Edit Menu">Edit Menu</option>
+                        </select>
+                    </div>
                     
                     <form action="/edit_menu" method="POST" id="editForm" enctype="multipart/form-data">
                         <input type="hidden" name="id" id="edit-id">
