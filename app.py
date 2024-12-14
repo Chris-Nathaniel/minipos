@@ -48,8 +48,13 @@ def menu():
     # check if customer have chosen order type
     if 'type' not in session or not session['type']:
         return redirect("/")    
+    query = request.args.get('search')
+    if query:
+        main = db.execute('SELECT * FROM menu_list WHERE item_name LIKE ?',('%' + query + '%',)).fetchall()
+    else: 
+        main = db.execute('SELECT * FROM menu_list').fetchall()
+    
     # fetch menu list
-    main = db.execute('SELECT * FROM menu_list').fetchall()
     categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
     
     # Fetch the username in current session
@@ -78,7 +83,7 @@ def menu():
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories)
+    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, mode="menu")
 
 
 @app.route("/<category>")
@@ -122,7 +127,7 @@ def menu_by_category(category):
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories)
+    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, mode="menu")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -204,10 +209,11 @@ def logout():
 @app.route('/add_to_cart', methods=['POST'])
 @login_required
 def add_to_cart():
-
+    
     if 'cart' not in session:
         session['cart'] = []
     gtotal = 0
+    itemCount = 0
     # retrieving data
     data = request.json
     item_in_cart = any(item['item_id'] == data['item_id'] for item in session['cart'])
@@ -224,17 +230,20 @@ def add_to_cart():
 
     for i in session['cart']:
         total = int(i['item_price'].replace(',', '')) * int(i['item_quantity'])
+        item_quantity = int(i['item_quantity'])
         # storing the individual total in the cart as dict
         i['total'] = total
         i['total'] = '{:,.0f}'.format(i['total'])
         # storing the global total in session
         gtotal += total
+        itemCount += item_quantity
 
     session['tax'] = '{:,.0f}'.format(gtotal * 0.10)
     session['total'] = '{:,.0f}'.format(gtotal + gtotal * 0.10)
+    session['itemCount'] = itemCount
     cash = session.get('cashPaid', 0)
 
-    return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash}), 200
+    return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount' : session['itemCount']}), 200
 
 
 @app.route('/remove_from_cart', methods=['POST'])
@@ -246,21 +255,25 @@ def remove_from_cart():
         del data['ordertime']
     session['cart'] = [item for item in session['cart'] if str(item.get('item_id')) != data.get(
         'item_id') or item.get('order_time') != data.get('ordertime')]
-
+    itemCount = 0
     gtotal = 0
     for i in session['cart']:
         total = int(i['item_price'].replace(',', '')) * int(i['item_quantity'])
+        item_quantity = int(i['item_quantity'])
         # storing the individual total in the cart as dict
         i['total'] = total
         i['total'] = '{:,.0f}'.format(i['total'])
         # storing the global total in session
         gtotal += total
+        itemCount += item_quantity
 
     session['tax'] = '{:,.0f}'.format(gtotal * 0.10)
     session['total'] = '{:,.0f}'.format(gtotal)
+    session['itemCount'] = itemCount
     cash = session.get('cashPaid', 0)
 
-    return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash}), 200
+
+    return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount' : session['itemCount']}), 200
 
 
 @app.route('/process_order', methods=['POST', 'GET'])
@@ -730,11 +743,10 @@ def customizations():
         main = db.execute('SELECT * FROM menu_list').fetchall()
     
     mylist = [dict(item) for item in main]
-    print(mylist)
     
     categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
 
-    return render_template('customization.html', name=name, main=main, categories=categories, query=query)
+    return render_template('customization.html', name=name, main=main, categories=categories, query=query, mode='customize')
 
 @app.route("/add_menu", methods=['POST'])
 @login_required
@@ -808,7 +820,6 @@ def saveImage(image):
     if image:
         # Create a safe filename
         image_path = os.path.join(current_app.root_path, 'static/images', image.filename)
-        print(image_path)
 
         # Ensure the directory exists
         os.makedirs(os.path.dirname(image_path), exist_ok=True)
@@ -824,22 +835,31 @@ def edit_menu():
         id = parseInt(request.form.get('id'))
         print(id)
         name = request.form.get('item_name')
-        print(name)
         category = request.form.get('category')
-        print(category)
         price = request.form.get('price')
-        print(price)
         image = request.files['image']
-        print(image)
         if not image:
             image_url = urlparse(request.form.get('current_image')).path
-            print(image_url)
         else:
             image_url = saveImage(image)
-        print(image_url)
         db.execute('UPDATE menu_list SET item_name = ?, image_url = ?, price = ?, category = ? WHERE id = ?', (name, image_url, price, category, id) )
         db.connection.commit()
         return redirect('/customization')
+    
+
+@app.route('/aggregate_delete', methods=['POST'])
+def aggregate_delete():
+    # Get the list of selected item IDs from the POST request
+    selected_ids = request.form.getlist('selected_items')
+    for i in selected_ids:
+        db.execute("DELETE FROM menu_list WHERE id = ?", (i, ))
+        db.connection.commit()
+
+    return redirect('/customization')
+
+@app.route('/discount', methods=["GET"])
+def discount():
+    return render_template('discount.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

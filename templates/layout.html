@@ -35,35 +35,23 @@
                             Management
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="inventoryDropdown">
-                            <li><a class="dropdown-item" href="#">Shifts management</a></li>
                             <li><a class="dropdown-item" href="/customization">Menu Customization</a></li>
-                            <li><a class="dropdown-item" href="#">Discount</a></li>
+                            <li><a class="dropdown-item" href="/discount">Discount</a></li>
                         </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="settingsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Settings
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                            <li><a class="dropdown-item" href="#">General Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Payment Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Preferences</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Reports</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Help</a>
                     </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
-                    <div  class="nav-item">
-                        <form action="/customization" method="GET" class="form-inline d-flex flex-row gap-1">
+                    {% if mode =='menu' or mode == 'customize' %}
+                    <div class="nav-item">
+                        <form method="GET" class="form-inline d-flex flex-row gap-1">
                             <input class="form-control me-2" type="search" name="search" placeholder="Search" aria-label="Search" style="height:33px; margin-top: 2px; font-size: 1.8vmin;">
                             <button class="btn search-btn mt-1" style="border-radius:3px!important; display: none;" type="submit">Search</button>
                         </form>
                     </div>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
                 </ul>
             {% else %}

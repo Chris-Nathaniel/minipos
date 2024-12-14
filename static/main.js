@@ -51,6 +51,7 @@ function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
     .then(data => {
         console.log(data.message);
         updateCartUI(data.cart, data.total, data.tax, data.cashPaid);
+        updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
 }
@@ -75,8 +76,16 @@ function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, it
     .then(data => {
         console.log(data.message);
         updateCartUI(data.cart, data.total, data.tax, data.cashPaid);
+        updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
+}
+
+function updateCartCount(count) {
+    const counterElement = document.querySelector('.shoppingCart .counter');
+    if (counterElement) {
+        counterElement.textContent = count; 
+    }
 }
 
 // Function to update the cart
@@ -772,7 +781,8 @@ function checkPaymentStatus(orderNumber) {
         const addMenuForm = document.getElementById('addMenuForm');
         const addCategoryForm = document.getElementById('addCategoryForm');
         const editMenuForm = document.getElementById('editMenuForm');
-        
+        const rightMenuHeader = document.querySelector('.right-menu-header');
+        rightMenuHeader.innerHTML = choice;
         if (choice === 'Add Menu') {
             addMenuForm.classList.remove('d-none');
             addCategoryForm.classList.add('d-none');
@@ -853,4 +863,24 @@ function checkPaymentStatus(orderNumber) {
                 shoppingCart.classList.remove('d-none');
         })};
     });
+    
+    document.addEventListener("DOMContentLoaded", function () {
+        const selectAll = document.getElementById("select-all");
+        const deleteButton = document.querySelector(".deleteselected");
+        const checkboxes = document.querySelectorAll(".allcheckbox");
+    
+        function toggleDeleteButton() {
+            const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
+            deleteButton.classList.toggle("showdeletebutton", anyChecked);
+            deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
+        }
+    
+        selectAll.addEventListener("click", function () {
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+            toggleDeleteButton();
+        });
+    
+        checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
+    });
+        
     

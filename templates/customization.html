@@ -4,15 +4,18 @@
 {% include 'modal.html' %}
 <div class="mycontainer">
     <div class="firstcol" style="padding:5px;">
-        <div class="left-menu p-2">
+        <div class="left-menu p-2 position-relative">
+            <button class="btn btn-dark mt-3 position-absolute top-0 end-0 m-2 deleteselected" type="submit" style="background-color:#385060;" form="aggregate_delete">
+                <i class="fas fa-trash"></i> Delete Selected
+            </button>
             <div class="d-flex justify-content-between align-items-end ms-3 me-3 mt-4">
                 <h3>Menu Customization</h3>
                 <span>{{ main | length }} items</span>
             </div>
-            <div class="row-category ms-3">
+            <div class="row-category ms-3 m-2">
                 {% for category in categories %}
                     {% set main_course_items = main | selectattr('category', 'equalto', category.category | lower) | list %}
-                    <span class="{{ category.category }}">{{ category.category }} ({{ main_course_items | length }})</span> |
+                    <span class="{{ category.category }} catwrapper">{{ category.category }} ({{ main_course_items | length }})</span>
                 {% endfor %}
             </div> 
             {% if query is not none and query|trim != '' %}
@@ -32,25 +35,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in main %}
-                    <tr>
-                        <td class="checkbox"><input type="checkbox" class="select-item"></td>
-                        <td class="card-image"><img src='{{item["image_url"]}}' alt="T-Shirt with Logo" width="50px" ></td>
-                        <td>
-                            {{item["item_name"]}}
-                            <div class="row-actions">
-                                <span class="id">ID: {{item['id']}} | </span>
-                                <span class="edit"><a href="">Edit</a> | </span>
-                                <span class="trash"><a href="/delete_menu?action=trash&id={{ item['id'] }}">Trash</a> | </span>
-                                <span class="view"><a href="">View</a> | </span>
-                            </div>
-                        </td>
-                        <td>{{item["category"]}}</td>
-                        <td>Rp {{ '{:,.0f}'.format(item['price']) }}</td>
-                        <td>{{item['date_added']}}</td>
-                    </tr>
-                    {% endfor %}
-                    
+                    <form action="/aggregate_delete" method="POST" id="aggregate_delete">
+                        {% for item in main %}
+                        <tr>
+                            <td class="checkbox"><input class="allcheckbox" type="checkbox" name="selected_items" value="{{ item['id'] }}"></td>
+                            <td class="card-image"><img src='{{item["image_url"]}}' alt="T-Shirt with Logo" width="50px" ></td>
+                            <td>
+                                {{item["item_name"]}}
+                                <div class="row-actions">
+                                    <span class="id">ID: {{item['id']}} | </span>
+                                    <span class="edit"><a href="">Edit</a> | </span>
+                                    <span class="trash"><a href="/delete_menu?action=trash&id={{ item['id'] }}">Trash</a> | </span>
+                                </div>
+                            </td>
+                            <td>{{item["category"]}}</td>
+                            <td>Rp {{ '{:,.0f}'.format(item['price']) }}</td>
+                            <td>{{item['date_added']}}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                    </form>      
                 </tbody>
             </table>
         </div>
@@ -59,7 +63,7 @@
     <div class="secondcol">
         <div class="right-menu">
             <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
-                <h4 style="color: #ffffff;">Add New Menu</h4>
+                <h4 class="right-menu-header" style="color: #ffffff;">Add Menu</h4>
             </div>
             <div class="small-menu  p-3 justify-content-between d-flex">
                 <button class="btn btn-dark back-button">
@@ -116,9 +120,7 @@
                 </div>
             </div>
             <div id="addCategoryForm" class="wrapper {{'d-none' if name == 'menu' else ''}}" style="border: 1px solid var(--lg); background-color: #ffffff; height: 100vh;">
-               
                 <div class="content p-3">
-                
                     <!-- Add Category Form -->
                     <form action="/add_category" method="POST">
                         <div class="mb-3">
@@ -146,11 +148,8 @@
                     </ul>
                 </div>
             </div>
-            <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">
-                
-                <div class="content p-3">
-                    
-                    
+            <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">  
+                <div class="content p-3">   
                     <form action="/edit_menu" method="POST" id="editForm" enctype="multipart/form-data">
                         <input type="hidden" name="id" id="edit-id">
                         <div class="form-group mb-2">

@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div class="mycontainer">
+    <div class="firstcol" style="padding:5px;">
+        <div class="left-menu p-2 position-relative">
+            <h1>Create Discount Ticket</h1>
+            <form id="discountForm">
+                <div class="mb-3">
+                    <label for="ticketTitle" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="ticketTitle" placeholder="e.g: Summer Sale">
+                </div>
+                <div class="mb-3">
+                    <label for="discountAmount" class="form-label">Discount Amount</label>
+                    <input type="number" class="form-control" id="discountAmount" placeholder="e.g: 20">
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" rows="3" placeholder="e.g: 20% off on all items!"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="expirationDate" class="form-label">Expiration Date</label>
+                    <input type="date" class="form-control" id="expirationDate">
+                </div>
+                <button type="button" class="btn btn-primary" id="previewButton">Create Ticket</button>
+            </form>
+        </div>
+       
+    </div>
+    <div class="secondcol">
+        <div class="right-menu">
+            <p>hello</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
