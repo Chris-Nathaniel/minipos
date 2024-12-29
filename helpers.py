@@ -25,6 +25,7 @@ def apology(message, categories="", code=400):
     cart = session.get('cart', [])
     total = session.get('total', 0)
     category = session.get('category', [])
+    categories = session.get('categories', [])
     return render_template("apology.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
 
 def thankYou(message, orderNumber, code=200):
@@ -65,7 +66,6 @@ def bankTransfer(order_number, total_amount):
         "bank_transfer":{"bank":"bca"},
     }
     return request_body
-
 
 
 def generate_random_string(length=5):

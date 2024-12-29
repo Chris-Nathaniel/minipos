@@ -5,3 +5,4 @@ Introduced a table numbering system for better order tracking.
 Table number and order type (dine-in or take-out) are now displayed on the billing form.
 Orders can now be canceled or modified at the menu item level.  
 
+<p class="mb-0">${formatCurrency(orderItems.reduce((sum, order) => sum + order.total, 0)*0.10 + orderItems.reduce((sum, order) => sum + order.total, 0))}</p>

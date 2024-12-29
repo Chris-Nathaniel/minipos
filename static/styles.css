@@ -529,6 +529,7 @@ td:hover .row-actions{
   border-radius: 5px;
   overflow: auto;
   font-size: 1.5vmin;
+  width:100%;
 
 }
 
@@ -612,18 +613,12 @@ td:hover .row-actions{
   transform: scale(1.1); 
 }
 
-.back-button {
-  height: 40px;
-  background-color: var(--theme) !important; 
-  border: none !important;
-}
 .shoppingCart{
   display:none;
 }
 
 .deleteselected{
   transform: translateX(170px);
-  
   
 }
 
@@ -638,6 +633,7 @@ td:hover .row-actions{
   border-radius: 5px;
   padding: 5px;
   min-width: 25% !important;
+  font-size: 1.9vmin;
 }
 
 @keyframes slide {
@@ -668,6 +664,45 @@ td:hover .row-actions{
   font-size: 2vmin;
 }
 
+
+  .offer-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+  }
+  .offer-item:hover {
+    background-color: #e7e7e7;
+    }
+  .offer-item img {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+  }
+  .offer-details {
+    flex-grow: 1;
+  }
+  .offer-details .title {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .offer-details .description {
+    font-size: 0.9rem;
+    color: #888;
+  }
+  .offer-action {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    cursor: pointer;
+  }
+
+  @media screen and (min-width: 969px) {
+    .back-button {
+      display: none!important;
+    }
+  }
+
 @media screen and (min-width: 330px) and (max-width: 968px) {
   .shoppingCart{
     width: 70px;
@@ -688,6 +723,27 @@ td:hover .row-actions{
     display: flex;
     cursor: pointer;
   }
+
+  .moreMenu{
+    width: 70px;
+    height: 70px;
+    border-radius: 0%;
+    background-color: rgb(255, 255, 255);
+    position: fixed;
+    bottom: 5%;
+    right: 10px;
+    z-index: 1px;
+    border: 1px solid var(--lg);
+    box-shadow: 2px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: width 0.1s ease;
+    background-image: url('/static/images/menu.jpg');
+    background-size: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    cursor: pointer;
+  }
+
   .secondcol.clicked {
     width: 100%;
     height: 100vh;
@@ -731,11 +787,22 @@ td:hover .row-actions{
     width: 100vw;
   }
 
+  .back-button {
+    height: 40px;
+    background-color: var(--theme) !important; 
+    border: none !important;
+    display: block;
+    width:80px;
+  }
+
 }
 
 @media (max-width: 330px) {
   .card {
       width: 100%;
   }
+
+  
 }
+
 

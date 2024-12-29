@@ -21,7 +21,7 @@
 
 <!-- Save Changes Modal -->
 <div class="modal fade" id="saveChangesModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"> <!-- modal-dialog-centered centers the modal -->
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="saveChangesTitle">Confirm Changes</h5>
@@ -35,5 +35,36 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- discount selection-->
+<div class="modal fade" id="discountSelection" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-top">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Discounts</h4>
+            </div>
+            <div class="modal-body">
+                <form id="voucherSearch">
+                    <input type="text" class="form-control mb-3 mt-2" name="codeSearch" id="codeSearch" placeholder="Enter promo or gift code here">
+                    <button type="submit" style="display: none;">Search</button>
+                </form>
+        
+                {% for ticket in tickets %}
+                <div class="offer-item">
+                    <img src="https://via.placeholder.com/50" alt="Discount Icon">
+                    <div class="offer-details">
+                        <div class="title" data-item-discount="{{ticket.discount}}">{{ticket.title}} | {{ticket.discount}}% off</div>
+                        <div class="Voucher">Voucher: {{ticket.discount_code}} </div>
+                        <div class="description">{{ticket.description}}</div>
+                    </div>
+                    <div class="offer-action">+</div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+        
     </div>
 </div>

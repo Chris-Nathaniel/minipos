@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string
 import midtransclient
 import secrets
 from dotenv import load_dotenv
@@ -70,6 +70,8 @@ def menu():
     deliveryType = session.get('type', 'cart').capitalize()
     finish_edit_order = session.get('edit_order', '')
     change = cashValue - total
+    tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+    discount = session.get('discount', 0)
 
     # format them add currency
     if total not in ['0', 0]:
@@ -83,7 +85,7 @@ def menu():
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, mode="menu")
+    return render_template("menu.html", main=main, cart=cart, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
 
 
 @app.route("/<category>")
@@ -96,6 +98,7 @@ def menu_by_category(category):
     # fetch menu list by category
     main = db.execute('SELECT * FROM menu_list WHERE category Like ?', (category,)).fetchall()
     categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
+    tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
 
      # Handle the case where the category doesn't exist
     if category not in valid_categories:
@@ -114,6 +117,7 @@ def menu_by_category(category):
     deliveryType = session.get('type', 'cart').capitalize()
     finish_edit_order = session.get('edit_order', '')
     change = cashValue - total
+    discount = session.get('discount', 0)
 
     # format them add currency
     if total not in ['0', 0]:
@@ -127,7 +131,7 @@ def menu_by_category(category):
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, mode="menu")
+    return render_template("menu.html", main=main, cart=cart, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -282,13 +286,14 @@ def confirm_order():
 
     orders = session.get("cart", [])
     total_amount = session.get("total", 0)  # the amount customer has to pay
+    print(total_amount)
     ordertype = session.get("type", " ")
     payment_method = request.form.get('paymentMethod')
     table = request.form.get('table')
     totalValue = parseInt(total_amount)
     amount = request.form.get('cashValue')
     order_number = generate_order_number("TESTORD-")
-    print(order_number)
+    discount = session.get("discount", 0)
 
     if int(amount) < totalValue and payment_method == "Cash":
         flash("Invalid paid amount!", "error")
@@ -301,8 +306,8 @@ def confirm_order():
         table = 0
 
     # save order to database
-    result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount) VALUES (?, ?, ?, ?, ?) RETURNING order_number, order_date",
-                        (order_number, ordertype, table, "new", int(total_amount.replace(",", "")),)).fetchone()
+    result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount) VALUES (?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
+                        (order_number, ordertype, table, "new", int(total_amount.replace(",", "")), discount,)).fetchone()
 
     # Fetch the returned order number and order_date
     order_number, order_date = result
@@ -414,6 +419,7 @@ def orders():
         cashValue = parseInt(session.get('cashPaid', 0))
         # get orderNumber
         payment = request.args.get('payment')
+        tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
         cash = 0
         change = 0
         cart = []
@@ -482,7 +488,7 @@ def orders():
         if cart:
             session['billings'] = cart
 
-        return render_template("orders.html", orders=orders, deliveryType=deliveryType, cart=cart, orderType=orderType, cashValue=cashValue, tax=ftax, total=ftotal, status=status, cash=cash, change=change, tableNumber=tableNumber)
+        return render_template("orders.html", orders=orders, deliveryType=deliveryType, cart=cart, orderType=orderType, cashValue=cashValue, tax=ftax, total=ftotal, status=status, cash=cash, change=change, tickets=tickets, tableNumber=tableNumber)
 
 
 @app.route("/retrieve_details", methods=['POST'])
@@ -496,12 +502,13 @@ def retrieve_details():
     SELECT orderitems.order_number, orderitems.item_id, orderitems.quantity,
            orderitems.price, orderitems.total, menu_list.item_name,
            payments.invoice_number, payments.payment_method,
-           payments.payment_amount, payments.change, payments.payment_date
+           payments.payment_amount, payments.change, payments.payment_date, orders.total_amount, orders.discount
     FROM orderitems
     JOIN menu_list ON orderitems.item_id = menu_list.id
     JOIN payments ON orderitems.order_number = payments.order_number
+    JOIN orders ON orderitems.order_number = orders.order_number
     WHERE orderitems.order_number = ?
-""", (order_number,)).fetchall()
+    """, (order_number,)).fetchall()
 
     # Convert the result into a list of dictionaries
     for row in data:
@@ -848,6 +855,7 @@ def edit_menu():
     
 
 @app.route('/aggregate_delete', methods=['POST'])
+@login_required
 def aggregate_delete():
     # Get the list of selected item IDs from the POST request
     selected_ids = request.form.getlist('selected_items')
@@ -857,9 +865,62 @@ def aggregate_delete():
 
     return redirect('/customization')
 
-@app.route('/discount', methods=["GET"])
+@app.route('/discount', methods=["GET", "POST"])
+@login_required
 def discount():
-    return render_template('discount.html')
+    if request.method == "POST":
+        title = request.form.get('title')
+        discount = request.form.get('discAmount')
+        description = request.form.get('discDescription')
+        expiration = request.form.get('discExpiration')
+        discountCode = generate_random_string()
+
+        try:
+            db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code) VALUES (?, ?, ?, ?, ?)", (title, description, discount, expiration, discountCode))
+            db.connection.commit()
+        except Exception as e:
+            return "Error inserting data into the database", 500
+        return render_template('discount.html')
+    if request.method == "GET":
+        query = request.args.get('codeSearch')
+        if query:
+            tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (query,)).fetchall()
+                
+        else:
+            tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+        
+        return render_template('discount.html', tickets=tickets)
+    
+@app.route('/searchVoucher', methods=['POST'])
+def search_voucher():
+    code = request.json.get('code')
+    
+    # Query the database for matching tickets
+    if code:
+        tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (code,)).fetchall()
+
+    else:
+        tickets = db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+
+    # Convert the rows into dictionaries
+    tickets_list = [dict(ticket) for ticket in tickets]  
+  
+    
+    return jsonify({'tickets': tickets_list})
+
+@app.route('/addDiscount', methods=['POST'])
+def addDiscount():
+    data = request.json
+    session['discount'] = int(data['discount'])
+    discount = session['discount']/100
+    total = parseInt(session.get('total', 0))
+    tax = parseInt(session.get('tax', 0))
+    discountedTotal = int(total - ((total - tax)*discount))
+    session['total'] = '{:,.0f}'.format(discountedTotal)
+
+    return jsonify({'discountValue': session['discount'], 'discountedTotal' : discountedTotal})
+    
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

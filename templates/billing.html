@@ -37,7 +37,7 @@
                         <p class="mb-0 ms-auto">Order type: <strong>{{ '-' if not deliveryType else deliveryType }}</strong></p>
                     </div>
                     <hr>
-                    <div class="list-group" id="cart-items">
+                    <div class="list-group" id="cart-items">    
                         {% if not cart%}
                         <div class="d-flex justify-content-center align-items-center" style="height: 100vh; width: auto; padding: 5px 5px; border: 1px solid var(--lg);">
                             <img src="/static/images/sadcat.png" style="width:100px; align-self: center;">
@@ -108,7 +108,7 @@
                     <br>
                     <div class="list-group">
                         <div class="list-group-item">
-                            <label class="text-hover">Discount</label>
+                            <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
                         </div>
                     </div>
                     <br>
@@ -122,7 +122,7 @@
                                                 <span class="mx-2">Discount:</span>
                                             </div>
                                             <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                                <span class="mx-2">0</span>
+                                                <span class="mx-2">{{discount}}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -173,7 +173,7 @@
                                         <span class="mx-2 mt-1">Grand Total:</span>
                                     </div>
                                     <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                        <span class="mx-2 mt-1">{{ total }}</span>
+                                        <span class="cartTotalValue mx-2 mt-1">{{ total }}</span>
                                     </div>
                                 </div>
                             </div>              

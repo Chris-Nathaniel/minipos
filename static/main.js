@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function addCashPaid(cashPaid){
-    fetch('add_cash_paid', {
+    fetch('/add_cash_paid', {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ function updateCartCount(count) {
 }
 
 // Function to update the cart
-function updateCartUI(cartItems, cartTotal, cartTax, cashPaid) {
+function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalContainer = document.getElementById('cart-total');
     const cartOtherContainer = document.getElementById('cart-other');
@@ -205,8 +205,6 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid) {
         }
     }
 
-
-    
     // Update cart total
     const totalItem = document.createElement('div');
     totalItem.className = "list-group-item";
@@ -217,7 +215,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid) {
                     <span class="mx-2 mt-1">Grand Total:</span>
                 </div>
                 <div class="col-md-4 d-flex justify-content-end align-items-end">
-                    <span class="mx-2 mt-1">${cartTotal == 0? '0':formatCurrency(parseInt(cartTotal.replace(',','')))}</span>
+                    <span class="cartTotalValue mx-2 mt-1">${cartTotal == 0? '0':formatCurrency(parseInt(cartTotal.replace(',','')))}</span>
                 </div>
             </div>
         </div>     
@@ -380,6 +378,7 @@ function updateDetails2(orderItems, orderNumber){
                                     <p class="mt-0 mb-0">Payment method:</p>
                                     <p class="mt-0 mb-0">Paid amount:</p>
                                     <p class="mt-0 mb-0">Change:</p>
+                                    <p class="mt-0 mb-0">Discount:</p>
                                     <p class="mt-0 mb-0">Grand Total:</p>
                                 </div>
                                 <div class="col" style="max-width:30%; text-align:end; font-size: 11px;">
@@ -392,7 +391,8 @@ function updateDetails2(orderItems, orderNumber){
                                     <p class="mb-0">${orderItems[0].payment_method?orderItems[0].payment_method:"-"}</p>
                                     <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].payment_amount): "-"}</p>
                                     <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].change): "-"}</p>
-                                    <p class="mb-0">${formatCurrency(orderItems.reduce((sum, order) => sum + order.total, 0)*0.10 + orderItems.reduce((sum, order) => sum + order.total, 0))}</p>
+                                    <p class="mb-0">${orderItems[0].discount}%</p>
+                                    <p class="mb-0">${formatCurrency(orderItems[0].total_amount)}</p>
                                 </div>
                             </div>
                         </div>
@@ -478,6 +478,7 @@ function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display
                                     <p class="mt-0 mb-0">Payment method:</p>
                                     <p class="mt-0 mb-0">Paid amount:</p>
                                     <p class="mt-0 mb-0">Change:</p>
+                                    <p class="mt-0 mb-0">Discount:</p>
                                     <p class="mt-0 mb-0">Grand Total:</p>
                                 </div>
                                 <div class="col" style="max-width:30%; text-align:end; font-size: 11px;">
@@ -490,7 +491,8 @@ function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display
                                     <p class="mb-0">${orderItems[0].payment_method?orderItems[0].payment_method:"-"}</p>
                                     <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].payment_amount): "-"}</p>
                                     <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].change): "-"}</p>
-                                    <p class="mb-0">${formatCurrency(orderItems.reduce((sum, order) => sum + order.total, 0)*0.10 + orderItems.reduce((sum, order) => sum + order.total, 0))}</p>
+                                    <p class="mb-0">${orderItems[0].discount}%</p>
+                                    <p class="mb-0">${formatCurrency(orderItems[0].total_amount)}</p>
                                 </div>
                             </div>
                         </div>
@@ -630,6 +632,10 @@ function printTheReceipt(){
 
 }
 
+function showDiscount(){
+    var myModal = new bootstrap.Modal(document.getElementById('discountSelection'));
+    myModal.show();
+}
 
 function payment(){
     showpayment();
@@ -863,6 +869,24 @@ function checkPaymentStatus(orderNumber) {
                 shoppingCart.classList.remove('d-none');
         })};
     });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const secondCol = document.querySelector(".secondcol");
+        const moreMenu = document.querySelector(".moreMenu");
+        const backButton = document.querySelector(".back-button");
+        if (moreMenu) {
+            moreMenu.addEventListener('click', () => {
+                secondCol.classList.toggle('clicked');
+                moreMenu.classList.add('d-none');
+            });
+        }
+
+        if (backButton){
+            backButton.addEventListener('click', () => {
+                secondCol.classList.toggle('clicked');
+                moreMenu.classList.remove('d-none');
+        })};
+    });
     
     document.addEventListener("DOMContentLoaded", function () {
         const selectAll = document.getElementById("select-all");
@@ -882,5 +906,104 @@ function checkPaymentStatus(orderNumber) {
     
         checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
     });
+    
+    document.addEventListener("DOMContentLoaded", function(){
+        const voucherSearchForm = document.getElementById("voucherSearch")
+        voucherSearchForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            const code = document.getElementById('codeSearch').value;
+
+            fetch('/searchVoucher', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({code: code})
+            }).then(response => response.json())
+            .then(data =>{
+                discountVouchers(data.tickets)
+            })
+            
+        })
+    })
+    function discountVouchers(tickets) {
+        const modalBody = document.querySelector("#discountSelection .modal-body");
         
+    
+        // Clear previous content
+        const existingOffers = modalBody.querySelectorAll('.offer-item');
+        existingOffers.forEach(item => item.remove());
+       
+        const existingNoOffers = modalBody.querySelector('.no-offers');
+        if (existingNoOffers) {
+            existingNoOffers.remove();
+        }
+        
+        // Add tickets to the modal
+        if (tickets.length > 0) {
+            tickets.forEach(ticket => {
+                const offerItem = document.createElement('div');
+                offerItem.classList.add('offer-item');
+    
+                offerItem.innerHTML = `
+                    <img src="https://via.placeholder.com/50" alt="Discount Icon">
+                    <div class="offer-details">
+                        <div class="title">${ticket.title} | ${ticket.discount}% off</div>
+                        <div class="Voucher">Voucher: ${ticket.discount_code}</div>
+                        <div class="description">${ticket.description}</div>
+                    </div>
+                    <div class="offer-action">+</div>
+                `;
+    
+                modalBody.appendChild(offerItem);
+            });
+        } else {
+            // Display a message if no tickets are found
+            const noOffers = document.createElement('div');
+            noOffers.classList.add('no-offers');
+            noOffers.textContent = "No discounts found.";
+            modalBody.appendChild(noOffers);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Select all offer items
+        const voucherList = document.querySelectorAll(".offer-item");
+    
+        // Add click event listener to each offer item
+        voucherList.forEach(item => {
+            item.addEventListener("click", function () {
+                // Extract the discount value from the data attribute
+                const discount = this.querySelector(".title").getAttribute("data-item-discount");
+    
+                // Send the discount value to the server via POST request
+                fetch("/addDiscount", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ discount: discount })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Discount added successfully:", data);
+                    console.log(formatCurrency(data.discountedTotal));
+                    
+                    // Optionally, provide user feedback
+                    alert("Discount applied: " + discount + "%");
+                    // Update the discount display in the DOM
+                    const discountDisplay = document.querySelector(".row .col-md-4 span");
+                    const cartTotal =  document.querySelector('.cartTotalValue');
+                    if (discountDisplay) {
+                        discountDisplay.textContent = discount + "%";
+                        cartTotal.textContent = formatCurrency(data.discountedTotal);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error adding discount:", error);
+                    alert("Failed to apply the discount. Please try again.");
+                });
+            });
+        });
+    });
     
