@@ -345,7 +345,6 @@ def confirm_order():
     if payment_method == "m-banking":
         param = bankTransfer(order_number, total_amount)
         charge_response = core.charge(param)
-        print(charge_response)
         va_number = charge_response['va_numbers'][0]['va_number']
         bank_name = charge_response['va_numbers'][0]['bank']
         db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
@@ -384,6 +383,7 @@ def midtrans_notification():
 
     # Use Midtrans library to parse and verify the notification
     notification = core.transactions.notification(notification_json)
+    
 
     # Extract necessary data from the notification
     order_id = notification['order_id']
