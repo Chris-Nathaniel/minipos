@@ -9,7 +9,6 @@ import random
 import os
 import secrets
 import csv
-# import pytz
 import requests
 import urllib
 import uuid
@@ -21,6 +20,7 @@ db = SQL(database_url)
 
 def apology(message, categories="", code=400):
     """Render message as an apology to user and include the cart."""
+    print(categories)
     # Get the cart from the session
     cart = session.get('cart', [])
     total = session.get('total', 0)
@@ -44,7 +44,7 @@ def login_required(f):
         if session.get("user_id") is None:
             return redirect("/login")
         return f(*args, **kwargs)
-    
+
     return decorated_function
 
 def parseInt(placeholder):
@@ -76,17 +76,17 @@ def generate_random_string(length=5):
 def generate_order_id():
     # Generate a random string
     random_string = generate_random_string()
-    
+
     # Get the current time as a formatted string (YearMonthDayHourMinSec)
     current_time = time.strftime("%Y%m%d%H%M%S")
-    
+
     # Combine the random string and the current time to create an order ID
     order_id = f"{random_string}{current_time}"
-    
+
     return order_id
 
 def generate_order_number(prefix):
-    
+
     # Get the latest order_number
     latest_order_number = db.execute("""
         SELECT order_number
@@ -109,6 +109,6 @@ def generate_order_number(prefix):
 def clear_session():
     keys_to_keep = ['user_id']  # List of keys you want to keep
     keys_to_delete = [key for key in session.keys() if key not in keys_to_keep]
-    
+
     for key in keys_to_delete:
         session.pop(key, None)
