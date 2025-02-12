@@ -17,12 +17,12 @@
                     {% set main_course_items = main | selectattr('category', 'equalto', category.category | lower) | list %}
                     <span class="{{ category.category }} catwrapper">{{ category.category }} ({{ main_course_items | length }})</span>
                 {% endfor %}
-            </div> 
+            </div>
             {% if query is not none and query|trim != '' %}
             <div class="row-category ms-3 mt-3">
                 <span>Filtered By: {{ query }}</span>
-            </div>          
-            {% endif %} 
+            </div>
+            {% endif %}
             <table class="customizeTable">
                 <thead>
                     <tr>
@@ -53,26 +53,27 @@
                             <td>{{item['date_added']}}</td>
                         </tr>
                         {% endfor %}
-                        
-                    </form>      
+
+                    </form>
                 </tbody>
             </table>
         </div>
-        
+
     </div>
     <div class="secondcol">
         <div class="right-menu">
             <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
-                <h4 class="right-menu-header" style="color: #ffffff;">Add Menu</h4>
+                <h4 class="right-menu-header" style="color: #ffffff;">{{ session.get('menu_choice', 'New Menu') }}</h4>
+
             </div>
             <div class="small-menu  p-2 justify-content-between d-flex">
                 <button class="btn btn-dark back-button">
                     ❮ Back
                 </button>
                 <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
-                    <option value="Add Menu">New Menu</option>
-                    <option value="Add Category">Add Categories</option>
-                    <option value="Edit Menu">Edit Menu</option>
+                    <option value="Add Menu" {% if session.get('menu_choice') == 'Add Menu' %}selected{% endif %}>New Menu</option>
+                    <option value="Add Category" {% if session.get('menu_choice') == 'Add Category' %}selected{% endif %}>Add Categories</option>
+                    <option value="Edit Menu" {% if session.get('menu_choice') == 'Edit Menu' %}selected{% endif %}>Edit Menu</option>
                 </select>
             </div>
             <div id="addMenuForm" class="wrapper {{'d-none' if name == 'category' else ''}}" style="background-color: #ffffff; height: 100vh;">
@@ -83,35 +84,35 @@
                             <label for="title" class="form-label" style="color: black;">Product Title:</label>
                             <input type="text" id="title" name="title" class="form-control" placeholder="Enter product title" style="border: 1px solid var(--lg);">
                         </div>
-                        
+
                         <!--Product image-->
                         <div class="mb-3">
                             <label for="image" class="form-label" style="color: black;">Product Image:</label>
                             <input type="file" id="image" name="image" class="form-control" style="border: 1px solid var(--lg);">
                         </div>
-                        
+
                         <!--Product description-->
                         <div class="mb-3">
                             <label for="description" class="form-label" style="color: black;">Product Description:</label>
                             <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter product description" style="border: 1px solid var(--lg);"></textarea>
                         </div>
-                        
+
                         <!--Product price-->
                         <div class="mb-3">
                             <label for="price" class="form-label" style="color: black;">Product Price:</label>
                             <input type="number" id="price" name="price" class="form-control" placeholder="Enter price" style="border: 1px solid var(--lg);">
                         </div>
-                        
+
                         <!--Product category-->
                         <div class="mb-3">
                             <label for="category" class="form-label" style="color: black;">Product Category:</label>
                             <select id="category" class="form-select" name="category" style="border: 1px solid var(--lg); background-color: #ffffff;">
                                 {% for category in categories %}
                                 <option value="{{ category['category'] }}">{{category['category']}}</option>
-                                {% endfor %}  
+                                {% endfor %}
                             </select>
                         </div>
-                        
+
                         <!--Submit button-->
                         <div class="mb-3 justify-content-left d-flex mt-4">
                             <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Menu Item</button>
@@ -127,12 +128,12 @@
                             <label for="categoryTitle" class="form-label" style="color: black;">Category Title:</label>
                             <input type="text" id="categoryTitle" name="category_title" class="form-control" placeholder="Enter category title" required style="border: 1px solid var(--lg);">
                         </div>
-                        
+
                         <div class="mb-5 d-flex justify-content-end mt-2">
                             <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Category</button>
                         </div>
                     </form>
-                
+
                     <!-- Existing Categories List -->
                     <h4 style="color: #1c1c1b;">Existing Categories</h4>
                     <ul class="list-group mt-3" id="categoryList">
@@ -148,8 +149,8 @@
                     </ul>
                 </div>
             </div>
-            <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">  
-                <div class="content p-3">   
+            <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">
+                <div class="content p-3">
                     <form action="/edit_menu" method="POST" id="editForm" enctype="multipart/form-data">
                         <input type="hidden" name="id" id="edit-id">
                         <div class="form-group mb-2">
@@ -163,12 +164,12 @@
                         <div class="form-group mb-2">
                             <label for="edit-price">Price</label>
                             <input type="number" name="price" id="edit-price" class="form-control" required>
-                        </div>         
+                        </div>
                         <div class="form-group mb-3">
                             <label for="edit-image-upload">Upload Image</label>
                             <input type="file" name="image" id="edit-image-upload" class="form-control">
                         </div>
-                        
+
                         <div class="form-group mb-3">
                             <label>Current Image:</label>
                             <input type="hidden" name="current_image" id="current-image">
@@ -176,23 +177,22 @@
                             </div>
                         </div>
                         <div class="d-flex flex-row gap-3">
-                            <button class="btn btn-dark btn-block mt-3 w-100 confirm-changes" onclick="confirm_changes()" type="submit">Confirm Changes</button> 
+                            <button class="btn btn-dark btn-block mt-3 w-100 confirm-changes" onclick="confirm_changes()" type="submit">Confirm Changes</button>
                         </div>
-                        
+
                     </form>
                     <form action="/customization" method="GET">
                         <button id="cancel-btn" class="btn btn-danger btn-block mt-3 w-100 cancel-changes" type="submit">Cancel Changes</button>
                     </form>
                 </div>
-                
+
             </div>
-            
+
         </div>
     </div>
     <div class="moreMenu">
-        
+
     </div>
 </div>
 
 {% endblock %}
-

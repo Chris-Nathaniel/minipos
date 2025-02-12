@@ -112,3 +112,13 @@ def clear_session():
 
     for key in keys_to_delete:
         session.pop(key, None)
+
+def createImageUrl(image_url, text, text_size=85, text_color="white", x_align="center", y_align="middle"):
+    # Base URL for the API
+    base_url = "https://textoverimage.moesif.com/image"
+    s_image_url = urllib.parse.quote(image_url, safe='')
+    s_custom_text = urllib.parse.quote(text, safe='')
+
+
+    url = f'https://textoverimage.moesif.com/image?image_url={s_image_url}&text={s_custom_text}&text_size={text_size}&y_align=middle&x_align=center'
+    return url

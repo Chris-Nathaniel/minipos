@@ -3,13 +3,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 import midtransclient
 import secrets
 from dotenv import load_dotenv
 import os
 
-# db = SQL('/mnt/c/Users/LEGION/.vscode/github/personal/possystem/minicafe.db')
 load_dotenv()
 app = Flask(__name__)
 
@@ -63,7 +62,6 @@ def menu():
     username = username['username']
 
     # Load Sessions
-    cart = session.get('cart', [])
     total = parseInt(session.get('total', 0))  # return str in the format (x,xxx)
     tax = parseInt(session.get('tax', 0))  # return str format (x,xxx)
     cashValue = parseInt(session.get('cashPaid', 0))  # return str format (Rp x,xxx)
@@ -87,7 +85,7 @@ def menu():
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
+    return render_template("menu.html", main=main, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
 
 
 @app.route("/<category>")
@@ -98,8 +96,14 @@ def menu_by_category(category):
     valid_categories = ["Appetizers", "Main Course", "Side Dish",
                         "Drinks", "Breads", "Desserts", "Additionals"]
 
+    query = request.args.get('search')
+    if query:
+        main = db.execute('SELECT * FROM menu_list WHERE item_name LIKE ?',
+                          ('%' + query + '%',)).fetchall()
+    else:
+        main = db.execute('SELECT * FROM menu_list WHERE category Like ?', (category,)).fetchall()
+
     # fetch menu list by category
-    main = db.execute('SELECT * FROM menu_list WHERE category Like ?', (category,)).fetchall()
     categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
     tickets = db.execute(
         "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
@@ -135,7 +139,7 @@ def menu_by_category(category):
         change = 0
         cash = cashValue
 
-    return render_template("menu.html", main=main, cart=cart, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
+    return render_template("menu.html", main=main, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -184,7 +188,7 @@ def register():
         if not username:
             return apology("Username is required!")
         if not password:
-            return apology("Passwordis required!")
+            return apology("Password is required!")
         if password == confirmation:
             hashed_password = generate_password_hash(password)
         else:
@@ -292,7 +296,6 @@ def confirm_order():
 
     orders = session.get("cart", [])
     total_amount = session.get("total", 0)  # the amount customer has to pay
-    print(total_amount)
     ordertype = session.get("type", " ")
     payment_method = request.form.get('paymentMethod')
     table = request.form.get('table')
@@ -300,6 +303,7 @@ def confirm_order():
     amount = request.form.get('cashValue')
     order_number = generate_order_number("TESTORD-")
     discount = session.get("discount", 0)
+
 
     if int(amount) < totalValue and payment_method == "Cash":
         flash("Invalid paid amount!", "error")
@@ -310,6 +314,9 @@ def confirm_order():
         return redirect("/")
     if not table:
         table = 0
+    if ordertype == "take out" and not payment_method:
+        flash("Error: Takeaway orders must provide a payment method", "error")
+        return redirect("/menu")
 
     # save order to database
     result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount) VALUES (?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
@@ -534,7 +541,7 @@ def update_status(on, status):
 
     # Handle case where payment_status is None (no matching order)
     if payment_status is None:
-        return apology("Order not found")
+        return apology("Order not found",code=404)
 
     # Access the payment status
     current_status = payment_status[0]
@@ -800,35 +807,34 @@ def add_menu():
 @app.route('/add_category', methods=['POST'])
 @login_required
 def add_category():
-    if request.method == 'POST':
-        session['menu'] = 'category'
-        inputCategory = request.form.get('category_title').lower()
-        if inputCategory:
-            try:
-                db.execute("INSERT INTO categories (category) VALUES (?)", (inputCategory,))
-                db.connection.commit()
-            except Exception as e:
-                print("Error adding category: " + str(e))
-
-        return redirect('/customization')
+    session['menu'] = 'category'
+    session['menu_choice'] = 'Add Category'  # Store the selected menu choice
+    inputCategory = request.form.get('category_title').lower()
+    if inputCategory:
+        try:
+            db.execute("INSERT INTO categories (category) VALUES (?)", (inputCategory,))
+            db.connection.commit()
+        except Exception as e:
+            print("Error adding category: " + str(e))
+    return redirect('/customization')
 
 
 @app.route('/remove_category', methods=['POST'])
 @login_required
 def remove_category():
-    if request.method == 'POST':
-        session['menu'] = 'category'
-        deleteCategory = request.form.get('category').lower()
-        if deleteCategory:
-            try:
-                db.execute("DELETE FROM categories WHERE category = ?", (deleteCategory,))
-                db.execute('UPDATE menu_list SET category = ? WHERE category = ?',
-                           ('Uncategorized', deleteCategory,))
-                db.connection.commit()
-            except Exception as e:
-                print("Error adding category: " + str(e))
+    session['menu'] = 'category'
+    session['menu_choice'] = 'Add Category'  # Store the selected menu choice
+    deleteCategory = request.form.get('category').lower()
+    if deleteCategory:
+        try:
+            db.execute("DELETE FROM categories WHERE category = ?", (deleteCategory,))
+            db.execute('UPDATE menu_list SET category = ? WHERE category = ?',
+                       ('Uncategorized', deleteCategory,))
+            db.connection.commit()
+        except Exception as e:
+            print("Error removing category: " + str(e))
+    return redirect('/customization')
 
-        return redirect('/customization')
 
 
 @app.route('/delete_menu', methods=['GET'])
@@ -896,15 +902,20 @@ def discount():
         discount = request.form.get('discAmount')
         description = request.form.get('discDescription')
         expiration = request.form.get('discExpiration')
-        discountCode = generate_random_string()
+        discountCode = generate_random_string().upper()
+        imageUrl = createImageUrl("https://www.casacenina.com/catalog/images/img_192/rico-99000-0421.jpg", f'{discount}% off')
 
         try:
-            db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code) VALUES (?, ?, ?, ?, ?)",
-                       (title, description, discount, expiration, discountCode))
+            db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code, image ) VALUES (?, ?, ?, ?, ?, ?)",
+                       (title, description, discount, expiration, discountCode, imageUrl))
             db.connection.commit()
         except Exception as e:
             return "Error inserting data into the database", 500
-        return render_template('discount.html')
+
+        tickets = db.execute(
+                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+
+        return render_template('discount.html', tickets=tickets)
     if request.method == "GET":
         query = request.args.get('codeSearch')
         if query:

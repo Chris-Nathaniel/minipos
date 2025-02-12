@@ -8,12 +8,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemQuantity = this.getAttribute('data-item-quantity')
             const itemPrice = this.getAttribute('data-item-price');
             const itemImage = this.getAttribute('data-item-image');
-        
+
 
             // Call the function to add the item to the cart
             addToCart(itemId, itemName, itemQuantity, itemPrice, itemImage);
             console.log(itemId, itemName, itemQuantity, itemPrice, itemImage);
-            
+
 
         });
     });
@@ -84,7 +84,7 @@ function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, it
 function updateCartCount(count) {
     const counterElement = document.querySelector('.shoppingCart .counter');
     if (counterElement) {
-        counterElement.textContent = count; 
+        counterElement.textContent = count;
     }
 }
 
@@ -94,10 +94,12 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
     const cartTotalContainer = document.getElementById('cart-total');
     const cartOtherContainer = document.getElementById('cart-other');
     const editOrder = document.querySelector('.cart-menu').getAttribute('data-edit-order');
-   
-    cartItemsContainer.innerHTML = '';  
+    const discountDiv = document.querySelector('.discount');
+
+    cartItemsContainer.innerHTML = '';
     cartTotalContainer.innerHTML = '';
     cartOtherContainer.innerHTML = '';
+    discountDiv.innerHTML = " ";
 
     if (cashPaid != 0) {
         document.querySelector('.change').innerHTML = formatCurrency(parseCurrency(cashPaid) - parseInt(cartTotal.replace(/,/g, ''), 10));
@@ -145,7 +147,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
 
             const listButton = document.createElement('div');
             listButton.className = "listbutton";
-            
+
             // Create the remove button
             const removeButton = document.createElement('button');
             removeButton.className = "btn btn-sm remove-from-cart";
@@ -157,7 +159,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
             removeButton.setAttribute('data-item-total', item.total);
             removeButton.setAttribute('data-item-ordertime', item.order_time);
             removeButton.innerHTML = `<img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/>`;
-        
+
             // Attach click event listener to the remove button
             removeButton.addEventListener('click', function(event) {
                 event.preventDefault();
@@ -171,16 +173,16 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
                 console.log(itemId, itemName, itemPrice, itemImage, itemQuantity, itemTotal);
                 removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, itemTotal, orderTime);
             });
-        
+
             listButton.appendChild(removeButton);
-        
+
             // Append the elements to the cartItem
             cartItem.appendChild(listImg);
             cartItem.appendChild(listName);
             cartItem.appendChild(listQuantity);
             cartItem.appendChild(listTotal);
             cartItem.appendChild(listButton);
-        
+
             return cartItem;
         }
 
@@ -218,13 +220,23 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
                     <span class="cartTotalValue mx-2 mt-1">${cartTotal == 0? '0':formatCurrency(parseInt(cartTotal.replace(',','')))}</span>
                 </div>
             </div>
-        </div>     
+        </div>
     `;
     cartTotalContainer.appendChild(totalItem);
 
+
+    // Create a new discount item
+    const newDiscountSub = document.createElement('div'); // Use a new variable name
+    newDiscountSub.className = "list-group-item";
+    newDiscountSub.innerHTML = `
+        <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
+    `;
+
+    // Append the new discount item
+    discountDiv.appendChild(newDiscountSub);
     // Update cart other
     const otherItem = document.createElement('div');
-    otherItem.innerHTML = ` 
+    otherItem.innerHTML = `
                 <div class="row">
                     <div class="col-12 d-flex justify-content-end align-items-end">
                         <div class="col d-flex justify-content-end align-items-end">
@@ -244,11 +256,11 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
                             <span class="mx-2 mt-1">${cartTax == 0? '0':formatCurrency(parseInt(cartTax.replace(',','')))}</span>
                         </div>
                     </div>
-                </div>       
+                </div>
     `;
 
     cartOtherContainer.appendChild(otherItem);
-   
+
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -268,7 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Call the function to add the item to the cart
             console.log(itemName,  itemPrice, itemImage);
             removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, itemTotal, orderTime)
-            
+
         });
     });
 });
@@ -282,7 +294,7 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-            
+
             retrieveOrderDetails(orderNumber,'view');
         });
     });
@@ -290,7 +302,7 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-            
+
             retrieveOrderDetails(orderNumber,'view');
             retrieveOrderDetails(orderNumber,'view', "hidden");
             setTimeout(()=>{printTheReceipt()}, 500);
@@ -307,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-            
+
             retrieveOrderDetails(orderNumber,'receipt');
         });
     });
@@ -315,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-            
+
             retrieveOrderDetails(orderNumber,'receipt', "hidden");
             setTimeout(()=>{printTheReceipt()}, 500);
         });
@@ -345,7 +357,7 @@ function retrieveOrderDetails(orderNumber, actionType, display="show") {
             updateDetails(data.items, data.number, actionType, display);
         }
 
-    })  
+    })
     .catch(error => console.error('Error:', error));
 }
 
@@ -366,7 +378,7 @@ function updateDetails2(orderItems, orderNumber){
                             <p class="mb-0">Order #${orderNumber}</p>
                             <p class="mb-0">Invoice Number: ${orderItems[0].invoice_number}</p>
                             <hr style="border-top: 1px dashed #000; margin-bottom:3px; margin-top: 4px;">
-        
+
                             <div class="detailWrapper" style="display:flex; flex-direction:row; padding: 5px 5px;">
                                 <div class="col" style="max-width:100%; text-align:left; font-size: 11px;">
                                     <p class="mb-1">Items</p>
@@ -400,7 +412,7 @@ function updateDetails2(orderItems, orderNumber){
                         <small class="mb-0 text-center d-block">Thank you, please come again!</small>
                     </div>
                 </div>
-           
+
         `;
     result.innerHTML = orderDetailsHTML
 }
@@ -411,7 +423,7 @@ function updateDetails(orderItems, orderNumber, actionType, display){
     const storedDataItem = localStorage.getItem('data-item');
     const prevActionType = localStorage.getItem('actionType');
     try {
-        const element = document.getElementById(`collapseOrder${storedDataItem}`); 
+        const element = document.getElementById(`collapseOrder${storedDataItem}`);
         const currentElement = document.getElementById(`collapseOrder${orderNumber}`)
         // close the selected element
         if (element && currentElement && prevActionType == actionType && display == "show"){
@@ -424,7 +436,7 @@ function updateDetails(orderItems, orderNumber, actionType, display){
             }else{
                 createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, display);
             }
-            
+
         // open the selected element
         }else{
             if (actionType == "receipt"){
@@ -433,11 +445,11 @@ function updateDetails(orderItems, orderNumber, actionType, display){
                 createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, display);
             }
         }
-       
+
     } catch (error) {
         console.error("Element not found or another error occurred:", error);
     }
-    
+
 }
 
 function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display){
@@ -466,7 +478,7 @@ function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display
                             <p class="mb-0">Order #${orderNumber}</p>
                             <p class="mb-0">Invoice Number: ${orderItems[0].invoice_number}</p>
                             <hr style="border-top: 1px dashed #000; margin-bottom:3px; margin-top: 4px;">
-        
+
                             <div class="detailWrapper" style="display:flex; flex-direction:row; padding: 5px 5px;">
                                 <div class="col" style="max-width:100%; text-align:left; font-size: 11px;">
                                     <p class="mb-1">Items</p>
@@ -502,9 +514,9 @@ function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display
                 </div>
             </td>
         `;
-    
+
         collapseRow.innerHTML = orderDetailsHTML;
-    
+
 
         if (selectedRow == orderNumber) {
             tbody.insertBefore(collapseRow, row.nextSibling);
@@ -512,7 +524,7 @@ function createReceipt(orderItems, orderNumber, tbody, rows, actionType, display
             localStorage.setItem('actionType', actionType);
             return 0;
         }
-    
+
     });
 }
 
@@ -526,7 +538,7 @@ function createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, di
             collapseRow.className = 'order-details-row';
         }
         collapseRow.id = `collapseOrder${orderNumber}`;
-        
+
         let orderDetailsHTML = `
             <td colspan="6">
                 <div class="d-flex justify-content-center">
@@ -537,13 +549,13 @@ function createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, di
                         <div class="card-body p-3" style="text-align:left;">
                             <p class="mb-2">Order #${orderNumber}</p>
                             <hr style="border-top: 1px dashed #000; margin-bottom:3px;">
-        
+
                             <div class="detailWrapper" style="display:flex; flex-direction:row; padding: 5px 5px;">
                                 <div class="col" style="max-width:100%; text-align:left">
                                     <p>Items</p>
                                     ${orderItems.map((order, i) => `
                                         <p style="margin-bottom:2px;">${i+1}.${order.item_name} <small>x ${order.quantity}</small></p>
-                                        
+
                                     `).join('')}
                                 </div>
                             </div>
@@ -554,9 +566,9 @@ function createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, di
                 </div>
             </td>
         `;
-    
+
         collapseRow.innerHTML = orderDetailsHTML;
-    
+
 
         if (selectedRow == orderNumber) {
             tbody.insertBefore(collapseRow, row.nextSibling);
@@ -586,7 +598,7 @@ function printTheReceipt(){
     if (orderDetailsRow || data) {
         // Open a new window
         const printWindow = window.open('', 'Print', 'width=600,height=600');
-        
+
         // Write the HTML for the new window, including the necessary styles
         printWindow.document.write(`
             <html>
@@ -621,14 +633,14 @@ function printTheReceipt(){
         `);
 
         // Trigger print
-        printWindow.document.close(); 
-        printWindow.focus(); 
-        printWindow.print();  
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
 
     } else {
         alert('No order details found to print!');
     }
-    
+
 
 }
 
@@ -683,7 +695,7 @@ function showModal(){
 
 function paymentSubmission(){
     document.getElementById('cashAmountForm').addEventListener('submit', function(event) {
-        event.preventDefault(); 
+        event.preventDefault();
         var cashAmount = parseInt(document.getElementById('cashAmount').value);
         var formatted_cashAmount = formatCurrency(parseInt(cashAmount));
         var totalValue = parseCurrency(document.querySelector("#cart-total .list-group-item .row .col-md-4 span").textContent.trim());
@@ -707,7 +719,7 @@ function confirm_changes(){
     const confirmSaveButton = document.getElementById('confirmSaveButton');
     var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
     myModal.show();
-    
+
     document.getElementById('saveChangesButton').setAttribute('form','editForm');
 
      // Handle the confirmation button click
@@ -724,7 +736,7 @@ document.addEventListener('DOMContentLoaded', function(){
         event.preventDefault()
         var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
         myModal.show();
-        
+
     })
      // Handle the confirmation button click
      confirmSaveButton.addEventListener('click', function() {
@@ -744,7 +756,7 @@ window.onload = function() {
     console.log('Getting order number...');
     console.log('Order Number:', orderNumber); // Output the order number to console
     startPolling(orderNumber); // Start polling with the extracted order number
-   
+
 };
 
 
@@ -808,11 +820,11 @@ function checkPaymentStatus(orderNumber) {
         const editButtons = document.querySelectorAll('.edit');
         const secondCol = document.querySelector(".secondcol");
         const backButton = document.querySelector(".back-button");
-    
+
         editButtons.forEach(button => {
             button.addEventListener('click', (event) => {
                 event.preventDefault();
-                
+
                 // Extract the menu item details from the clicked row
                 const row = button.closest('tr');
                 const id = row.querySelector('.id').textContent.split('ID: ')[1].trim();
@@ -821,7 +833,7 @@ function checkPaymentStatus(orderNumber) {
                 const price = parseCurrency(row.querySelector('td:nth-child(5)').textContent);
                 const imageUrl = row.querySelector('.card-image img').src;
                 const cardImage = document.querySelector('.preview-image');
-                
+
                 cardImage.innerHTML = '';
                 // Populate the form fields with the menu item data
                 document.getElementById('edit-id').value = id;
@@ -887,26 +899,26 @@ function checkPaymentStatus(orderNumber) {
                 moreMenu.classList.remove('d-none');
         })};
     });
-    
+
     document.addEventListener("DOMContentLoaded", function () {
         const selectAll = document.getElementById("select-all");
         const deleteButton = document.querySelector(".deleteselected");
         const checkboxes = document.querySelectorAll(".allcheckbox");
-    
+
         function toggleDeleteButton() {
             const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
             deleteButton.classList.toggle("showdeletebutton", anyChecked);
             deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
         }
-    
+
         selectAll.addEventListener("click", function () {
             checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
             toggleDeleteButton();
         });
-    
+
         checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
     });
-    
+
     document.addEventListener("DOMContentLoaded", function(){
         const voucherSearchForm = document.getElementById("voucherSearch")
         voucherSearchForm.addEventListener('submit', function(e){
@@ -923,30 +935,30 @@ function checkPaymentStatus(orderNumber) {
             .then(data =>{
                 discountVouchers(data.tickets)
             })
-            
+
         })
     })
     function discountVouchers(tickets) {
         const modalBody = document.querySelector("#discountSelection .modal-body");
-        
-    
+
+
         // Clear previous content
         const existingOffers = modalBody.querySelectorAll('.offer-item');
         existingOffers.forEach(item => item.remove());
-       
+
         const existingNoOffers = modalBody.querySelector('.no-offers');
         if (existingNoOffers) {
             existingNoOffers.remove();
         }
-        
+
         // Add tickets to the modal
         if (tickets.length > 0) {
             tickets.forEach(ticket => {
                 const offerItem = document.createElement('div');
                 offerItem.classList.add('offer-item');
-    
+
                 offerItem.innerHTML = `
-                    <img src="https://via.placeholder.com/50" alt="Discount Icon">
+                    <img src="${ticket.image}" alt="Discount Icon">
                     <div class="offer-details">
                         <div class="title">${ticket.title} | ${ticket.discount}% off</div>
                         <div class="Voucher">Voucher: ${ticket.discount_code}</div>
@@ -954,7 +966,7 @@ function checkPaymentStatus(orderNumber) {
                     </div>
                     <div class="offer-action">+</div>
                 `;
-    
+
                 modalBody.appendChild(offerItem);
             });
         } else {
@@ -968,14 +980,15 @@ function checkPaymentStatus(orderNumber) {
 
     document.addEventListener("DOMContentLoaded", function () {
         // Select all offer items
-        const voucherList = document.querySelectorAll(".offer-item");
-    
+        const voucherList = document.querySelectorAll(".modal .offer-item");
         // Add click event listener to each offer item
         voucherList.forEach(item => {
             item.addEventListener("click", function () {
                 // Extract the discount value from the data attribute
                 const discount = this.querySelector(".title").getAttribute("data-item-discount");
-    
+                const title = this.querySelector(".title").getAttribute("data-item-title");
+                const image = this.querySelector(".title").getAttribute("data-item-image");
+                const voucher = this.querySelector(".title").getAttribute("data-item-voucher");
                 // Send the discount value to the server via POST request
                 fetch("/addDiscount", {
                     method: "POST",
@@ -988,9 +1001,26 @@ function checkPaymentStatus(orderNumber) {
                 .then(data => {
                     console.log("Discount added successfully:", data);
                     console.log(formatCurrency(data.discountedTotal));
-                    
+                    const discountDiv = document.querySelector(".discount");
                     // Optionally, provide user feedback
-                    alert("Discount applied: " + discount + "%");
+                    discountDiv.innerHTML = " ";
+                    discountDiv.innerHTML = `
+                        <div class="list-group-item">
+                            <div class="offer-item border-0">
+                                <img src="${image}" alt="Discount Icon">
+                                <div class="offer-details">
+                                    <div class="title">${title} | ${discount}% off</div>
+                                    <div class="Voucher">Voucher: ${voucher}</div>
+                                </div>
+                                <div>Using</div>
+                            </div>
+                        </div
+                    `;
+                    var myModal = document.getElementById('discountSelection');
+                    var backdrop = document.querySelector('.modal-backdrop');
+                    myModal.classList.remove('show');
+                    backdrop.classList.remove('show');
+
                     // Update the discount display in the DOM
                     const discountDisplay = document.querySelector(".row .col-md-4 span");
                     const cartTotal =  document.querySelector('.cartTotalValue');
@@ -1006,4 +1036,3 @@ function checkPaymentStatus(orderNumber) {
             });
         });
     });
-    
