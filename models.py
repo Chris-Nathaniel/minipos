@@ -121,6 +121,41 @@ class Billing:
             db.connection.commit()
             return "success"
         
+    def update_payments(order_number, payment_method, totalValue, cashValue, core):
+        # check if payment is cash
+        if payment_method == "Cash":
+            # save payments to database and generate invoice
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
+                       (payment_method, "paid", cashValue, order_number))
+            db.connection.commit()
+            return "success"
+        
+        # check if payment is card
+        if payment_method == "Card":
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
+                       (payment_method, "paid", totalValue, order_number))
+            db.connection.commit()
+            return "success"
+        
+        # check if payment is Bca Qris
+        if payment_method == "BCA Qris":
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
+                       (payment_method, "paid", totalValue, order_number))
+            db.connection.commit()
+            return "success"
+        if payment_method == "m-banking":
+            param = bankTransfer(order_number, int(totalValue))
+            charge_response = core.charge(param)
+            va_number = charge_response['va_numbers'][0]['va_number']
+            bank_name = charge_response['va_numbers'][0]['bank']
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
+                       (payment_method, "pending", totalValue, order_number))
+            db.connection.commit()
+
+            return va_number, bank_name
+        if not payment_method:
+            return "not payment"
+
     def check_payment_status(orderNumber):
         status = db.execute("SELECT payment_status FROM payments WHERE order_number = ?", (orderNumber,)).fetchone()[0]
         return status
@@ -137,3 +172,46 @@ class Billing:
         self.tax = 0
         self.total = 0
         self.tableNumber = 0
+
+class Orders:
+    def search_orders_type(orderType):
+        return db.execute("""
+                SELECT orders.*, payments.payment_status
+                FROM orders
+                LEFT JOIN payments ON orders.order_number = payments.order_number
+                WHERE DATE(order_date) = CURRENT_DATE
+                AND orders.type = ?
+                AND orders.status NOT IN ('completed', 'cancelled')
+                ORDER BY orders.order_date ASC """, (orderType,)).fetchall()
+    
+    def search_orders_status(status):
+        return db.execute("""
+                SELECT orders.*, payments.payment_status
+                FROM orders
+                LEFT JOIN payments ON orders.order_number = payments.order_number
+                WHERE DATE(order_date) = CURRENT_DATE
+                AND orders.status = ? ORDER BY orders.order_date ASC """, (status,)).fetchall()
+    
+    def fetch_order_details(orderNumber):
+        return db.execute("""
+            SELECT orderitems.*, menu_list.item_name, menu_list.image_url, orders.total_amount, orders.type, orders.table_number
+            FROM orderitems
+            JOIN menu_list ON orderitems.item_id = menu_list.id
+            JOIN orders ON orderitems.order_number = orders.order_number
+            WHERE orderitems.order_number = ?
+            """, (orderNumber,)).fetchall()
+        
+    def fetch_invoice_details(orderNumber):
+        return db.execute("""
+            SELECT orderitems.order_number, orderitems.item_id, orderitems.quantity,
+                orderitems.price, orderitems.total, menu_list.item_name,
+                payments.invoice_number, payments.payment_method,
+                payments.payment_amount, payments.change, payments.payment_date, orders.total_amount, orders.discount
+            FROM orderitems
+            JOIN menu_list ON orderitems.item_id = menu_list.id
+            JOIN payments ON orderitems.order_number = payments.order_number
+            JOIN orders ON orderitems.order_number = orders.order_number
+            WHERE orderitems.order_number = ?
+            """, (orderNumber,)).fetchall()
+    
+  

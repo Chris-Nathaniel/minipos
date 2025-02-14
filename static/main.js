@@ -50,6 +50,7 @@ function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
     .then(response => response.json())
     .then(data => {
         console.log(data.message);
+        console.log(data.tax)
         updateCartUI(data.cart, data.total, data.tax, data.cashPaid);
         updateCartCount(data.itemCount);
     })
@@ -211,6 +212,33 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
         }
     }
 
+    // Update cart other
+    const otherItem = document.createElement('div');
+    otherItem.innerHTML = `
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-end align-items-end">
+                        <div class="col d-flex justify-content-end align-items-end">
+                            <span class="mx-2">Discount:</span>
+                        </div>
+                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                            <span class="mx-2">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-end align-items-end">
+                        <div class="col d-flex justify-content-end align-items-end">
+                            <span class="mx-2 mt-1">Tax:</span>
+                        </div>
+                        <div class="col-md-4 d-flex justify-content-end align-items-end">
+                            <span class="mx-2 mt-1">${cartTax == 0? '0':formatCurrency(parseInt(cartTax.replace(',','')))}</span>
+                        </div>
+                    </div>
+                </div>
+    `;
+
+    cartOtherContainer.appendChild(otherItem);
+
     // Update cart total
     const totalItem = document.createElement('div');
     totalItem.className = "list-group-item";
@@ -238,32 +266,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
 
     // Append the new discount item
     discountDiv.appendChild(newDiscountSub);
-    // Update cart other
-    const otherItem = document.createElement('div');
-    otherItem.innerHTML = `
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-end align-items-end">
-                        <div class="col d-flex justify-content-end align-items-end">
-                            <span class="mx-2">Discount:</span>
-                        </div>
-                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                            <span class="mx-2">0</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-end align-items-end">
-                        <div class="col d-flex justify-content-end align-items-end">
-                            <span class="mx-2 mt-1">Tax:</span>
-                        </div>
-                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                            <span class="mx-2 mt-1">${cartTax == 0? '0':formatCurrency(parseInt(cartTax.replace(',','')))}</span>
-                        </div>
-                    </div>
-                </div>
-    `;
-
-    cartOtherContainer.appendChild(otherItem);
+    
 
 }
 

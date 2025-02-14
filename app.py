@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL
-from models import Menu, Checkout, Users, Billing
+from models import Menu, Checkout, Users, Billing, Orders
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 import midtransclient
 import secrets
@@ -208,7 +208,7 @@ def remove_from_cart():
         itemCount += item_quantity
 
     session['tax'] = '{:,.0f}'.format(gtotal * 0.10)
-    session['total'] = '{:,.0f}'.format(gtotal)
+    session['total'] = '{:,.0f}'.format(gtotal + gtotal * 0.10)
     session['itemCount'] = itemCount
     cash = session.get('cashPaid', 0)
 
@@ -298,7 +298,7 @@ def check_payment_status(on):
 def orders():
     if request.method == 'GET':
         # initalize orders
-        orderType = request.args.get('type')
+        orderType = request.args.get('type', 'dine in')
         status = request.args.get('status')
         cashValue = parseInt(session.get('cashPaid', 0))
         payment = request.args.get('payment')
@@ -306,39 +306,13 @@ def orders():
         billing = Billing(session)
         billing.reset()
         if orderType:
-            orders = db.execute("""
-                SELECT orders.*, payments.payment_status
-                FROM orders
-                LEFT JOIN payments ON orders.order_number = payments.order_number
-                WHERE DATE(order_date) = CURRENT_DATE
-                AND orders.type = ?
-                AND orders.status NOT IN ('completed', 'cancelled')
-                ORDER BY orders.order_date ASC """, (orderType,)).fetchall()
-        else:
-            orders = db.execute("""
-                SELECT orders.*, payments.payment_status
-                FROM orders
-                LEFT JOIN payments ON orders.order_number = payments.order_number
-                WHERE DATE(order_date) = CURRENT_DATE
-                AND orders.type = ?
-                AND orders.status NOT IN ('completed', 'cancelled')
-                ORDER BY orders.order_date ASC """, ('dine in',)).fetchall()
+            orders = Orders.search_orders_type(orderType)
 
         if status:
-            orders = db.execute("""
-                SELECT orders.*, payments.payment_status
-                FROM orders
-                LEFT JOIN payments ON orders.order_number = payments.order_number
-                WHERE DATE(order_date) = CURRENT_DATE
-                AND orders.status = ? ORDER BY orders.order_date ASC """, (status,)).fetchall()
+            orders = Orders.search_orders_status(status)
+
         if payment:
-            order_details = db.execute("""
-                SELECT orderitems.*, menu_list.item_name, menu_list.image_url, orders.total_amount, orders.type, orders.table_number
-                FROM orderitems
-                JOIN menu_list ON orderitems.item_id = menu_list.id
-                JOIN orders ON orderitems.order_number = orders.order_number
-                WHERE orderitems.order_number = ?
-            """, (payment,)).fetchall()
+            order_details = Orders.fetch_order_details(payment)
 
             if order_details:
                 billing.total = order_details[0]['total_amount']
@@ -360,13 +334,16 @@ def orders():
                     'deliveryType': item['type'],
                     'table_number': item['table_number']
                 })
+
             billing.deliveryType = billing.cart[0]['deliveryType'].capitalize()
             billing.tableNumber = billing.cart[0]['table_number']
 
         if billing.cart:
             session['billings'] = billing.cart
 
-        return render_template("orders.html", orders=orders, deliveryType=billing.deliveryType, cart=billing.cart, orderType=orderType, cashValue=cashValue, tax=billing.tax, total=billing.total, status=status, cash=billing.cashValue, change=billing.change, tickets=tickets, tableNumber=billing.tableNumber)
+        return render_template("orders.html", orders=orders, deliveryType=billing.deliveryType, cart=billing.cart, orderType=orderType, 
+                               cashValue=cashValue, tax=billing.tax, total=billing.total, status=status, cash=billing.cashValue, change=billing.change, 
+                               tickets=tickets, tableNumber=billing.tableNumber)
 
 
 @app.route("/retrieve_details", methods=['POST'])
@@ -376,17 +353,7 @@ def retrieve_details():
     order_number = request.json['order_number']
     order_items = []
 
-    data = db.execute("""
-    SELECT orderitems.order_number, orderitems.item_id, orderitems.quantity,
-           orderitems.price, orderitems.total, menu_list.item_name,
-           payments.invoice_number, payments.payment_method,
-           payments.payment_amount, payments.change, payments.payment_date, orders.total_amount, orders.discount
-    FROM orderitems
-    JOIN menu_list ON orderitems.item_id = menu_list.id
-    JOIN payments ON orderitems.order_number = payments.order_number
-    JOIN orders ON orderitems.order_number = orders.order_number
-    WHERE orderitems.order_number = ?
-    """, (order_number,)).fetchall()
+    data = Orders.fetch_invoice_details(order_number)
 
     # Convert the result into a list of dictionaries
     for row in data:
@@ -400,18 +367,18 @@ def retrieve_details():
 def update_status(on, status):
 
     # Fetch payment status from the database
-    payment_status = db.execute(
-        'SELECT payment_status FROM payments WHERE order_number = ?', (on,)).fetchone()
-    order_type = db.execute("SELECT type FROM orders WHERE order_number = ?", (on,)).fetchone()
+    payment_status = Billing.check_payment_status(on)
+    order_type = Orders.fetch_order_details(on)[0]['type']
+
 
     # Handle case where payment_status is None (no matching order)
     if payment_status is None:
         return apology("Order not found",code=404)
 
     # Access the payment status
-    current_status = payment_status[0]
+    current_status = payment_status
     # set current Tab
-    current_Tab = order_type[0]
+    current_Tab = order_type
 
     # If the order is already paid and the status update is 'completed' and cancelling unpaid order
     if current_status == 'paid' and status == 'completed' or current_status == 'unpaid' and status == 'cancelled':
@@ -451,44 +418,19 @@ def complete_payment():
         order_number = billings[0]['order_number']
         totalValue = billings[0]['grand_total']
         amount = request.form.get('cashValue')
-        order_type = db.execute(
-            "SELECT type FROM orders WHERE order_number = ?", (order_number,)).fetchone()
+        order_type = Orders.fetch_order_details(order_number)[0]['type']
         # set current Tab
-        current_Tab = order_type[0]
+        current_Tab = order_type
 
-        if int(amount) < totalValue and payment_method == "Cash":
+        if int(amount) < parseInt(totalValue) and payment_method == "Cash":
             flash("Invalid paid amount!", "error")
             return redirect('/orders')
+        status = Billing.update_payments(order_number, payment_method, totalValue, amount, core)
 
-        # check if payment is cash
-        if payment_method == "Cash":
-            # save payments to database and generate invoice
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", amount, order_number))
-            db.connection.commit()
-        # check if payment is card
-        if payment_method == "Card":
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", totalValue, order_number))
-            db.connection.commit()
-        # check if payment is Bca Qris
-        if payment_method == "BCA Qris":
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", totalValue, order_number))
-            db.connection.commit()
-        if payment_method == "m-banking":
-            param = bankTransfer(order_number, int(totalValue))
-            charge_response = core.charge(param)
-            va_number = charge_response['va_numbers'][0]['va_number']
-            bank_name = charge_response['va_numbers'][0]['bank']
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "pending", totalValue, order_number))
-            db.connection.commit()
-
+        if status != "success" and status != "not payment":
+            va_number, bank_name = status
             return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=totalValue)
-        if not payment_method:
-            return redirect(f"/orders?type={current_Tab}")
-
+            
         session['cashPaid'] = 0
     return redirect(f"/orders?type={current_Tab}")
 
@@ -497,7 +439,6 @@ def complete_payment():
 @login_required
 def edit_order():
     if request.method == 'GET':
-
         order_number = request.args.get('orders')
         cart = []
         ftotal = 0
