@@ -5,7 +5,7 @@
     <div class="firstcol" style="padding:5px;">
         <div class="left-menu p-3 position-relative">
             <h4>Discounts</h4>
-            
+
             <form method="GET" action="/discount">
                 <input type="text" class="form-control mb-3 mt-2" name="codeSearch" placeholder="Enter promo or gift code here">
                 <button type="submit" style="display: none;">Search</button>
@@ -13,18 +13,17 @@
 
             {% for ticket in tickets %}
             <div class="offer-item">
-                <img src="https://via.placeholder.com/50" alt="Discount Icon">
+                <img src="{{ ticket.image }}" alt="Discount Icon">
                 <div class="offer-details">
                     <div class="title">{{ticket.title}} | {{ticket.discount}}% off</div>
                     <div class="Voucher">Voucher: {{ticket.discount_code}} </div>
                     <div class="description">{{ticket.description}}</div>
                 </div>
-                <div class="offer-action">+</div>
             </div>
             {% endfor %}
-            
+
         </div>
-       
+
     </div>
     <div class="secondcol">
         <div class="right-menu">
@@ -55,11 +54,11 @@
                 </div>
                 <button type="submit" class="btn" style="background-color:#385060; color: white;" id="previewButton">Create Ticket</button>
             </form>
-            
+
         </div>
     </div>
     <div class="moreMenu">
-        
+
     </div>
 </div>
 {% endblock %}

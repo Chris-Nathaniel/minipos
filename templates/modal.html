@@ -50,12 +50,12 @@
                     <input type="text" class="form-control mb-3 mt-2" name="codeSearch" id="codeSearch" placeholder="Enter promo or gift code here">
                     <button type="submit" style="display: none;">Search</button>
                 </form>
-        
+
                 {% for ticket in tickets %}
                 <div class="offer-item">
-                    <img src="https://via.placeholder.com/50" alt="Discount Icon">
+                    <img src="{{ticket.image}}" alt="Discount Icon">
                     <div class="offer-details">
-                        <div class="title" data-item-discount="{{ticket.discount}}">{{ticket.title}} | {{ticket.discount}}% off</div>
+                        <div class="title" data-item-discount="{{ticket.discount}}" data-item-image="{{ticket.image}}" data-item-title="{{ticket.title}}" data-item-voucher="{{ticket.discount_code}}">{{ticket.title}} | {{ticket.discount}}% off</div>
                         <div class="Voucher">Voucher: {{ticket.discount_code}} </div>
                         <div class="description">{{ticket.description}}</div>
                     </div>
@@ -65,6 +65,6 @@
             </div>
 
         </div>
-        
+
     </div>
 </div>

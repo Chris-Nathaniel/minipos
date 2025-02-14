@@ -37,17 +37,18 @@
                         <p class="mb-0 ms-auto">Order type: <strong>{{ '-' if not deliveryType else deliveryType }}</strong></p>
                     </div>
                     <hr>
-                    <div class="list-group" id="cart-items">    
+                    <div class="list-group" id="cart-items">
                         {% if not cart%}
                         <div class="d-flex justify-content-center align-items-center" style="height: 100vh; width: auto; padding: 5px 5px; border: 1px solid var(--lg);">
                             <img src="/static/images/sadcat.png" style="width:100px; align-self: center;">
                             <p class="text-center lead">Cart is empty..</p>
                         </div>
                         {% endif %}
+
                         {% for item in cart %}
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div class="listimg">
-                                <img src='{{item["item_image"]}}' alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
+                                <img src="{{ item['item_image'] }}" alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
                             </div>
                             <div class="listname">
                                 <span class="mx-0">{{ item['item_name'] }}</span>
@@ -59,22 +60,21 @@
                                 <span class="mx-0">Rp {{ item['total'] }}</span>
                             </div>
                             <div class="listbutton">
-                                <button class="btn btn-sm remove-from-cart" 
-                                        data-item-id="{{item['item_id']}}" 
-                                        data-item-image="{{item['item_image']}}" 
-                                        data-item-name="{{ item['item_name'] }}" 
-                                        data-item-price="{{ item['item_price'] }}"  
-                                        data-item-quantity="{{item['item_quantity']}}"  
-                                        data-item-total="{{item['total']}}">
-                                    <img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/> 
+                                <button class="btn btn-sm remove-from-cart"
+                                        data-item-id="{{ item['item_id'] }}"
+                                        data-item-image="{{ item['item_image'] }}"
+                                        data-item-name="{{ item['item_name'] }}"
+                                        data-item-price="{{ item['item_price'] }}"
+                                        data-item-quantity="{{ item['item_quantity'] }}"
+                                        data-item-total="{{ item['total'] }}">
+                                    <img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;" />
                                 </button>
                             </div>
-                            
                         </div>
                         {% endfor %}
                     </div>
                     <div class="list-group">
-                        <div class="list-group-item mt-3">  
+                        <div class="list-group-item mt-3">
                             <label onclick="payment()" style="cursor:pointer" class="payment-method text-hover">Add Payment Method</label>
                             <div class="form-check mt-2 d-none">
                                 <input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="Cash">
@@ -83,14 +83,14 @@
                                     Cash
                                 </label>
                             </div>
-                
+
                             <div class="form-check mt-2 d-none">
                                 <input class="form-check-input" type="radio" name="paymentMethod" id="debitCredit" value="Card">
                                 <label class="form-check-label" for="debitCredit">
                                     Debit/Credit Cards
                                 </label>
                             </div>
-                
+
                             <div class="form-check mt-2 d-none">
                                 <input class="form-check-input" type="radio" name="paymentMethod" id="bcaQris" value="BCA Qris">
                                 <label class="form-check-label" for="bcaQris">
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <br>
-                    <div class="list-group">
+                    <div class="list-group discount">
                         <div class="list-group-item">
                             <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
                         </div>
@@ -161,12 +161,12 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>      
+                            </div>
                         </div>
-                    </div>               
+                    </div>
                     <br>
                     <div class="list-group" id="cart-total">
-                        <div class="list-group-item">    
+                        <div class="list-group-item">
                             <div class="row">
                                 <div class="d-flex justify-content-end align-items-end">
                                     <div class="col d-flex justify-content-end align-items-end">
@@ -176,10 +176,10 @@
                                         <span class="cartTotalValue mx-2 mt-1">{{ total }}</span>
                                     </div>
                                 </div>
-                            </div>              
+                            </div>
                         </div>
                     </div>
-                    <button class="btn btn-dark btn-block mt-3 w-100" id="submitorderbutton" type="submit">Finish Order</button>  
+                    <button class="btn btn-dark btn-block mt-3 w-100" id="submitorderbutton" type="submit">Finish Order</button>
                 </form>
             </div>
         </div>
