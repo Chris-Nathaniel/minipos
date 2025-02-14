@@ -1,194 +1,192 @@
 </div>
-<div class="secondcol">
-    <div class="cart-menu">
-        <div class="col-md-11 cart-wrapper">
-            <div class="close-button-wrapper" style="text-align: right;">
-                <img src="/static/images/close.jpg" class="close-button" alt="Close">
-            </div>
-            <h3 class="text-center my-3">Billing</h3>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <ul>
-                    {% for category, message in messages %}
-                        <li class="{{ category }}">{{ message }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-            {% endwith %}
-            <hr>
-            <form id="paymentForm" action="{% if finish_edit_order %}/finish_edit_order {% elif  cart and cart[0]['order_number'] %}/complete_payment {% else %}/process_order{% endif %}" method="post">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <label for="table-no" class="me-2 mb-0">Table no:</label>
-                        {% if deliveryType == 'Dine in' and not tableNumber %}
-                            <select id="table-no" class="form-select" name="table" style="width: 100px;">
-                                {% for table_no in range(1, 11) %}
-                                    <option value="{{ table_no }}">{{ table_no }}</option>
-                                {% endfor %}
-                            </select>
-                        {% elif deliveryType == 'Take out' %}
-                            <p class="mb-0"><strong>-</strong></p>
-                        {% elif tableNumber %}
-                            <p class="mb-0"><strong>{{ tableNumber }}</strong></p>
-                        {% else %}
-                            <p class="mb-0"><strong>-</strong></p>
-                        {% endif %}
-                    </div>
-                    <p class="mb-0 ms-auto">Order type: <strong>{{ '-' if not deliveryType else deliveryType }}</strong></p>
+    <div class="secondcol">
+        <div class="cart-menu">
+            <div class="col-md-11 cart-wrapper">
+                <div class="close-button-wrapper" style="text-align: right;">
+                    <img src="/static/images/close.jpg" class="close-button" alt="Close">
                 </div>
-                <hr>
-                <div class="list-group" id="cart-items">
-                    {% set cart = session.get('cart', []) %}
-                    {% if not cart%}
-                    <div class="d-flex justify-content-center align-items-center" style="height: 100vh; width: auto; padding: 5px 5px; border: 1px solid var(--lg);">
-                        <img src="/static/images/sadcat.png" style="width:100px; align-self: center;">
-                        <p class="text-center lead">Cart is empty..</p>
-                    </div>
+                <h3 class="text-center my-3">Billing</h3>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul>
+                        {% for category, message in messages %}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                        </ul>
                     {% endif %}
-
-                    {% for item in cart %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="listimg">
-                            <img src="{{ item['item_image'] }}" alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
+                {% endwith %}
+                <hr>
+                <form id="paymentForm" action="{% if finish_edit_order %}/finish_edit_order {% elif  cart and cart[0]['order_number'] %}/complete_payment {% else %}/process_order{% endif %}" method="post">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <label for="table-no" class="me-2 mb-0">Table no:</label>
+                            {% if deliveryType == 'Dine in' and not tableNumber %}
+                                <select id="table-no" class="form-select" name="table" style="width: 100px;">
+                                    {% for table_no in range(1, 11) %}
+                                        <option value="{{ table_no }}">{{ table_no }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% elif deliveryType == 'Take out' %}
+                                <p class="mb-0"><strong>-</strong></p>
+                            {% elif tableNumber %}
+                                <p class="mb-0"><strong>{{ tableNumber }}</strong></p>
+                            {% else %}
+                                <p class="mb-0"><strong>-</strong></p>
+                            {% endif %}
                         </div>
-                        <div class="listname">
-                            <span class="mx-0">{{ item['item_name'] }}</span>
+                        <p class="mb-0 ms-auto">Order type: <strong>{{ '-' if not deliveryType else deliveryType }}</strong></p>
+                    </div>
+                    <hr>
+                    <div class="list-group" id="cart-items">    
+                        {% if not cart%}
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100vh; width: auto; padding: 5px 5px; border: 1px solid var(--lg);">
+                            <img src="/static/images/sadcat.png" style="width:100px; align-self: center;">
+                            <p class="text-center lead">Cart is empty..</p>
                         </div>
-                        <div class="listquantity">
-                            <span class="mx-0"> x {{ item['item_quantity'] }} </span>
+                        {% endif %}
+                        {% for item in cart %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="listimg">
+                                <img src='{{item["item_image"]}}' alt="Item {{ item['item_id'] }}" class="img-thumbnail" style="width: 70px;">
+                            </div>
+                            <div class="listname">
+                                <span class="mx-0">{{ item['item_name'] }}</span>
+                            </div>
+                            <div class="listquantity">
+                                <span class="mx-0"> x {{ item['item_quantity'] }} </span>
+                            </div>
+                            <div class="listtotal">
+                                <span class="mx-0">Rp {{ item['total'] }}</span>
+                            </div>
+                            <div class="listbutton">
+                                <button class="btn btn-sm remove-from-cart" 
+                                        data-item-id="{{item['item_id']}}" 
+                                        data-item-image="{{item['item_image']}}" 
+                                        data-item-name="{{ item['item_name'] }}" 
+                                        data-item-price="{{ item['item_price'] }}"  
+                                        data-item-quantity="{{item['item_quantity']}}"  
+                                        data-item-total="{{item['total']}}">
+                                    <img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/> 
+                                </button>
+                            </div>
+                            
                         </div>
-                        <div class="listtotal">
-                            <span class="mx-0">Rp {{ item['total'] }}</span>
-                        </div>
-                        <div class="listbutton">
-                            <button class="btn btn-sm remove-from-cart"
-                                    data-item-id="{{ item['item_id'] }}"
-                                    data-item-image="{{ item['item_image'] }}"
-                                    data-item-name="{{ item['item_name'] }}"
-                                    data-item-price="{{ item['item_price'] }}"
-                                    data-item-quantity="{{ item['item_quantity'] }}"
-                                    data-item-total="{{ item['total'] }}">
-                                <img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;" />
-                            </button>
+                        {% endfor %}
+                    </div>
+                    <div class="list-group">
+                        <div class="list-group-item mt-3">  
+                            <label onclick="payment()" style="cursor:pointer" class="payment-method text-hover">Add Payment Method</label>
+                            <div class="form-check mt-2 d-none">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="Cash">
+                                <input hidden name="cashValue" value="{{cashValue}}">
+                                <label class="form-check-label" for="cash">
+                                    Cash
+                                </label>
+                            </div>
+                
+                            <div class="form-check mt-2 d-none">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="debitCredit" value="Card">
+                                <label class="form-check-label" for="debitCredit">
+                                    Debit/Credit Cards
+                                </label>
+                            </div>
+                
+                            <div class="form-check mt-2 d-none">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="bcaQris" value="BCA Qris">
+                                <label class="form-check-label" for="bcaQris">
+                                    BCA Qris
+                                </label>
+                            </div>
+                            <div class="form-check mt-2 d-none">
+                                <input class="form-check-input" type="radio" name="paymentMethod" id="m-banking" value="m-banking">
+                                <label class="form-check-label" for="m-banking">
+                                    M-banking
+                                </label>
+                            </div>
                         </div>
                     </div>
-                    {% endfor %}
-                </div>
-                <div class="list-group">
-                    <div class="list-group-item mt-3">
-                        <label onclick="payment()" style="cursor:pointer" class="payment-method text-hover">Add Payment Method</label>
-                        <div class="form-check mt-2 d-none">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="cash" value="Cash">
-                            <input hidden name="cashValue" value="{{cashValue}}">
-                            <label class="form-check-label" for="cash">
-                                Cash
-                            </label>
-                        </div>
-
-                        <div class="form-check mt-2 d-none">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="debitCredit" value="Card">
-                            <label class="form-check-label" for="debitCredit">
-                                Debit/Credit Cards
-                            </label>
-                        </div>
-
-                        <div class="form-check mt-2 d-none">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="bcaQris" value="BCA Qris">
-                            <label class="form-check-label" for="bcaQris">
-                                BCA Qris
-                            </label>
-                        </div>
-                        <div class="form-check mt-2 d-none">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="m-banking" value="m-banking">
-                            <label class="form-check-label" for="m-banking">
-                                M-banking
-                            </label>
+                    <br>
+                    <div class="list-group">
+                        <div class="list-group-item">
+                            <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
                         </div>
                     </div>
-                </div>
-                <br>
-                <div class="list-group discount">
-                    <div class="list-group-item">
-                        <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
-                    </div>
-                </div>
-                <br>
-                <div class="list-group">
-                    <div class="list-group-item" >
-                        <div id="cart-other">
+                    <br>
+                    <div class="list-group">
+                        <div class="list-group-item" >
+                            <div id="cart-other">
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-end align-items-end">
+                                            <div class="col d-flex justify-content-end align-items-end">
+                                                <span class="mx-2">Discount:</span>
+                                            </div>
+                                            <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                                <span class="mx-2">{{discount}}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-end align-items-end">
+                                            <div class="col d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1">Tax:</span>
+                                            </div>
+                                            <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1">{{ tax }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div>
-                                <div class="row">
-                                    <div class="col-12 d-flex justify-content-end align-items-end">
-                                        <div class="col d-flex justify-content-end align-items-end">
-                                            <span class="mx-2">Discount:</span>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-end align-items-end">
+                                            <div class="col d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1">Paid Amount:</span>
+                                            </div>
+                                            <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1 cash_payment">{{ cash }}</span>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                            <span class="mx-2">{{discount}}%</span>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12 d-flex justify-content-end align-items-end">
+                                            <div class="col d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1">Change:</span>
+                                            </div>
+                                            <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                                <span class="mx-2 mt-1 change">{{ change }}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12 d-flex justify-content-end align-items-end">
-                                        <div class="col d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1">Tax:</span>
-                                        </div>
-                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1">{{ tax }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </div>      
                         </div>
-                        <div>
-                            <div>
-                                <div class="row">
-                                    <div class="col-12 d-flex justify-content-end align-items-end">
-                                        <div class="col d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1">Paid Amount:</span>
-                                        </div>
-                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1 cash_payment">{{ cash }}</span>
-                                        </div>
+                    </div>               
+                    <br>
+                    <div class="list-group" id="cart-total">
+                        <div class="list-group-item">    
+                            <div class="row">
+                                <div class="d-flex justify-content-end align-items-end">
+                                    <div class="col d-flex justify-content-end align-items-end">
+                                        <span class="mx-2 mt-1">Grand Total:</span>
+                                    </div>
+                                    <div class="col-md-4 d-flex justify-content-end align-items-end">
+                                        <span class="cartTotalValue mx-2 mt-1">{{ total }}</span>
                                     </div>
                                 </div>
-                                <div class="row">
-                                    <div class="col-12 d-flex justify-content-end align-items-end">
-                                        <div class="col d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1">Change:</span>
-                                        </div>
-                                        <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                            <span class="mx-2 mt-1 change">{{ change }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </div>              
                         </div>
                     </div>
-                </div>
-                <br>
-                <div class="list-group" id="cart-total">
-                    <div class="list-group-item">
-                        <div class="row">
-                            <div class="d-flex justify-content-end align-items-end">
-                                <div class="col d-flex justify-content-end align-items-end">
-                                    <span class="mx-2 mt-1">Grand Total:</span>
-                                </div>
-                                <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                    <span class="cartTotalValue mx-2 mt-1">{{ total }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <button class="btn btn-dark btn-block mt-3 w-100" id="submitorderbutton" type="submit">Finish Order</button>
-            </form>
+                    <button class="btn btn-dark btn-block mt-3 w-100" id="submitorderbutton" type="submit">Finish Order</button>  
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="shoppingCart">
+        <div class="counter">
+            {{ cart|length }}
         </div>
     </div>
 </div>
-<div class="shoppingCart">
-    <div class="counter">
-        {{ cart|length }}
-    </div>
-</div>
-</div>
-

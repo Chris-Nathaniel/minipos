@@ -3,6 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL
+from models import Menu, Checkout, Users, Billing
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 import midtransclient
 import secrets
@@ -27,7 +28,6 @@ core = midtransclient.CoreApi(
 @app.route('/')
 @login_required
 def choose_option():
-
     if 'dinein' in request.args:
         # Handle the Take Away option
         session['type'] = "dine in"
@@ -39,107 +39,37 @@ def choose_option():
 
     return render_template('index.html')
 
-
-@app.route("/menu")
-@login_required
-def menu():
-    # check if customer have chosen order type
-    if 'type' not in session or not session['type']:
-        return redirect("/")
-    query = request.args.get('search')
-    if query:
-        main = db.execute('SELECT * FROM menu_list WHERE item_name LIKE ?',
-                          ('%' + query + '%',)).fetchall()
-    else:
-        main = db.execute('SELECT * FROM menu_list').fetchall()
-
-    # fetch menu list
-    categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
-
-    # Fetch the username in current session
-    username = db.execute('SELECT username FROM users WHERE id = ?',
-                          (session['user_id'],)).fetchone()
-    username = username['username']
-
-    # Load Sessions
-    total = parseInt(session.get('total', 0))  # return str in the format (x,xxx)
-    tax = parseInt(session.get('tax', 0))  # return str format (x,xxx)
-    cashValue = parseInt(session.get('cashPaid', 0))  # return str format (Rp x,xxx)
-    tableNumber = session.get('tableNumber', "")
-    deliveryType = session.get('type', 'cart').capitalize()
-    finish_edit_order = session.get('edit_order', '')
-    change = cashValue - total
-    tickets = db.execute(
-        "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
-    discount = session.get('discount', 0)
-
-    # format them add currency
-    if total not in ['0', 0]:
-        tax = formatCurrency("Rp", tax)
-        total = formatCurrency("Rp", total)
-
-    if cashValue not in ['0', 0]:
-        cash = formatCurrency("Rp", cashValue)
-        change = formatCurrency("Rp", change)
-    else:
-        change = 0
-        cash = cashValue
-
-    return render_template("menu.html", main=main, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
-
-
 @app.route("/<category>")
 @login_required
 def menu_by_category(category):
-
-    # list of valid category
-    valid_categories = ["Appetizers", "Main Course", "Side Dish",
-                        "Drinks", "Breads", "Desserts", "Additionals"]
+    # check if customer have chosen order type
+    if 'type' not in session or not session['type']:
+        return redirect("/")
 
     query = request.args.get('search')
-    if query:
-        main = db.execute('SELECT * FROM menu_list WHERE item_name LIKE ?',
-                          ('%' + query + '%',)).fetchall()
-    else:
-        main = db.execute('SELECT * FROM menu_list WHERE category Like ?', (category,)).fetchall()
-
     # fetch menu list by category
-    categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
-    tickets = db.execute(
-        "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+    categories = Menu.get_category()
+    valid_categories = [row[0].title() for row in categories]
 
-    # Handle the case where the category doesn't exist
-    if category not in valid_categories:
-        return apology("oops , category not found", categories)
+    tickets = Checkout.get_active_discount_ticket()
+    if query:
+        main = Menu.search_menu(query)
+    elif category == 'menu':
+        main = Menu.get_all_menu()
+    elif category in valid_categories:
+        main = Menu.search_menu_category(category)
+    else:
+        return apology("oops , category not found", code=404)
 
     if not main:
         session['category'] = category
 
+    billing = Billing(session)
+    billing.format_currency()
 
-    # Get the cart from the session
-    cart = session.get('cart', [])
-    total = parseInt(session.get('total', 0))
-    tax = parseInt(session.get('tax', 0))
-    cashValue = parseInt(session.get('cashPaid', 0))
-    tableNumber = session.get('tableNumber', "")
-    deliveryType = session.get('type', 'cart').capitalize()
-    finish_edit_order = session.get('edit_order', '')
-    change = cashValue - total
-    discount = session.get('discount', 0)
-
-    # format them add currency
-    if total not in ['0', 0]:
-        tax = formatCurrency("Rp", tax)
-        total = formatCurrency("Rp", total)
-
-    if cashValue not in ['0', 0]:
-        cash = formatCurrency("Rp", cashValue)
-        change = formatCurrency("Rp", change)
-    else:
-        change = 0
-        cash = cashValue
-
-    return render_template("menu.html", main=main, total=total, discount=discount, tax=tax, cash=cash, cashValue=cashValue, change=change, deliveryType=deliveryType, category=category, tableNumber=tableNumber, finish_edit_order=finish_edit_order, categories=categories, tickets=tickets, mode="menu")
+    return render_template("menu.html", 
+        main=main, categories=categories, tickets=tickets,
+        mode="menu", category=category, **billing.__dict__)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -158,8 +88,7 @@ def login():
             return apology("must provide password", code=402)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = ?",
-                          (request.form.get("username"),)).fetchall()
+        rows = Users.search_username(request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
@@ -195,14 +124,11 @@ def register():
             return apology("please confirm password")
 
         # check if user already registered, if not registered
-        existinguser = db.execute(
-            "SELECT username FROM users WHERE username = ?", (username,)).fetchall()
+        existinguser = Users.search_username(username)
         if existinguser:
             return apology("user already registered", code=400)
         else:
-            db.execute("INSERT INTO users (username, hash) VALUES (?,?)",
-                       (username, hashed_password,))
-            db.connection.commit()
+            Users.register(username, hashed_password)
             return redirect("/login")
 
     else:
@@ -224,7 +150,6 @@ def logout():
 @app.route('/add_to_cart', methods=['POST'])
 @login_required
 def add_to_cart():
-
     if 'cart' not in session:
         session['cart'] = []
     gtotal = 0
@@ -295,88 +220,39 @@ def remove_from_cart():
 def confirm_order():
 
     orders = session.get("cart", [])
-    total_amount = session.get("total", 0)  # the amount customer has to pay
-    ordertype = session.get("type", " ")
-    payment_method = request.form.get('paymentMethod')
-    table = request.form.get('table')
-    totalValue = parseInt(total_amount)
-    amount = request.form.get('cashValue')
+    billing = Billing(session, request.form)
+    totalValue = parseInt(billing.total)
     order_number = generate_order_number("TESTORD-")
-    discount = session.get("discount", 0)
-
-
-    if int(amount) < totalValue and payment_method == "Cash":
+    
+    if int(billing.cashValue) < totalValue and billing.payment_method == "Cash":
         flash("Invalid paid amount!", "error")
         return redirect('/menu')
 
     # check if orders is empty
     if not orders:
         return redirect("/")
-    if not table:
-        table = 0
-    if ordertype == "take out" and not payment_method:
+    if not billing.tableNumber:
+        billing.tableNumber = 0
+    if billing.deliveryType == "take out" and not billing.payment_method:
         flash("Error: Takeaway orders must provide a payment method", "error")
         return redirect("/menu")
 
-    # save order to database
-    result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount) VALUES (?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
-                        (order_number, ordertype, table, "new", int(total_amount.replace(",", "")), discount,)).fetchone()
-
-    # Fetch the returned order number and order_date
-    order_number, order_date = result
-    db.connection.commit()
-
-    # save order items to database
-    for order in orders:
-        db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), order_date))
-        db.connection.commit()
-
-    # check if payment is cash
-    if payment_method == "Cash":
-       # save payments to database and generate invoice
-        db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, payment_method, "paid", totalValue, amount))
-        db.connection.commit()
+    #save the order to database
+    Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
+    #process payments
+    payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
+    if payment_status == "success":
         clear_session()
         return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
-    # check if payment is card
-    if payment_method == "Card":
-        db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, payment_method, "paid", totalValue, totalValue))
-        db.connection.commit()
-        clear_session()
-        return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
-    # check if payment is Bca Qris
-    if payment_method == "BCA Qris":
-        db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, payment_method, "paid", totalValue, totalValue))
-        db.connection.commit()
-        clear_session()
-        return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
-    # check if payment is m-banking
-    if payment_method == "m-banking":
-        param = bankTransfer(order_number, total_amount)
-        charge_response = core.charge(param)
-        va_number = charge_response['va_numbers'][0]['va_number']
-        bank_name = charge_response['va_numbers'][0]['bank']
-        db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, payment_method, "pending", totalValue, totalValue))
-        db.connection.commit()
+    else:
+        va_number, bank_name = payment_status
         clear_session()
         session['va_number'] = va_number
         session['bank_name'] = bank_name
         session['order_number'] = order_number
-        session['total_amount'] = total_amount
+        session['total_amount'] = billing.total
 
         return redirect("/waiting_for_payment")
-    if not payment_method:
-        db.execute("INSERT INTO payments (order_number, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?)",
-                   (order_number, "unpaid", totalValue, 0,))
-        db.connection.commit()
-        clear_session()
-        return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
-
 
 @app.route("/waiting_for_payment", methods=['GET'])
 def waiting_for_payment():
@@ -404,18 +280,15 @@ def midtrans_notification():
     # If the transaction is successful
     if transaction_status == 'settlement':
         # Update the payment status to 'paid' in the database
-        db.execute("UPDATE payments SET payment_status = 'paid' WHERE order_number = ?", (order_id,))
-        db.connection.commit()
+        Billing.update_payment_status(order_id)
 
     return jsonify({'message': 'Notification received'}), 200
 
 
 @app.route("/payment_status/<on>", methods=['POST', 'GET'])
 def check_payment_status(on):
-
     print(on)
-    status = db.execute("SELECT payment_status FROM payments WHERE order_number = ?", (on,))
-    status = status.fetchone()[0]
+    status = Billing.check_payment_status(on)
 
     return jsonify({'payment_status': status})
 
@@ -423,23 +296,15 @@ def check_payment_status(on):
 @app.route("/orders", methods=['GET', 'POST'])
 @login_required
 def orders():
-
     if request.method == 'GET':
         # initalize orders
         orderType = request.args.get('type')
         status = request.args.get('status')
         cashValue = parseInt(session.get('cashPaid', 0))
-        # get orderNumber
         payment = request.args.get('payment')
-        tickets = db.execute(
-            "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
-        cash = 0
-        change = 0
-        cart = []
-        deliveryType = ""
-        ftax = 0
-        ftotal = 0
-        tableNumber = 0
+        tickets = Checkout.get_active_discount_ticket()
+        billing = Billing(session)
+        billing.reset()
         if orderType:
             orders = db.execute("""
                 SELECT orders.*, payments.payment_status
@@ -476,13 +341,13 @@ def orders():
             """, (payment,)).fetchall()
 
             if order_details:
-                total = order_details[0]['total_amount']
-                tax = total / 1.1 * 0.10
-                ftotal = 'Rp {:,.0f}'.format(total)
-                ftax = 'Rp {:,.0f}'.format(tax)
+                billing.total = order_details[0]['total_amount']
+                billing.tax = billing.total / 1.1 * 0.10
+                billing.total = 'Rp {:,.0f}'.format(billing.total)
+                billing.tax = 'Rp {:,.0f}'.format(billing.tax)
 
             for item in order_details:
-                cart.append({
+                billing.cart.append({
                     'id': item['id'],
                     'order_number': item['order_number'],
                     'item_id': item['item_id'],
@@ -491,17 +356,17 @@ def orders():
                     'total': '{:,}'.format(int(item['total'])),
                     'item_name': item['item_name'],
                     'item_image': item['image_url'],
-                    'grand_total': total,
+                    'grand_total': billing.total,
                     'deliveryType': item['type'],
                     'table_number': item['table_number']
                 })
-            deliveryType = cart[0]['deliveryType'].capitalize()
-            tableNumber = cart[0]['table_number']
+            billing.deliveryType = billing.cart[0]['deliveryType'].capitalize()
+            billing.tableNumber = billing.cart[0]['table_number']
 
-        if cart:
-            session['billings'] = cart
+        if billing.cart:
+            session['billings'] = billing.cart
 
-        return render_template("orders.html", orders=orders, deliveryType=deliveryType, cart=cart, orderType=orderType, cashValue=cashValue, tax=ftax, total=ftotal, status=status, cash=cash, change=change, tickets=tickets, tableNumber=tableNumber)
+        return render_template("orders.html", orders=orders, deliveryType=billing.deliveryType, cart=billing.cart, orderType=orderType, cashValue=cashValue, tax=billing.tax, total=billing.total, status=status, cash=billing.cashValue, change=billing.change, tickets=tickets, tableNumber=billing.tableNumber)
 
 
 @app.route("/retrieve_details", methods=['POST'])
