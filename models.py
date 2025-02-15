@@ -47,11 +47,11 @@ class Menu:
 
 class Discount:
     def get_active_discount_ticket():
-        return db.execute(
-        "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+        return db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+    
     def search_discount_ticket(code):
-        db.execute(
-                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (code,)).fetchall()
+        return db.execute("SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (code,)).fetchall()
+    
     def insert_discount(title, description, discount, expiration, discountCode, imageUrl):
         db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code, image ) VALUES (?, ?, ?, ?, ?, ?)",
                        (title, description, discount, expiration, discountCode, imageUrl))

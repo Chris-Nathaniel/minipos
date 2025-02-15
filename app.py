@@ -351,7 +351,7 @@ def complete_payment():
         totalValue = billings[0]['grand_total']
         amount = request.form.get('cashValue')
         order_type = Orders.fetch_order_details(order_number)[0]['type']
-        
+
         # set current Tab
         current_Tab = order_type
 
