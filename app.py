@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL
-from models import Menu, Checkout, Users, Billing, Orders
+from models import Menu, Discount, Users, Billing, Orders, Cart
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 import midtransclient
 import secrets
@@ -51,7 +51,7 @@ def menu_by_category(category):
     categories = Menu.get_category()
     valid_categories = [row[0].title() for row in categories]
 
-    tickets = Checkout.get_active_discount_ticket()
+    tickets = Discount.get_active_discount_ticket()
     if query:
         main = Menu.search_menu(query)
     elif category == 'menu':
@@ -145,42 +145,15 @@ def logout():
     return redirect("/")
 
 # Route to add items to the cart
-
-
 @app.route('/add_to_cart', methods=['POST'])
 @login_required
 def add_to_cart():
     if 'cart' not in session:
         session['cart'] = []
-    gtotal = 0
-    itemCount = 0
     # retrieving data
     data = request.json
-    item_in_cart = any(item['item_id'] == data['item_id'] for item in session['cart'])
-    if item_in_cart:
-        # increase the quantity + 1
-        for item in session['cart']:
-            if item['item_id'] == data['item_id']:
-                # Increment the quantity by 1
-                item['item_quantity'] = str(int(item['item_quantity']) + 1)
-    else:
-        # append data to session
-        session['cart'].append(data)
-        session['cart'] = session['cart']
-
-    for i in session['cart']:
-        total = int(i['item_price'].replace(',', '')) * int(i['item_quantity'])
-        item_quantity = int(i['item_quantity'])
-        # storing the individual total in the cart as dict
-        i['total'] = total
-        i['total'] = '{:,.0f}'.format(i['total'])
-        # storing the global total in session
-        gtotal += total
-        itemCount += item_quantity
-
-    session['tax'] = '{:,.0f}'.format(gtotal * 0.10)
-    session['total'] = '{:,.0f}'.format(gtotal + gtotal * 0.10)
-    session['itemCount'] = itemCount
+    Cart.update_cart_item(data, session)
+    Cart.calculate_cart_totals(session)
     cash = session.get('cashPaid', 0)
 
     return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount']}), 200
@@ -189,27 +162,9 @@ def add_to_cart():
 @app.route('/remove_from_cart', methods=['POST'])
 @login_required
 def remove_from_cart():
-
     data = request.json
-    if data['ordertime'] == 'undefined':
-        del data['ordertime']
-    session['cart'] = [item for item in session['cart'] if str(item.get('item_id')) != data.get(
-        'item_id') or item.get('order_time') != data.get('ordertime')]
-    itemCount = 0
-    gtotal = 0
-    for i in session['cart']:
-        total = int(i['item_price'].replace(',', '')) * int(i['item_quantity'])
-        item_quantity = int(i['item_quantity'])
-        # storing the individual total in the cart as dict
-        i['total'] = total
-        i['total'] = '{:,.0f}'.format(i['total'])
-        # storing the global total in session
-        gtotal += total
-        itemCount += item_quantity
-
-    session['tax'] = '{:,.0f}'.format(gtotal * 0.10)
-    session['total'] = '{:,.0f}'.format(gtotal + gtotal * 0.10)
-    session['itemCount'] = itemCount
+    Cart.remove_cart_item(data, session)
+    Cart.calculate_cart_totals(session)
     cash = session.get('cashPaid', 0)
 
     return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount']}), 200
@@ -302,7 +257,7 @@ def orders():
         status = request.args.get('status')
         cashValue = parseInt(session.get('cashPaid', 0))
         payment = request.args.get('payment')
-        tickets = Checkout.get_active_discount_ticket()
+        tickets = Discount.get_active_discount_ticket()
         billing = Billing(session)
         billing.reset()
         if orderType:
@@ -313,30 +268,7 @@ def orders():
 
         if payment:
             order_details = Orders.fetch_order_details(payment)
-
-            if order_details:
-                billing.total = order_details[0]['total_amount']
-                billing.tax = billing.total / 1.1 * 0.10
-                billing.total = 'Rp {:,.0f}'.format(billing.total)
-                billing.tax = 'Rp {:,.0f}'.format(billing.tax)
-
-            for item in order_details:
-                billing.cart.append({
-                    'id': item['id'],
-                    'order_number': item['order_number'],
-                    'item_id': item['item_id'],
-                    'item_quantity': item['quantity'],
-                    'item_price': item['price'],
-                    'total': '{:,}'.format(int(item['total'])),
-                    'item_name': item['item_name'],
-                    'item_image': item['image_url'],
-                    'grand_total': billing.total,
-                    'deliveryType': item['type'],
-                    'table_number': item['table_number']
-                })
-
-            billing.deliveryType = billing.cart[0]['deliveryType'].capitalize()
-            billing.tableNumber = billing.cart[0]['table_number']
+            billing.cart = billing.load_order_details(order_details)
 
         if billing.cart:
             session['billings'] = billing.cart
@@ -419,6 +351,7 @@ def complete_payment():
         totalValue = billings[0]['grand_total']
         amount = request.form.get('cashValue')
         order_type = Orders.fetch_order_details(order_number)[0]['type']
+        
         # set current Tab
         current_Tab = order_type
 
@@ -439,53 +372,22 @@ def complete_payment():
 @login_required
 def edit_order():
     if request.method == 'GET':
+        clear_session()
         order_number = request.args.get('orders')
-        cart = []
-        ftotal = 0
-        ftax = 0
-        deliveryType = ""
-        tableNumber = 0
+        billing = Billing(session)
         edit_order = True
         if order_number:
-            order_details = db.execute("""
-                SELECT orderitems.*, menu_list.item_name, menu_list.image_url, orders.total_amount, orders.type, orders.table_number
-                FROM orderitems
-                JOIN menu_list ON orderitems.item_id = menu_list.id
-                JOIN orders ON orderitems.order_number = orders.order_number
-                WHERE orderitems.order_number = ?
-            """, (order_number,)).fetchall()
-
-            if order_details:
-                total = order_details[0]['total_amount']
-                tax = total / 1.1 * 0.10
-                ftotal = '{:,.0f}'.format(total)
-                ftax = '{:,.0f}'.format(tax)
-
-            for item in order_details:
-                cart.append({
-                    'id': item['id'],
-                    'order_number': item['order_number'],
-                    'item_id': item['item_id'],
-                    'item_quantity': item['quantity'],
-                    'item_price': '{:,}'.format(int(item['price'])),
-                    'total': '{:,}'.format(int(item['total'])),
-                    'item_name': item['item_name'],
-                    'item_image': item['image_url'],
-                    'grand_total': total,
-                    'deliveryType': item['type'],
-                    'table_number': item['table_number'],
-                    'order_time': item['order_time']
-                })
-            deliveryType = cart[0]['deliveryType'].capitalize()
-            tableNumber = cart[0]['table_number']
-        if cart:
-            session['cart'] = cart
-            session['tax'] = ftax
-            session['total'] = ftotal
-            session['type'] = deliveryType
-            session['tableNumber'] = tableNumber
+            order_details = Orders.fetch_order_details(order_number)
+            billing.load_order_details(order_details)
+            
+        if billing.cart:
+            session['cart'] = billing.cart
+            session['tax'] = billing.tax
+            session['total'] = billing.total
+            session['type'] = billing.deliveryType
+            session['tableNumber'] = billing.tableNumber
             session['edit_order'] = edit_order
-            session['edit_order_number'] = cart[0]['order_number']
+            session['edit_order_number'] = billing.cart[0]['order_number']
 
         return redirect('/menu')
     if request.method == 'POST':
@@ -506,30 +408,16 @@ def finish_edit_order():
     totalValue = int(str(total_amount).replace("Rp", "").replace(",", "").strip())
 
     # check if order_number exist in database
-    existOrderNumber = db.execute(
-        "SELECT order_number FROM orders WHERE order_number = ?", (order_number,)).fetchone()
+    existOrderNumber = Orders.search_orders_number(order_number)
     if existOrderNumber:
         # update order total in database
-        db.execute("UPDATE orders SET total_amount = ? WHERE order_number = ?",
-                   (totalValue, order_number,))
-        db.connection.commit()
+        Orders.update_orders_total(totalValue, order_number)
         # del prev items from database
-        db.execute("DELETE FROM orderitems WHERE order_number = ?", (order_number,))
-        db.connection.commit()
+        Orders.delete_orderitems(order_number)
         # update orderitems in database
-        for order in new_data_order:
-            if 'order_time' in order:
-                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
-                           (order_number, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), order['order_time']))
-                db.connection.commit()
-            else:
-                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, datetime('now'))",
-                           (order_number, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", ""))))
-                db.connection.commit()
+        Orders.update_order_items(new_data_order, order_number)
         # update invoice amount in payments
-        db.execute("UPDATE payments SET invoice_amount = ? WHERE order_number = ?",
-                   (totalValue, order_number,))
-        db.connection.commit()
+        Billing.update_invoice(totalValue, order_number)
 
     # clear session
     clear_session()
@@ -540,9 +428,7 @@ def finish_edit_order():
 @app.route('/thank', methods=['POST'])
 def thank():
     order_number = request.form.get('order_number')
-    status = db.execute(
-        "SELECT payment_status FROM payments WHERE order_number = ?", (order_number,))
-    status = status.fetchone()
+    status = Billing.check_payment_status(order_number)
     if status[0] == 'paid':
         clear_session()
 
@@ -559,8 +445,7 @@ def sync_payment(on):
     # If the transaction is successful
     if transaction_status == 'settlement':
         # Update the payment status to 'paid' in the database
-        db.execute("UPDATE payments SET payment_status = 'paid' WHERE order_number = ?", (on,))
-        db.connection.commit()
+        Billing.update_payment_status(on)
 
     return redirect('/orders')
 
@@ -571,14 +456,13 @@ def customizations():
     name = session.get('menu', 'menu')
     query = request.args.get('search')
     if query:
-        main = db.execute('SELECT * FROM menu_list WHERE item_name LIKE ?',
-                          ('%' + query + '%',)).fetchall()
+        main = Menu.search_menu(query)
     else:
-        main = db.execute('SELECT * FROM menu_list').fetchall()
+        main = Menu.get_all_menu()
 
     mylist = [dict(item) for item in main]
 
-    categories = db.execute('SELECT DISTINCT category FROM categories').fetchall()
+    categories = Menu.get_category()
 
     return render_template('customization.html', name=name, main=main, categories=categories, query=query, mode='customize')
 
@@ -596,11 +480,7 @@ def add_menu():
         if product_title and product_price and product_category and product_image:
             try:
                 product_image_url = saveImage(product_image)
-                db.execute(
-                    "INSERT INTO menu_list (item_name, image_url, description, price, category) VALUES (?, ?, ?, ?, ?)",
-                    (product_title, product_image_url, product_description, product_price, product_category)
-                )
-                db.connection.commit()
+                Menu.add_menu(product_title, product_image_url, product_description, product_price, product_category)
                 flash("Menu item added successfully!", "success")
                 return redirect('/customization')
             except Exception as e:
@@ -618,8 +498,7 @@ def add_category():
     inputCategory = request.form.get('category_title').lower()
     if inputCategory:
         try:
-            db.execute("INSERT INTO categories (category) VALUES (?)", (inputCategory,))
-            db.connection.commit()
+            Menu.add_category(inputCategory)
         except Exception as e:
             print("Error adding category: " + str(e))
     return redirect('/customization')
@@ -633,10 +512,7 @@ def remove_category():
     deleteCategory = request.form.get('category').lower()
     if deleteCategory:
         try:
-            db.execute("DELETE FROM categories WHERE category = ?", (deleteCategory,))
-            db.execute('UPDATE menu_list SET category = ? WHERE category = ?',
-                       ('Uncategorized', deleteCategory,))
-            db.connection.commit()
+            Menu.remove_category(deleteCategory)
         except Exception as e:
             print("Error removing category: " + str(e))
     return redirect('/customization')
@@ -648,7 +524,7 @@ def remove_category():
 def delete_menu():
 
     menu_id = request.args.get('id')
-    db.execute("DELETE FROM menu_list WHERE id = ?", (menu_id, ))
+    Menu.delete_menu(menu_id)
     return redirect('/customization')
 
 
@@ -682,9 +558,7 @@ def edit_menu():
             image_url = urlparse(request.form.get('current_image')).path
         else:
             image_url = saveImage(image)
-        db.execute('UPDATE menu_list SET item_name = ?, image_url = ?, price = ?, category = ? WHERE id = ?',
-                   (name, image_url, price, category, id))
-        db.connection.commit()
+        Menu.update_menu(name, image_url, price, category, id)
         return redirect('/customization')
 
 
@@ -694,8 +568,7 @@ def aggregate_delete():
     # Get the list of selected item IDs from the POST request
     selected_ids = request.form.getlist('selected_items')
     for i in selected_ids:
-        db.execute("DELETE FROM menu_list WHERE id = ?", (i, ))
-        db.connection.commit()
+        Menu.delete_menu(i)
 
     return redirect('/customization')
 
@@ -712,25 +585,20 @@ def discount():
         imageUrl = createImageUrl("https://www.casacenina.com/catalog/images/img_192/rico-99000-0421.jpg", f'{discount}% off')
 
         try:
-            db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code, image ) VALUES (?, ?, ?, ?, ?, ?)",
-                       (title, description, discount, expiration, discountCode, imageUrl))
-            db.connection.commit()
+            Discount.insert_discount(title, description, discount, expiration, discountCode, imageUrl)
         except Exception as e:
             return "Error inserting data into the database", 500
 
-        tickets = db.execute(
-                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+        tickets = Discount.get_active_discount_ticket()
 
         return render_template('discount.html', tickets=tickets)
     if request.method == "GET":
         query = request.args.get('codeSearch')
         if query:
-            tickets = db.execute(
-                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (query,)).fetchall()
+            tickets = Discount.search_discount_ticket(query)
 
         else:
-            tickets = db.execute(
-                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+            tickets = Discount.get_active_discount_ticket()
 
         return render_template('discount.html', tickets=tickets)
 
@@ -741,12 +609,10 @@ def search_voucher():
 
     # Query the database for matching tickets
     if code:
-        tickets = db.execute(
-            "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (code,)).fetchall()
+        tickets = Discount.search_discount_ticket(code)
 
     else:
-        tickets = db.execute(
-            "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+        tickets = Discount.get_active_discount_ticket()
 
     # Convert the rows into dictionaries
     tickets_list = [dict(ticket) for ticket in tickets]

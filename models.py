@@ -20,10 +20,42 @@ class Menu:
     def search_menu_category(category):
         return db.execute('SELECT * FROM menu_list WHERE category Like ?', (category,)).fetchall()
     
-class Checkout:
+    def add_menu(product_title, product_image_url, product_description, product_price, product_category):
+        db.execute(
+                    "INSERT INTO menu_list (item_name, image_url, description, price, category) VALUES (?, ?, ?, ?, ?)",
+                    (product_title, product_image_url, product_description, product_price, product_category)
+                )
+        db.connection.commit()
+    
+    def delete_menu(menu_id):
+        db.execute("DELETE FROM menu_list WHERE id = ?", (menu_id, ))
+
+    def add_category(category):
+        db.execute("INSERT INTO categories (category) VALUES (?)", (category,))
+        db.connection.commit()     
+    
+    def remove_category(category):
+        db.execute("DELETE FROM categories WHERE category = ?", (category,))
+        db.execute('UPDATE menu_list SET category = ? WHERE category = ?',
+                    ('Uncategorized', category,))
+        db.connection.commit()
+
+    def update_menu(name, image_url, price, category, id):
+        db.execute('UPDATE menu_list SET item_name = ?, image_url = ?, price = ?, category = ? WHERE id = ?',
+                   (name, image_url, price, category, id))
+        db.connection.commit()
+
+class Discount:
     def get_active_discount_ticket():
         return db.execute(
         "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now')").fetchall()
+    def search_discount_ticket(code):
+        db.execute(
+                "SELECT * FROM discount_ticket WHERE expiration_date > datetime('now') AND discount_code = ?", (code,)).fetchall()
+    def insert_discount(title, description, discount, expiration, discountCode, imageUrl):
+        db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code, image ) VALUES (?, ?, ?, ?, ?, ?)",
+                       (title, description, discount, expiration, discountCode, imageUrl))
+        db.connection.commit()
 
 class Users:
     def search_username(username):
@@ -37,6 +69,40 @@ class Users:
                        (username, password,))
         db.connection.commit()
 
+class Cart:
+    def update_cart_item(data, session):
+        """ Updates the cart by incrementing item quantity or adding a new item. """
+        for item in session.get('cart', []): 
+            if item['item_id'] == data['item_id']:
+                item['item_quantity'] = str(int(item['item_quantity']) + 1)
+                return  
+        session['cart'].append(data)
+
+    def remove_cart_item(data, session):
+        """ Removes an item from the cart based on `item_id` and optional `ordertime`. """
+        if data['ordertime'] == 'undefined':
+            del data['ordertime']
+        
+        session['cart'] = [
+            item for item in session.get('cart', []) 
+            if str(item.get('item_id')) != data.get('item_id') or item.get('order_time') != data.get('ordertime')
+        ]
+
+    def calculate_cart_totals(session):
+        """ Calculates total cost, tax, and item count in the cart. """
+        gtotal, itemCount = 0, 0
+        for item in session.get('cart', []):  
+            total = int(item['item_price'].replace(',', '')) * int(item['item_quantity'])
+            item['total'] = '{:,.0f}'.format(total)
+            gtotal += total
+            itemCount += int(item['item_quantity'])
+        
+        session.update({
+            'tax': '{:,.0f}'.format(gtotal * 0.10),
+            'total': '{:,.0f}'.format(gtotal + gtotal * 0.10),
+            'itemCount': itemCount
+        })
+    
 class Billing:
     def __init__(self, session, form=None):
         self.cart = session.get('cart', [])
@@ -155,7 +221,40 @@ class Billing:
             return va_number, bank_name
         if not payment_method:
             return "not payment"
+        
+    def update_invoice(totalValue, orderNumber):
+        db.execute("UPDATE payments SET invoice_amount = ? WHERE order_number = ?",
+                   (totalValue, orderNumber,))
+        db.connection.commit()
 
+    def load_order_details(self, order_details):
+        # load order details from database
+        if order_details:
+                self.total = order_details[0]['total_amount']
+                self.tax = self.total / 1.1 * 0.10
+                self.total = 'Rp {:,.0f}'.format(self.total)
+                self.tax = 'Rp {:,.0f}'.format(self.tax)
+
+        for item in order_details:
+            self.cart.append({
+                'id': item['id'],
+                'order_number': item['order_number'],
+                'item_id': item['item_id'],
+                'item_quantity': item['quantity'],
+                'item_price': '{:,}'.format(int(item['price'])),
+                'total': '{:,}'.format(int(item['total'])),
+                'item_name': item['item_name'],
+                'item_image': item['image_url'],
+                'grand_total': self.total,
+                'deliveryType': item['type'],
+                'table_number': item['table_number'],
+                'order_time': item['order_time']
+            })
+
+        self.deliveryType = self.cart[0]['deliveryType'].capitalize()
+        self.tableNumber = self.cart[0]['table_number']
+        return self.cart
+    
     def check_payment_status(orderNumber):
         status = db.execute("SELECT payment_status FROM payments WHERE order_number = ?", (orderNumber,)).fetchone()[0]
         return status
@@ -174,6 +273,9 @@ class Billing:
         self.tableNumber = 0
 
 class Orders:
+    def search_orders_number(orderNumber):
+        return db.execute("SELECT * FROM orders WHERE order_number = ?", (orderNumber,)).fetchone()
+    
     def search_orders_type(orderType):
         return db.execute("""
                 SELECT orders.*, payments.payment_status
@@ -214,4 +316,22 @@ class Orders:
             WHERE orderitems.order_number = ?
             """, (orderNumber,)).fetchall()
     
-  
+    def update_orders_total(totalValue, order_number):
+        db.execute("UPDATE orders SET total_amount = ? WHERE order_number = ?",
+                   (totalValue, order_number,))
+        db.connection.commit()
+    
+    def delete_orderitems(orderNumber):
+        db.execute("DELETE FROM orderitems WHERE order_number = ?", (orderNumber,))
+        db.connection.commit()
+
+    def update_order_items(cart, orderNumber):
+        for order in cart:
+            if 'order_time' in order:
+                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
+                           (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), order['order_time']))
+                db.connection.commit()
+            else:
+                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, datetime('now'))",
+                           (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", ""))))
+                db.connection.commit()
