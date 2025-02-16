@@ -253,7 +253,7 @@ def check_payment_status(on):
 def orders():
     if request.method == 'GET':
         # initalize orders
-        orderType = request.args.get('type', ' ')
+        orderType = request.args.get('type', 'dine in')
         status = request.args.get('status')
         cashValue = parseInt(session.get('cashPaid', 0))
         payment = request.args.get('payment')
@@ -265,6 +265,7 @@ def orders():
 
         if status:
             orders = Orders.search_orders_status(status)
+            orderType = ""
 
         if payment:
             order_details = Orders.fetch_order_details(payment)
