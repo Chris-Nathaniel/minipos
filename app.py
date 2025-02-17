@@ -2,33 +2,22 @@ from flask import Flask, render_template, request, session, redirect, flash, jso
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
-from conn import SQL
+from conn import SQL, init_app
 from models import Menu, Discount, Users, Billing, Orders, Cart, run_gui
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
-import midtransclient
-import secrets
-from dotenv import load_dotenv
 import os
 import ctypes
 import threading
 
 def run_flask():
     
-    load_dotenv()
     app = Flask(__name__)
 
-    database_url = os.getenv('DATABASE_URL')
-    serverkey = os.getenv('SERVER_KEY')
-    clientkey = os.getenv('PUBLIC_CLIENT')
+    # Initialize the app with environment variables and Midtrans client
+    core, database_url = init_app(app)
+    # connect to database
     db = SQL(database_url)
-    app.secret_key = secrets.token_hex(16)
-
-    core = midtransclient.CoreApi(
-        is_production=False,
-        server_key=serverkey,
-        client_key=clientkey
-    )
-
+ 
     @app.route('/')
     @login_required
     def choose_option():
