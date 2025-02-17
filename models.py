@@ -2,6 +2,11 @@ from conn import SQL
 import os
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 from dotenv import load_dotenv
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+import sys
 
 load_dotenv()
 db = SQL(os.getenv('DATABASE_URL'))
@@ -335,3 +340,23 @@ class Orders:
                 db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, datetime('now'))",
                            (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", ""))))
                 db.connection.commit()
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.browser = QWebEngineView()
+        self.browser.setUrl(QUrl("http://127.0.0.1:5000"))  # Wrap the URL with QUrl
+        self.setCentralWidget(self.browser)
+
+        self.setWindowTitle("Minipos")
+        self.setGeometry(100, 100, 800, 600)
+
+def run_gui():
+    app = QApplication(sys.argv)
+    screen_size = app.primaryScreen().size()
+    app.setWindowIcon(QIcon("icon.ico"))
+    width, height = int(screen_size.width() * 0.8), int(screen_size.height() * 0.7)
+    window = MainWindow()
+    window.resize(width, height)
+    window.show()
+    sys.exit(app.exec())
