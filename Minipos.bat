@@ -15,3 +15,4 @@ start "" "%SCRIPT_DIR%miniposapp.lnk"
 
 
 
+exit

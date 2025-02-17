@@ -10,3 +10,5 @@ call venv\Scripts\activate
 
 :: Run the Python application
 python app.py
+
+exit

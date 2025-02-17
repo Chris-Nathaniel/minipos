@@ -1,0 +1,43 @@
+t=2025-02-17T02:25:57+0700 lvl=info msg="no configuration paths supplied"
+t=2025-02-17T02:25:57+0700 lvl=info msg="using configuration at default config path" path=C:\\Users\\LEGION\\AppData\\Local/ngrok/ngrok.yml
+t=2025-02-17T02:25:57+0700 lvl=info msg="open config file" path=C:\\Users\\LEGION\\AppData\\Local\\ngrok\\ngrok.yml err=nil
+t=2025-02-17T02:25:57+0700 lvl=info msg="starting web service" obj=web addr=127.0.0.1:4040 allow_hosts=[]
+t=2025-02-17T02:25:57+0700 lvl=info msg="client session established" obj=tunnels.session
+t=2025-02-17T02:25:57+0700 lvl=info msg="tunnel session started" obj=tunnels.session
+t=2025-02-17T02:25:57+0700 lvl=info msg="started tunnel" obj=tunnels name=command_line addr=http://localhost:5000 url=https://amused-fit-wasp.ngrok-free.app
+t=2025-02-17T02:25:58+0700 lvl=info msg="update available" obj=updater
+t=2025-02-17T02:26:01+0700 lvl=info msg="join connections" obj=join id=5b001acd8bb5 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:01+0700 lvl=info msg="join connections" obj=join id=1f0c9470470a l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:01+0700 lvl=info msg="join connections" obj=join id=916cef127d51 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:01+0700 lvl=info msg="join connections" obj=join id=0b9e7a19a423 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=e12aef853ccb l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=11ed18bce128 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=536eb3d8b748 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=1130f78ea853 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=bccb96a91f90 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=9cf9c0a6029b l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=3398a69cffb0 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=0b59e4bd8cc1 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=a474dcb4c840 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=cbd5a6e4d1cd l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=dac10e75dfee l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=f2b37d83037d l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=ef9238e3bdc2 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=d98ad42c1e9a l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=7a42c53c3b58 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=5301eb9b7863 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:07+0700 lvl=info msg="join connections" obj=join id=4f7f49bc48cf l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:09+0700 lvl=info msg="join connections" obj=join id=a04f5bf9428c l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:10+0700 lvl=info msg="join connections" obj=join id=447a3c24ad1e l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:12+0700 lvl=info msg="join connections" obj=join id=35833b39e32c l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:12+0700 lvl=info msg="join connections" obj=join id=dd9573a01ada l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:12+0700 lvl=info msg="join connections" obj=join id=9907e4852f0e l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:12+0700 lvl=info msg="join connections" obj=join id=77276bed7a5e l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:12+0700 lvl=info msg="join connections" obj=join id=c6486af29fe0 l=127.0.0.1:5000 r=139.194.149.87:55421
+t=2025-02-17T02:26:17+0700 lvl=info msg="received stop request" obj=app stopReq="{err:<nil> restart:false}"
+t=2025-02-17T02:26:17+0700 lvl=info msg="session closing" obj=tunnels.session err=nil
+t=2025-02-17T02:26:17+0700 lvl=info msg="accept failed" obj=tunnels.session obj=csess id=347a7aea8a23 err="reconnecting session closed"
+t=2025-02-17T02:26:17+0700 lvl=info msg="failed to accept connection: Listener closed" obj=tunnels.session clientid=49ee288c5f946af5039fff510a702e78
+t=2025-02-17T02:26:17+0700 lvl=warn msg="Stopping forwarder" name=command_line acceptErr="failed to accept connection: Listener closed"
+t=2025-02-17T02:26:17+0700 lvl=info msg="no more state changes" obj=tunnels.session
+t=2025-02-17T02:26:17+0700 lvl=warn msg="Error restarting forwarder" name=command_line err="failed to start tunnel: session closed"

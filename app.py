@@ -9,6 +9,7 @@ import midtransclient
 import secrets
 from dotenv import load_dotenv
 import os
+import ctypes
 
 load_dotenv()
 app = Flask(__name__)
@@ -349,7 +350,7 @@ def complete_payment():
         billings = session.get('billings', [])
         payment_method = request.form.get('paymentMethod')
         order_number = billings[0]['order_number']
-        totalValue = billings[0]['grand_total']
+        totalValue = parseInt(billings[0]['grand_total'])
         amount = request.form.get('cashValue')
         order_type = Orders.fetch_order_details(order_number)[0]['type']
 
@@ -430,12 +431,11 @@ def finish_edit_order():
 def thank():
     order_number = request.form.get('order_number')
     status = Billing.check_payment_status(order_number)
-    if status[0] == 'paid':
+    if status == 'paid':
         clear_session()
 
         return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
     else:
-
         return redirect('/waiting_for_payment')
 
 
@@ -635,4 +635,5 @@ def addDiscount():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+    app.run(debug=True, host="0.0.0.0", port=5000)
