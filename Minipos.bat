@@ -11,6 +11,6 @@ start /min "" "%SCRIPT_DIR%connecttongrok.bat"
 timeout /t 4 /nobreak >nul
 
 :: Start the main app
-start chrome.exe https://amused-fit-wasp.ngrok-free.app/
+start "" "%SCRIPT_DIR%miniposapp.lnk"
 
 exit
