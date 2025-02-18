@@ -668,6 +668,9 @@ def run_flask():
     def midtransIntegration():
         clk, svk = request.form.get("clk"), request.form.get('svk')
         dotenv_path = '.env'
+        if not os.path.exists(dotenv_path):
+            with open(dotenv_path, 'w') as f:
+                f.write("") 
         set_key(dotenv_path, 'PUBLIC_CLIENT', clk)
         set_key(dotenv_path, 'SERVER_KEY', svk)
         os.environ['PUBLIC_CLIENT'] = clk
@@ -680,6 +683,9 @@ def run_flask():
     def ngrok_setup():
         domain, auth = request.form.get("domain"), request.form.get('auth')
         dotenv_path = '.env'
+        if not os.path.exists(dotenv_path):
+            with open(dotenv_path, 'w') as f:
+                f.write("") 
         set_key(dotenv_path, 'NGROK_DOMAIN', domain)
         set_key(dotenv_path, 'NGROK_AUTH', auth)
         os.environ['NGROK_DOMAIN'] = domain
