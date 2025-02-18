@@ -377,6 +377,7 @@ class Ev:
         self.svkey = os.getenv("SERVER_KEY")
         self.ngdomain = os.getenv("NGROK_DOMAIN")
         self.ngauth = os.getenv("NGROK_AUTH")
+        self.db = os.getenv("DATABASE_URL")
         
 class MainWindow(QMainWindow):
     def __init__(self):

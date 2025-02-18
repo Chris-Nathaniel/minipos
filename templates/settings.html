@@ -1,6 +1,24 @@
 {% extends 'layout.html' %}
 {% block main %}
 {% include 'modal.html' %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+            {% for category, message in messages %}
+                <div class="toast align-items-center text-white bg-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' if category == 'error' else 'fa-info-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
 {% endblock %}
 {% block firstCol %}
 <div class="mycontainer settings m-0 p-2" style="max-height: 100vh; display: flex; flex-direction: column; overflow: auto; align-items: center;">
@@ -87,7 +105,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="currentDatabase" class="form-label"><i class="fas fa-cogs"></i> Current Database</label>
-                    <input type="text" class="form-control" id="currentDatabase" value="{{ current_db }}" disabled>
+                    <input type="text" class="form-control" id="currentDatabase" value="{{ masked.db }}" disabled>
                 </div>
                 <div class="mb-3">
                     <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
@@ -115,19 +133,19 @@
         </div>
         <div id="quickMenu" class="collapse container p-4 card-content align-items-left">
             <div class="list-group list-group-flush">
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="/settings#busset" class="list-group-item list-group-item-action">
                     <i class="fas fa-store"></i> Business Settings
                 </a>
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="/settings#mdi" class="list-group-item list-group-item-action">
                     <i class="fas fa-credit-card"></i> Payment Integration
                 </a>
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="/settings#ngrk" class="list-group-item list-group-item-action">
                     <i class="fas fa-network-wired"></i> Ngrok Setup
                 </a>
-                <a href="#" class="list-group-item list-group-item-action">
+                <a href="/settings#dbset" class="list-group-item list-group-item-action">
                     <i class="fas fa-database"></i> Database Settings
                 </a>
-                <a href="#" class="list-group-item list-group-item-action text-danger">
+                <a href="/logout" class="list-group-item list-group-item-action text-danger">
                     <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
             </div>

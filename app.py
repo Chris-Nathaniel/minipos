@@ -660,6 +660,7 @@ def run_flask():
             business.update_business()
         else:
             business.insert_business()
+        flash("business settings has been updated!")
         return redirect("/settings")
     
     @app.route("/midtrans-integration", methods=["POST"])
