@@ -42,11 +42,11 @@
             <form action="/midtrans-integration" method="POST">
                 <div class="mb-3">
                     <label for="clk" class="form-label"><i class="fas fa-key"></i> Client Key</label>
-                    <input type="text" class="form-control" id="clk" name="clk" required>
+                    <input type="text" class="form-control" id="clk" name="clk" value="{{masked.clkey}}" required>
                 </div>
                 <div class="mb-3">
                     <label for="svk" class="form-label"><i class="fas fa-lock"></i> Server Key</label>
-                    <input type="text" class="form-control" id="svk" name="svk" required>
+                    <input type="text" class="form-control" id="svk" name="svk" value="{{masked.svkey}}"required>
                 </div>
                 <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
             </form>
@@ -62,11 +62,11 @@
             <form action="/ngrok-settings" method="POST">
                 <div class="mb-3">
                     <label for="domain" class="form-label"><i class="fas fa-globe"></i> Ngrok Domain</label>
-                    <input type="text" class="form-control" id="domain" name="domain" required>
+                    <input type="text" class="form-control" id="domain" name="domain" value="{{masked.ngdomain}}" required>
                 </div>
                 <div class="mb-3">
                     <label for="auth" class="form-label"><i class="fas fa-user-lock"></i> Ngrok Auth</label>
-                    <input type="text" class="form-control" id="auth" name="auth" required>
+                    <input type="text" class="form-control" id="auth" name="auth" value="{{masked.ngauth}}" required>
                 </div>
                 <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
             </form>
@@ -108,8 +108,9 @@
     <!-- Quick Menu Spoiler -->
     <div class="card-menu p-3 m-2 position-relative">
         <div class="card-head d-flex justify-content-between align-items-end m-2">
-            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#quickMenu" aria-expanded="false" aria-controls="quickMenu">
-                <i class="fas fa-bars"></i> Quick Menu
+            <h3 class="mb-2 d-flex justify-content-between w-100" data-bs-toggle="collapse" data-bs-target="#quickMenu" aria-expanded="false" aria-controls="quickMenu">
+                <span><i class="fas fa-bars"></i> Quick Menu</span>
+                <i class="fas fa-chevron-down"></i>
             </h3>
         </div>
         <div id="quickMenu" class="collapse container p-4 card-content align-items-left">
@@ -136,8 +137,9 @@
     <!-- Live Status Spoiler -->
     <div class="card-menu p-3 m-2 position-relative">
         <div class="card-head d-flex justify-content-between align-items-end m-2">
-            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#liveStatus" aria-expanded="false" aria-controls="liveStatus">
-                <i class="fas fa-chart-line"></i> Live Status
+            <h3 class="mb-2 d-flex justify-content-between w-100" data-bs-toggle="collapse" data-bs-target="#liveStatus" aria-expanded="false" aria-controls="liveStatus">
+                <span><i class="fas fa-chart-line"></i> Live Status</span>
+                <i class="fas fa-chevron-down"></i>
             </h3>
         </div>
         <div id="liveStatus" class="collapse container p-4 card-content">
@@ -153,8 +155,9 @@
     <!-- Help and Documentation Spoiler -->
     <div class="card-menu p-3 m-2 position-relative">
         <div class="card-head d-flex justify-content-between align-items-end m-2">
-            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#helpDocs" aria-expanded="false" aria-controls="helpDocs">
-                <i class="fas fa-question-circle"></i> Help and Documentation
+            <h3 class="mb-2 d-flex justify-content-between w-100" data-bs-toggle="collapse" data-bs-target="#helpDocs" aria-expanded="false" aria-controls="helpDocs">
+                <span><i class="fas fa-question-circle"></i> Help and Documentation</span>
+                <i class="fas fa-chevron-down"></i>
             </h3>
         </div>
         <div id="helpDocs" class="collapse container p-4 card-content">
@@ -167,5 +170,6 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 

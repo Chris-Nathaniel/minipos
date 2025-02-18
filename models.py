@@ -202,7 +202,11 @@ class Billing:
         # check if payment is m-banking
         if paymentMethod == "m-banking":
             param = bankTransfer(orderNumber, total)
-            charge_response = core.charge(param)
+            try:
+                charge_response = core.charge(param)
+            except Exception as e:
+                message = {"failed": e}
+                return message    
             va_number = charge_response['va_numbers'][0]['va_number']
             bank_name = charge_response['va_numbers'][0]['bank']
             db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
@@ -239,7 +243,11 @@ class Billing:
             return "success"
         if payment_method == "m-banking":
             param = bankTransfer(order_number, int(totalValue))
-            charge_response = core.charge(param)
+            try:
+                charge_response = core.charge(param)
+            except Exception as e:
+                message = {"failed": e}
+                return message    
             va_number = charge_response['va_numbers'][0]['va_number']
             bank_name = charge_response['va_numbers'][0]['bank']
             db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
@@ -363,7 +371,13 @@ class Orders:
                 db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, datetime('now'))",
                            (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", ""))))
                 db.connection.commit()
-
+class Ev:
+    def __init__(self):
+        self.clkey = os.getenv("PUBLIC_CLIENT")
+        self.svkey = os.getenv("SERVER_KEY")
+        self.ngdomain = os.getenv("NGROK_DOMAIN")
+        self.ngauth = os.getenv("NGROK_AUTH")
+        
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -374,12 +388,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Minipos")
         self.setGeometry(100, 100, 800, 600)
 
-def run_gui():
-    app = QApplication(sys.argv)
-    screen_size = app.primaryScreen().size()
-    app.setWindowIcon(QIcon("icon.ico"))
-    width, height = int(screen_size.width() * 0.8), int(screen_size.height() * 0.7)
-    window = MainWindow()
-    window.resize(width, height)
-    window.show()
-    sys.exit(app.exec())
+    def run_gui():
+        app = QApplication(sys.argv)
+        screen_size = app.primaryScreen().size()
+        app.setWindowIcon(QIcon("icon.ico"))
+        width, height = int(screen_size.width() * 0.8), int(screen_size.height() * 0.7)
+        window = MainWindow()
+        window.resize(width, height)
+        window.show()
+        sys.exit(app.exec())

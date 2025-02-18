@@ -3,11 +3,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL, init_app
-from models import Menu, Discount, Users, Billing, Orders, Cart, run_gui, Business
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
+from models import Menu, Discount, Users, Billing, Orders, Cart, Business, MainWindow, Ev
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key
 import os
 import ctypes
 import threading
+from dotenv import set_key
 
 def run_flask():
     
@@ -17,26 +18,7 @@ def run_flask():
     core, database_url = init_app(app)
     # connect to database
     db = SQL(database_url)
-
-    @app.route("/settings", methods=['GET'])
-    @login_required
-    def settings():
-        business_details = Business.get_business()
-        print(business_details)
-        return render_template("settings.html", business_details=business_details)
-    @app.route("/business-settings", methods=['POST'])
-    @login_required
-    def businessdetails():
-        business_name = request.form.get("businessName")
-        business_address = request.form.get("businessAddress")
-        business_contact = request.form.get("businessContact")
-        business_email = request.form.get("businessEmail")
-        business = Business(business_name, business_address, business_contact, business_email)
-        if Business.get_business():
-            business.update_business()
-        else:
-            business.insert_business()
-        return redirect("/settings")
+    
     @app.route('/')
     @login_required
     def choose_option():
@@ -75,8 +57,9 @@ def run_flask():
         elif category in valid_categories:
             main = Menu.search_menu_category(category)
         else:
-            return apology("oops , category not found", code=404)
-
+            session['categories'] = [dict(item) for item in categories]
+            return apology("oops , category not found",  code=404)
+        
         if not main:
             session['category'] = category
 
@@ -212,6 +195,10 @@ def run_flask():
         Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
         #process payments
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
+        if isinstance(payment_status, dict):
+                status = next(iter(status), None) 
+                if status == "failed":
+                    return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
         if payment_status == "success":
             clear_session()
             return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
@@ -376,7 +363,10 @@ def run_flask():
                 flash("Invalid paid amount!", "error")
                 return redirect('/orders')
             status = Billing.update_payments(order_number, payment_method, totalValue, amount, core)
-
+            if isinstance(status, dict):
+                status = next(iter(status), None) 
+                if status == "failed":
+                    return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
             if status != "success" and status != "not payment":
                 va_number, bank_name = status
                 return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=totalValue)
@@ -647,6 +637,54 @@ def run_flask():
         session['total'] = '{:,.0f}'.format(discountedTotal)
 
         return jsonify({'discountValue': session['discount'], 'discountedTotal': discountedTotal})
+    
+    @app.route("/settings", methods=['GET'])
+    @login_required
+    def settings():
+        business_details = Business.get_business()
+        ev =Ev()
+        masked = {key: mask_key(value) if key in ['clkey', 'svkey', 'ngauth'] else value 
+                for key, value in ev.__dict__.items()}
+
+        return render_template("settings.html", business_details=business_details, masked=masked)
+    
+    @app.route("/business-settings", methods=['POST'])
+    @login_required
+    def businessdetails():
+        business_name = request.form.get("businessName")
+        business_address = request.form.get("businessAddress")
+        business_contact = request.form.get("businessContact")
+        business_email = request.form.get("businessEmail")
+        business = Business(business_name, business_address, business_contact, business_email)
+        if Business.get_business():
+            business.update_business()
+        else:
+            business.insert_business()
+        return redirect("/settings")
+    
+    @app.route("/midtrans-integration", methods=["POST"])
+    @login_required
+    def midtransIntegration():
+        clk, svk = request.form.get("clk"), request.form.get('svk')
+        dotenv_path = '.env'
+        set_key(dotenv_path, 'PUBLIC_CLIENT', clk)
+        set_key(dotenv_path, 'SERVER_KEY', svk)
+        os.environ['PUBLIC_CLIENT'] = clk
+        os.environ['SERVER_KEY'] = svk
+        
+        return redirect("/settings")
+    
+    @app.route("/ngrok-settings", methods=["POST"])
+    @login_required
+    def ngrok_setup():
+        domain, auth = request.form.get("domain"), request.form.get('auth')
+        dotenv_path = '.env'
+        set_key(dotenv_path, 'NGROK_DOMAIN', domain)
+        set_key(dotenv_path, 'NGROK_AUTH', auth)
+        os.environ['NGROK_DOMAIN'] = domain
+        os.environ['NGROK_AUTH'] = auth
+        
+        return redirect("/settings")
 
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)
@@ -656,4 +694,4 @@ if __name__ == '__main__':
     threading.Thread(target=run_flask, daemon=True).start()
 
     # Run the PyQt6 GUI
-    run_gui()
+    MainWindow.run_gui()

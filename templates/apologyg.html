@@ -1,14 +1,10 @@
-
 {% extends "layout.html" %}
 
 {% block title %}
 <title>Apology</title>
 {% endblock %}
 
-{% block firstCol %}
-    {% if categories %}
-        {% include 'category.html' %}
-    {% endif %}
+{% block main %}
     <div class="d-flex justify-content-center align-items-center mt-2" style="min-height: 100vh; width: auto;  background-color: #f8f9fa; border-radius: 5px;">
         <div class="text-center p-4 rounded shadow-sm" style="width: 300px;">
             <img src="/static/images/sadcat.png" style="width:100px; height:auto;">
@@ -16,10 +12,4 @@
         </div>
     </div>
 {% endblock %}
-{% block secondCol %}
-    {% if finish_edit_order == true %}
-        {% include 'edit_order.html' %}
-    {% else %}
-        {% include 'billing.html' %}
-    {% endif %}
-{% endblock %}
+

@@ -7,12 +7,8 @@ import re
 import time
 import random
 import os
-import secrets
-import csv
-# import pytz
-import requests
 import urllib
-import uuid
+
 
 load_dotenv()
 
@@ -26,7 +22,10 @@ def apology(message, categories="", code=400):
     total = session.get('total', 0)
     category = session.get('category', [])
     categories = session.get('categories', [])
-    return render_template("apology.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
+    if categories:
+        return render_template("apology.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
+    if not categories:
+        return render_template("apologyg.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
 
 def thankYou(message, orderNumber, code=200):
     """Render message as a thank you to user and include the cart."""
@@ -122,3 +121,9 @@ def createImageUrl(image_url, text, text_size=85, text_color="white", x_align="c
 
     url = f'https://textoverimage.moesif.com/image?image_url={s_image_url}&text={s_custom_text}&text_size={text_size}&y_align=middle&x_align=center'
     return url
+
+def mask_key(key, visible=5):
+    """Mask all but the first and last `visible` characters of the key."""
+    if len(key) <= visible * 2:
+        return key  # If the key is too short, don't mask it
+    return f"{key[:visible]}{'*' * (len(key) - (visible * 2))}{key[-visible:]}"
