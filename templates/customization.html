@@ -2,198 +2,198 @@
 
 {% block main %}
 {% include 'modal.html' %}
-<div class="mycontainer">
-    <div class="firstcol" style="padding:5px;">
-        <div class="left-menu p-2 position-relative">
-            <button class="btn btn-dark mt-3 position-absolute top-0 end-0 m-2 deleteselected hidedeletebutton" type="submit" style="background-color:#385060;" form="aggregate_delete">
-                <i class="fas fa-trash"></i> Delete Selected
-            </button>
-            <div class="d-flex justify-content-between align-items-end ms-3 me-3 mt-5">
-                <h3>Menu Customization</h3>
-                <span>{{ main | length }} items</span>
-            </div>
-            <div class="row-category ms-3 m-2">
+{% endblock %}
+{% block firstCol %}
+    <div class="left-menu m-2 position-relative">
+        <button class="btn btn-dark mt-3 position-absolute top-0 end-0 m-2 deleteselected hidedeletebutton" type="submit" style="background-color:#385060;" form="aggregate_delete">
+            <i class="fas fa-trash"></i> Delete Selected
+        </button>
+        <div class="d-flex justify-content-between align-items-end ms-3 me-3 mt-5 mb-3">
+            <h3>Menu Customization</h3>
+            <span>{{ main | length }} items</span>
+        </div>
+        <div class="subPostHeaderWrapper ms-2">
+            <div class="subPostHeader">      
                 {% for category in categories %}
-                    {% set main_course_items = main | selectattr('category', 'equalto', category.category | lower) | list %}
-                    <span class="{{ category.category }} catwrapper">{{ category.category }} ({{ main_course_items | length }})</span>
-                {% endfor %}
+                {% set main_course_items = main | selectattr('category', 'equalto', category.category | lower) | list %}
+                <span class="{{ category.category }} catwrapper">{{ category.category }} ({{ main_course_items | length }})</span>
+            {% endfor %}
             </div>
-            {% if query is not none and query|trim != '' %}
-            <div class="row-category ms-3 mt-3">
-                <span>Filtered By: {{ query }}</span>
-            </div>
-            {% endif %}
-            <table class="customizeTable">
-                <thead>
+        </div>
+      
+        {% if query is not none and query|trim != '' %}
+        <div class="row-category ms-3 mt-3">
+            <span>Filtered By: {{ query }}</span>
+        </div>
+        {% endif %}
+        <table class="customizeTable">
+            <thead>
+                <tr>
+                    <th class="checkbox"><input type="checkbox" id="select-all"></th>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <form action="/aggregate_delete" method="POST" id="aggregate_delete">
+                    {% for item in main %}
                     <tr>
-                        <th class="checkbox"><input type="checkbox" id="select-all"></th>
-                        <th>Image</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <form action="/aggregate_delete" method="POST" id="aggregate_delete">
-                        {% for item in main %}
-                        <tr>
-                            <td class="checkbox"><input class="allcheckbox" type="checkbox" name="selected_items" value="{{ item['id'] }}"></td>
-                            <td class="card-image"><img src='{{item["image_url"]}}' alt="T-Shirt with Logo" width="50px" ></td>
-                            <td>
-                                {{item["item_name"]}}
-                                <div class="row-actions">
-                                    <span class="id">ID: {{item['id']}} | </span>
-                                    <span class="edit"><a href="">Edit</a> | </span>
-                                    <span class="trash"><a href="/delete_menu?action=trash&id={{ item['id'] }}">Trash</a> | </span>
-                                </div>
-                            </td>
-                            <td>{{item["category"]}}</td>
-                            <td>Rp {{ '{:,.0f}'.format(item['price']) }}</td>
-                            <td>{{item['date_added']}}</td>
-                        </tr>
-                        {% endfor %}
-
-                    </form>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-    <div class="secondcol">
-        <div class="right-menu">
-            <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
-                <h4 class="right-menu-header" style="color: #ffffff;">{{ session.get('menu_choice', 'New Menu') }}</h4>
-
-            </div>
-            <div class="small-menu  p-2 justify-content-between d-flex">
-                <button class="btn btn-dark back-button">
-                    ❮ Back
-                </button>
-                <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
-                    <option value="Add Menu" {% if session.get('menu_choice') == 'Add Menu' %}selected{% endif %}>New Menu</option>
-                    <option value="Add Category" {% if session.get('menu_choice') == 'Add Category' %}selected{% endif %}>Add Categories</option>
-                    <option value="Edit Menu" {% if session.get('menu_choice') == 'Edit Menu' %}selected{% endif %}>Edit Menu</option>
-                </select>
-            </div>
-            <div id="addMenuForm" class="wrapper {{'d-none' if name == 'category' else ''}}" style="background-color: #ffffff; height: 100vh;">
-                <div class="content p-3">
-                    <form action="/add_menu" method="POST" enctype="multipart/form-data">
-                        <!--Product title-->
-                        <div class="mb-3">
-                            <label for="title" class="form-label" style="color: black;">Product Title:</label>
-                            <input type="text" id="title" name="title" class="form-control" placeholder="Enter product title" style="border: 1px solid var(--lg);">
-                        </div>
-
-                        <!--Product image-->
-                        <div class="mb-3">
-                            <label for="image" class="form-label" style="color: black;">Product Image:</label>
-                            <input type="file" id="image" name="image" class="form-control" style="border: 1px solid var(--lg);">
-                        </div>
-
-                        <!--Product description-->
-                        <div class="mb-3">
-                            <label for="description" class="form-label" style="color: black;">Product Description:</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter product description" style="border: 1px solid var(--lg);"></textarea>
-                        </div>
-
-                        <!--Product price-->
-                        <div class="mb-3">
-                            <label for="price" class="form-label" style="color: black;">Product Price:</label>
-                            <input type="number" id="price" name="price" class="form-control" placeholder="Enter price" style="border: 1px solid var(--lg);">
-                        </div>
-
-                        <!--Product category-->
-                        <div class="mb-3">
-                            <label for="category" class="form-label" style="color: black;">Product Category:</label>
-                            <select id="category" class="form-select" name="category" style="border: 1px solid var(--lg); background-color: #ffffff;">
-                                {% for category in categories %}
-                                <option value="{{ category['category'] }}">{{category['category']}}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <!--Submit button-->
-                        <div class="mb-3 justify-content-left d-flex mt-4">
-                            <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Menu Item</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div id="addCategoryForm" class="wrapper {{'d-none' if name == 'menu' else ''}}" style="border: 1px solid var(--lg); background-color: #ffffff; height: 100vh;">
-                <div class="content p-3">
-                    <!-- Add Category Form -->
-                    <form action="/add_category" method="POST">
-                        <div class="mb-3">
-                            <label for="categoryTitle" class="form-label" style="color: black;">Category Title:</label>
-                            <input type="text" id="categoryTitle" name="category_title" class="form-control" placeholder="Enter category title" required style="border: 1px solid var(--lg);">
-                        </div>
-
-                        <div class="mb-5 d-flex justify-content-end mt-2">
-                            <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Category</button>
-                        </div>
-                    </form>
-
-                    <!-- Existing Categories List -->
-                    <h4 style="color: #1c1c1b;">Existing Categories</h4>
-                    <ul class="list-group mt-3" id="categoryList">
-                        {% for category in categories %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ category['category'] | title }}
-                                <form action="/remove_category" method="POST">
-                                    <input type="hidden" name="category" value="{{ category['category'] }}">
-                                    <button class="btn btn-sm"><img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/></button>
-                                </form>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">
-                <div class="content p-3">
-                    <form action="/edit_menu" method="POST" id="editForm" enctype="multipart/form-data">
-                        <input type="hidden" name="id" id="edit-id">
-                        <div class="form-group mb-2">
-                            <label for="edit-item-name">Product Title</label>
-                            <input type="text" name="item_name" id="edit-item-name" class="form-control" required>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="edit-category">Category</label>
-                            <input type="text" name="category" id="edit-category" class="form-control" required>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label for="edit-price">Price</label>
-                            <input type="number" name="price" id="edit-price" class="form-control" required>
-                        </div>
-                        <div class="form-group mb-3">
-                            <label for="edit-image-upload">Upload Image</label>
-                            <input type="file" name="image" id="edit-image-upload" class="form-control">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label>Current Image:</label>
-                            <input type="hidden" name="current_image" id="current-image">
-                            <div class="card-image preview-image">
+                        <td class="checkbox"><input class="allcheckbox" type="checkbox" name="selected_items" value="{{ item['id'] }}"></td>
+                        <td class="card-image"><img src='{{item["image_url"]}}' alt="T-Shirt with Logo" width="50px" ></td>
+                        <td>
+                            {{item["item_name"]}}
+                            <div class="row-actions">
+                                <span class="id">ID: {{item['id']}} | </span>
+                                <span class="edit"><a href="">Edit</a> | </span>
+                                <span class="trash"><a href="/delete_menu?action=trash&id={{ item['id'] }}">Trash</a> | </span>
                             </div>
-                        </div>
-                        <div class="d-flex flex-row gap-3">
-                            <button class="btn btn-dark btn-block mt-3 w-100 confirm-changes" onclick="confirm_changes()" type="submit">Confirm Changes</button>
-                        </div>
+                        </td>
+                        <td>{{item["category"]}}</td>
+                        <td>Rp {{ '{:,.0f}'.format(item['price']) }}</td>
+                        <td>{{item['date_added']}}</td>
+                    </tr>
+                    {% endfor %}
 
-                    </form>
-                    <form action="/customization" method="GET">
-                        <button id="cancel-btn" class="btn btn-danger btn-block mt-3 w-100 cancel-changes" type="submit">Cancel Changes</button>
-                    </form>
-                </div>
+                </form>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}    
+{% block secondCol %}
+    <div class="right-menu">
+        <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
+            <h4 class="right-menu-header" style="color: #ffffff;">{{ session.get('menu_choice', 'New Menu') }}</h4>
 
+        </div>
+        <div class="small-menu  p-2 justify-content-between d-flex">
+            <button class="btn btn-dark back-button">
+                ❮ Back
+            </button>
+            <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
+                <option value="Add Menu" {% if session.get('menu_choice') == 'Add Menu' %}selected{% endif %}>New Menu</option>
+                <option value="Add Category" {% if session.get('menu_choice') == 'Add Category' %}selected{% endif %}>Add Categories</option>
+                <option value="Edit Menu" {% if session.get('menu_choice') == 'Edit Menu' %}selected{% endif %}>Edit Menu</option>
+            </select>
+        </div>
+        <div id="addMenuForm" class="wrapper {{'d-none' if name == 'category' else ''}}" style="background-color: #ffffff; height: 100vh;">
+            <div class="content p-3">
+                <form action="/add_menu" method="POST" enctype="multipart/form-data">
+                    <!--Product title-->
+                    <div class="mb-3">
+                        <label for="title" class="form-label" style="color: black;">Product Title:</label>
+                        <input type="text" id="title" name="title" class="form-control" placeholder="Enter product title" style="border: 1px solid var(--lg);">
+                    </div>
+
+                    <!--Product image-->
+                    <div class="mb-3">
+                        <label for="image" class="form-label" style="color: black;">Product Image:</label>
+                        <input type="file" id="image" name="image" class="form-control" style="border: 1px solid var(--lg);">
+                    </div>
+
+                    <!--Product description-->
+                    <div class="mb-3">
+                        <label for="description" class="form-label" style="color: black;">Product Description:</label>
+                        <textarea id="description" name="description" class="form-control" rows="3" placeholder="Enter product description" style="border: 1px solid var(--lg);"></textarea>
+                    </div>
+
+                    <!--Product price-->
+                    <div class="mb-3">
+                        <label for="price" class="form-label" style="color: black;">Product Price:</label>
+                        <input type="number" id="price" name="price" class="form-control" placeholder="Enter price" style="border: 1px solid var(--lg);">
+                    </div>
+
+                    <!--Product category-->
+                    <div class="mb-3">
+                        <label for="category" class="form-label" style="color: black;">Product Category:</label>
+                        <select id="category" class="form-select" name="category" style="border: 1px solid var(--lg); background-color: #ffffff;">
+                            {% for category in categories %}
+                            <option value="{{ category['category'] }}">{{category['category']}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!--Submit button-->
+                    <div class="mb-3 justify-content-left d-flex mt-4">
+                        <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Menu Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="addCategoryForm" class="wrapper {{'d-none' if name == 'menu' else ''}}" style="border: 1px solid var(--lg); background-color: #ffffff; height: 100vh;">
+            <div class="content p-3">
+                <!-- Add Category Form -->
+                <form action="/add_category" method="POST">
+                    <div class="mb-3">
+                        <label for="categoryTitle" class="form-label" style="color: black;">Category Title:</label>
+                        <input type="text" id="categoryTitle" name="category_title" class="form-control" placeholder="Enter category title" required style="border: 1px solid var(--lg);">
+                    </div>
+
+                    <div class="mb-5 d-flex justify-content-end mt-2">
+                        <button type="submit" class="btn" style="background-color:#385060; color: white;">Add Category</button>
+                    </div>
+                </form>
+
+                <!-- Existing Categories List -->
+                <h4 style="color: #1c1c1b;">Existing Categories</h4>
+                <ul class="list-group mt-3" id="categoryList">
+                    {% for category in categories %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ category['category'] | title }}
+                            <form action="/remove_category" method="POST">
+                                <input type="hidden" name="category" value="{{ category['category'] }}">
+                                <button class="btn btn-sm"><img src="static/icons/Cross.png" alt="Remove" style="width: 18px; height: 18px;"/></button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div id="editMenuForm" class="wrapper d-none" style="background-color: #ffffff; height: 100vh;">
+            <div class="content p-3">
+                <form action="/edit_menu" method="POST" id="editForm" enctype="multipart/form-data">
+                    <input type="hidden" name="id" id="edit-id">
+                    <div class="form-group mb-2">
+                        <label for="edit-item-name">Product Title</label>
+                        <input type="text" name="item_name" id="edit-item-name" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="edit-category">Category</label>
+                        <input type="text" name="category" id="edit-category" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label for="edit-price">Price</label>
+                        <input type="number" name="price" id="edit-price" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="edit-image-upload">Upload Image</label>
+                        <input type="file" name="image" id="edit-image-upload" class="form-control">
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Current Image:</label>
+                        <input type="hidden" name="current_image" id="current-image">
+                        <div class="card-image preview-image">
+                        </div>
+                    </div>
+                    <div class="d-flex flex-row gap-3">
+                        <button class="btn btn-dark btn-block mt-3 w-100 confirm-changes" onclick="confirm_changes()" type="submit">Confirm Changes</button>
+                    </div>
+
+                </form>
+                <form action="/customization" method="GET">
+                    <button id="cancel-btn" class="btn btn-danger btn-block mt-3 w-100 cancel-changes" type="submit">Cancel Changes</button>
+                </form>
             </div>
 
         </div>
-    </div>
-    <div class="moreMenu">
 
     </div>
 </div>
+<div class="moreMenu">
 
+</div>
 {% endblock %}
 

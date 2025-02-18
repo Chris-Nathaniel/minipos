@@ -11,6 +11,29 @@ import sys
 load_dotenv()
 db = SQL(os.getenv('DATABASE_URL'))
 
+class Business:
+    def __init__(self, name, address, contact, email):
+        self.name = name
+        self.address = address
+        self.contact = contact
+        self.email = email
+
+    def insert_business(self):
+        db.execute("INSERT INTO business (name, address, contact, email) VALUES(?, ?, ?, ?)", (
+            self.name, self.address, self.contact, self.email))
+        db.connection.commit()
+  
+    def get_business():
+        # Check if the business exists in the database
+        result = db.execute("SELECT * FROM business WHERE id = 1").fetchone()
+        return result
+    
+    def update_business(self):
+        db.execute("UPDATE business SET name = ?, address = ?, contact = ?, email = ? WHERE id = 1", 
+                   (self.name, self.address, self.contact, self.email))
+        db.connection.commit()
+
+
 class Menu:
     def get_all_menu():
         return db.execute('SELECT * FROM menu_list').fetchall()

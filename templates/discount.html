@@ -1,64 +1,59 @@
 {% extends 'layout.html' %}
 
-{% block main %}
-<div class="mycontainer">
-    <div class="firstcol" style="padding:5px;">
-        <div class="left-menu p-3 position-relative">
-            <h4>Discounts</h4>
+{% block firstCol %}
+    <div class="left-menu p-3 m-2 position-relative">
+        <h4>Discounts</h4>
 
-            <form method="GET" action="/discount">
-                <input type="text" class="form-control mb-3 mt-2" name="codeSearch" placeholder="Enter promo or gift code here">
-                <button type="submit" style="display: none;">Search</button>
-            </form>
+        <form method="GET" action="/discount">
+            <input type="text" class="form-control mb-3 mt-2" name="codeSearch" placeholder="Enter promo or gift code here">
+            <button type="submit" style="display: none;">Search</button>
+        </form>
 
-            {% for ticket in tickets %}
-            <div class="offer-item">
-                <img src="{{ ticket.image }}" alt="Discount Icon">
-                <div class="offer-details">
-                    <div class="title">{{ticket.title}} | {{ticket.discount}}% off</div>
-                    <div class="Voucher">Voucher: {{ticket.discount_code}} </div>
-                    <div class="description">{{ticket.description}}</div>
-                </div>
+        {% for ticket in tickets %}
+        <div class="offer-item">
+            <img src="{{ ticket.image }}" alt="Discount Icon">
+            <div class="offer-details">
+                <div class="title">{{ticket.title}} | {{ticket.discount}}% off</div>
+                <div class="Voucher">Voucher: {{ticket.discount_code}} </div>
+                <div class="description">{{ticket.description}}</div>
             </div>
-            {% endfor %}
-
         </div>
+        {% endfor %}
 
     </div>
-    <div class="secondcol">
-        <div class="right-menu">
-            <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
-                <h4 class="right-menu-header" style="color: #ffffff;">Create discount ticket</h4>
-            </div>
-            <div class="small-menu  p-2 justify-content-between d-flex">
-                <button class="btn btn-dark back-button">
-                    ❮ Back
-                </button>
-            </div>
-            <form action="/discount" method="POST" id="discountForm" class="p-2">
-                <div class="mb-3">
-                    <label for="ticketTitle" class="form-label">Title</label>
-                    <input type="text" name="title" class="form-control" id="ticketTitle" placeholder="e.g: Summer Sale">
-                </div>
-                <div class="mb-3">
-                    <label for="discountAmount" class="form-label">Discount Amount</label>
-                    <input type="number" name="discAmount" class="form-control" id="discountAmount" placeholder="e.g: 20">
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Description</label>
-                    <textarea class="form-control" name="discDescription" id="description" rows="3" placeholder="e.g: 20% off on all items!"></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="expirationDate" class="form-label">Expiration Date</label>
-                    <input type="date" name="discExpiration" class="form-control" id="expirationDate">
-                </div>
-                <button type="submit" class="btn" style="background-color:#385060; color: white;" id="previewButton">Create Ticket</button>
-            </form>
-
+{% endblock %}
+{% block secondCol %}
+    <div class="right-menu">
+        <div class="p-1 ps-3 pt-2 d-flex" style="background-color: var(--theme); align-items: center;">
+            <h4 class="right-menu-header" style="color: #ffffff;">Create discount ticket</h4>
         </div>
+        <div class="small-menu  p-2 justify-content-between d-flex">
+            <button class="btn btn-dark back-button">
+                ❮ Back
+            </button>
+        </div>
+        <form action="/discount" method="POST" id="discountForm" class="p-2">
+            <div class="mb-3">
+                <label for="ticketTitle" class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" id="ticketTitle" placeholder="e.g: Summer Sale">
+            </div>
+            <div class="mb-3">
+                <label for="discountAmount" class="form-label">Discount Amount</label>
+                <input type="number" name="discAmount" class="form-control" id="discountAmount" placeholder="e.g: 20">
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" name="discDescription" id="description" rows="3" placeholder="e.g: 20% off on all items!"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="expirationDate" class="form-label">Expiration Date</label>
+                <input type="date" name="discExpiration" class="form-control" id="expirationDate">
+            </div>
+            <button type="submit" class="btn" style="background-color:#385060; color: white;" id="previewButton">Create Ticket</button>
+        </form>
+
     </div>
     <div class="moreMenu">
 
     </div>
-</div>
 {% endblock %}

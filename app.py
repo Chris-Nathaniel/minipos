@@ -3,7 +3,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL, init_app
-from models import Menu, Discount, Users, Billing, Orders, Cart, run_gui
+from models import Menu, Discount, Users, Billing, Orders, Cart, run_gui, Business
 from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
 import os
 import ctypes
@@ -17,10 +17,33 @@ def run_flask():
     core, database_url = init_app(app)
     # connect to database
     db = SQL(database_url)
- 
+
+    @app.route("/settings", methods=['GET'])
+    @login_required
+    def settings():
+        business_details = Business.get_business()
+        print(business_details)
+        return render_template("settings.html", business_details=business_details)
+    @app.route("/business-settings", methods=['POST'])
+    @login_required
+    def businessdetails():
+        business_name = request.form.get("businessName")
+        business_address = request.form.get("businessAddress")
+        business_contact = request.form.get("businessContact")
+        business_email = request.form.get("businessEmail")
+        business = Business(business_name, business_address, business_contact, business_email)
+        if Business.get_business():
+            business.update_business()
+        else:
+            business.insert_business()
+        return redirect("/settings")
     @app.route('/')
     @login_required
     def choose_option():
+        if Business.get_business():
+            business_name = Business.get_business()['name']
+        else:
+            business_name = "Sleeping Giant Inn"
         if 'dinein' in request.args:
             # Handle the Take Away option
             session['type'] = "dine in"
@@ -30,7 +53,7 @@ def run_flask():
             session['type'] = "take out"
             return redirect('/menu')
 
-        return render_template('index.html')
+        return render_template('index.html', business_name=business_name)
 
     @app.route("/<category>")
     @login_required

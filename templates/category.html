@@ -1,12 +1,11 @@
-<div class="mycontainer">
-    <div class="firstcol">
-        <div class="subPostHeaderWrapper">
-            <div class="subPostHeader">
-                <div class="headitem {{'active-nav' if category == 'All' }}"><a href="/menu">All</a></div>
-                
-                {% for item in categories %}
-                <div class="headitem {{'active-nav' if category == item['category']|title }}"><a href="/{{item['category']|title}}">{{ item['category'] | title }}</a></div>
-                {% endfor %}
-            </div>
-        </div>
+
+<div class="subPostHeaderWrapper">
+    <div class="subPostHeader">
+        <div class="headitem {{'active-nav' if category == 'All' }}"><a href="/menu">All</a></div>
+        
+        {% for item in categories %}
+        <div class="headitem {{'active-nav' if category == item['category']|title }}"><a href="/{{item['category']|title}}">{{ item['category'] | title }}</a></div>
+        {% endfor %}
+    </div>
+</div>
         

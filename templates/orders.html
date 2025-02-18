@@ -4,11 +4,10 @@
 <title>orders</title>
 {% endblock %}
 
-
 {% block main %}
 {% include 'modal.html' %}
-<div class="mycontainer">
-    <div class="firstcol">
+{% endblock %}
+{% block firstCol %}
         <div class="tableWrapper mt-0 mx-0 mb-0" style="background-color: #92a0a9; min-height: 95vh; width:100%; border-radius: 10px;">
             <div class="container mx-0" style="max-width: 100vw;">
                 <div class="arrow-nav">
@@ -126,8 +125,8 @@
                 </div>
             </div>
         </div>
-    {% include 'billing.html' %}
-
-
-{% endblock %}
+    {% endblock %}
+    {% block secondCol %}
+        {% include 'billing.html' %}
+    {% endblock %}
 

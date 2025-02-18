@@ -4,7 +4,7 @@
 <title>Apology</title>
 {% endblock %}
 
-{% block main %}
+{% block firstCol %}
     {% if categories %}
         {% include 'category.html' %}
     {% endif %}
@@ -14,6 +14,8 @@
             <p class="lead">{{ message }}</p>
         </div>
     </div>
+{% endblock %}
+{% block secondCol %}
     {% if finish_edit_order == true %}
         {% include 'edit_order.html' %}
     {% else %}

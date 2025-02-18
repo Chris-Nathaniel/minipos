@@ -1,0 +1,171 @@
+{% extends 'layout.html' %}
+{% block main %}
+{% include 'modal.html' %}
+{% endblock %}
+{% block firstCol %}
+<div class="mycontainer settings m-0 p-2" style="max-height: 100vh; display: flex; flex-direction: column; overflow: auto; align-items: center;">
+    
+    <!-- Business Settings -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h2 id="busset"><i class="fas fa-store"></i> Business Settings</h2>
+        </div>
+        <div class="container p-4 card-content">
+            <form action="/business-settings" method="POST">
+                <div class="mb-3">
+                    <label for="businessName" class="form-label"><i class="fas fa-building"></i> Business Name</label>
+                    <input type="text" class="form-control" id="businessName" name="businessName" value="{{business_details.name}}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="businessAddress" class="form-label"><i class="fas fa-map-marker-alt"></i> Address</label>
+                    <input type="text" class="form-control" id="businessAddress" name="businessAddress" value="{{business_details.address}}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="businessContact" class="form-label"><i class="fas fa-phone"></i> Contact</label>
+                    <input type="text" class="form-control" id="businessContact" name="businessContact" value="{{business_details.contact}}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="businessEmail" class="form-label"><i class="fas fa-envelope"></i> Merchant Email</label>
+                    <input type="email" class="form-control" id="businessEmail" name="businessEmail" value="{{business_details.email}}" required>
+                </div>
+                <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Midtrans Integration -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h2 id="mdi"><i class="fas fa-credit-card"></i> Midtrans Integration</h2>
+        </div>
+        <div class="container p-4 card-content">
+            <form action="/midtrans-integration" method="POST">
+                <div class="mb-3">
+                    <label for="clk" class="form-label"><i class="fas fa-key"></i> Client Key</label>
+                    <input type="text" class="form-control" id="clk" name="clk" required>
+                </div>
+                <div class="mb-3">
+                    <label for="svk" class="form-label"><i class="fas fa-lock"></i> Server Key</label>
+                    <input type="text" class="form-control" id="svk" name="svk" required>
+                </div>
+                <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
+            </form>
+        </div>
+    </div> 
+
+    <!-- Ngrok -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h2 id="ngrk"><i class="fas fa-network-wired"></i> Ngrok</h2>
+        </div>
+        <div class="container p-4 card-content">
+            <form action="/ngrok-settings" method="POST">
+                <div class="mb-3">
+                    <label for="domain" class="form-label"><i class="fas fa-globe"></i> Ngrok Domain</label>
+                    <input type="text" class="form-control" id="domain" name="domain" required>
+                </div>
+                <div class="mb-3">
+                    <label for="auth" class="form-label"><i class="fas fa-user-lock"></i> Ngrok Auth</label>
+                    <input type="text" class="form-control" id="auth" name="auth" required>
+                </div>
+                <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
+            </form>
+        </div>
+    </div> 
+
+    
+    <!-- Database Settings -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h2 id="dbset"><i class="fas fa-database"></i> Database Settings</h2>
+        </div>
+        <div class="container p-4 card-content">
+            <form action="/database-settings" method="POST">
+                <div class="mb-3">
+                    <label for="newDatabaseName" class="form-label"><i class="fas fa-database"></i> New Database Name</label>
+                    <input type="text" class="form-control" id="newDatabaseName" name="newDatabaseName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="currentDatabase" class="form-label"><i class="fas fa-cogs"></i> Current Database</label>
+                    <input type="text" class="form-control" id="currentDatabase" value="{{ current_db }}" disabled>
+                </div>
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+                <div class="mb-3">
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDatabaseModal"><i class="fas fa-trash"></i> Delete Database</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block secondCol %}
+<div class="mycontainer quick-menu-section m-2 p-2" style="max-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Quick Menu Spoiler -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#quickMenu" aria-expanded="false" aria-controls="quickMenu">
+                <i class="fas fa-bars"></i> Quick Menu
+            </h3>
+        </div>
+        <div id="quickMenu" class="collapse container p-4 card-content align-items-left">
+            <div class="list-group list-group-flush">
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-store"></i> Business Settings
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-credit-card"></i> Payment Integration
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-network-wired"></i> Ngrok Setup
+                </a>
+                <a href="#" class="list-group-item list-group-item-action">
+                    <i class="fas fa-database"></i> Database Settings
+                </a>
+                <a href="#" class="list-group-item list-group-item-action text-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Status Spoiler -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#liveStatus" aria-expanded="false" aria-controls="liveStatus">
+                <i class="fas fa-chart-line"></i> Live Status
+            </h3>
+        </div>
+        <div id="liveStatus" class="collapse container p-4 card-content">
+            <p>Status of key services:</p>
+            <ul>
+                <li><strong>Business Service:</strong> <span class="text-success">Running</span></li>
+                <li><strong>Payment Gateway:</strong> <span class="text-warning">Connection Pending</span></li>
+                <li><strong>Ngrok:</strong> <span class="text-danger">Offline</span></li>
+            </ul>
+        </div>
+    </div> 
+
+    <!-- Help and Documentation Spoiler -->
+    <div class="card-menu p-3 m-2 position-relative">
+        <div class="card-head d-flex justify-content-between align-items-end m-2">
+            <h3 class="mb-2" data-bs-toggle="collapse" data-bs-target="#helpDocs" aria-expanded="false" aria-controls="helpDocs">
+                <i class="fas fa-question-circle"></i> Help and Documentation
+            </h3>
+        </div>
+        <div id="helpDocs" class="collapse container p-4 card-content">
+            <p>Need help? Explore our documentation:</p>
+            <ul class="help-links">
+                <li><a href="/help/business-settings"><i class="fas fa-info-circle"></i> Business Settings Guide</a></li>
+                <li><a href="/help/midtrans-integration"><i class="fas fa-info-circle"></i> Midtrans Integration Guide</a></li>
+                <li><a href="/help/ngrok-settings"><i class="fas fa-info-circle"></i> Ngrok Settings Guide</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

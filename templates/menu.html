@@ -3,13 +3,12 @@
 {% block title %}
 <title>menu</title>
 {% endblock %}
-
 {% block main %}
-    {% include 'modal.html' %}
-
+{% include 'modal.html' %}
+{% endblock %}
+{% block firstCol %}
     {% include 'category.html' %}
     <div class="articles mt-2">
-        
         {% for item in main %}
         <div class='card menu-card'>
             <div class='card-image'>
@@ -29,10 +28,12 @@
             </a>
         </div>        
     </div>
+{% endblock %}
+{% block secondCol %}
     {% if finish_edit_order == true %}
         {% include 'edit_order.html' %}
     {% else %}
         {% include 'billing.html' %}
     {% endif %}
-
 {% endblock %}
+

@@ -23,11 +23,10 @@
   flex-direction: row;
 }
 
-
 .firstcol {
   width: 100%;
   background-color: #92a0a9;
-  height: 94.1vh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -43,7 +42,7 @@
   width: 60%;
   background-color: #92a0a9;
   padding:5px;
-  height: 94.1vh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -81,7 +80,7 @@
   flex-wrap: wrap;
   gap: 4px;
   max-width: 1500px;
-  max-height:88vh;
+  max-height:89vh;
   overflow: auto;
   padding-left: 5px;
 }
@@ -545,6 +544,17 @@ td:hover .row-actions{
 
 }
 
+.card-menu{
+  background-color: white;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  box-shadow: 2px 4px 6px rgba(87, 86, 86, 0.2);
+}
+.card-content{
+  margin: 0 !important;
+}
 .left-menu::-webkit-scrollbar{
   display: none;
 }
@@ -562,22 +572,29 @@ td:hover .row-actions{
   margin:10px;
 }
 
+.customizeTable thead{
+  color: rgb(32, 32, 32);
+  background-color: #b8babc;
+}
+
 .customizeTable th, .customizeTable td {
   padding: 12px;
   border: 1px solid #ddd;
   border-left: none;
   border-right:none;
-
+  
 }
 
 .customizeTable tbody td:first-child,
 .customizeTable thead th:first-child {
   border-left: 1px solid var(--lg);
+  border-top-left-radius: 5px;
 }
 
 .customizeTable tbody td:last-child,
 .customizeTable thead th:last-child {
   border-right: 1px solid var(--lg);
+  border-top-right-radius: 5px;
 }
 
 .search-btn {
@@ -629,12 +646,75 @@ td:hover .row-actions{
 }
 
 .catwrapper {
-  background-color: #abb8be;
+  background-color: #b8babc;
   border-radius: 5px;
-  padding: 5px;
-  min-width: 25% !important;
+  padding: 6px;
+  min-width: 5% !important;
   font-size: 1.9vmin;
+  margin: 3px;
+  color: rgb(32, 32, 32);
+  font-family: Nunito, sans-serif;
+  
 }
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #343a40 !important;
+    color: white !important;
+}
+
+
+.form-select option {
+  background-color: #343a40; 
+  color: white;
+}
+
+.mycontainer.settings::-webkit-scrollbar{
+  display:none;
+
+}
+
+/* Styling the help links */
+.help-links a {
+  text-decoration: none;
+  color: #007bff; 
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+.help-links a:hover {
+  color: #0056b3;  
+}
+
+.help-links a i {
+  margin-right: 8px;
+  font-size: 1.3rem;  
+}
+
+.help-links a:focus,
+.help-links a:hover {
+  text-decoration: none;
+  outline: none;
+}
+
+.card-content ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.card-menu {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-menu .list-group-item {
+  margin-bottom: 8px;
+}
+
 
 @keyframes slide {
   0% {transform: translatex(170px)}
@@ -696,6 +776,17 @@ td:hover .row-actions{
     color: #0d6efd;
     cursor: pointer;
   }
+
+  .thick-line {
+    border: 0;
+    height: 3px; 
+    background-color: var(--theme); 
+    opacity: 1;
+}
+
+.card-head{
+  border-bottom: 1px solid black;
+}
 
   @media screen and (min-width: 969px) {
     .back-button {
@@ -804,5 +895,8 @@ td:hover .row-actions{
 
   
 }
+
+
+
 
 
