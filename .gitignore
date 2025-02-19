@@ -4,5 +4,10 @@ __pycache__/
 
 # Ignore virtual environment
 venv/
+
+# Ignore environment variables file
 .env
 
+# Ignore backup and database folders
+backup/
+.db/

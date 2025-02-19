@@ -125,5 +125,5 @@ def createImageUrl(image_url, text, text_size=85, text_color="white", x_align="c
 def mask_key(key, visible=5):
     """Mask all but the first and last `visible` characters of the key."""
     if len(key) <= visible * 2:
-        return key  # If the key is too short, don't mask it
+        return key  
     return f"{key[:visible]}{'*' * (len(key) - (visible * 2))}{key[-visible:]}"

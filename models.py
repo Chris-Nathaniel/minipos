@@ -373,11 +373,11 @@ class Orders:
                 db.connection.commit()
 class Ev:
     def __init__(self):
-        self.clkey = os.getenv("PUBLIC_CLIENT")
-        self.svkey = os.getenv("SERVER_KEY")
-        self.ngdomain = os.getenv("NGROK_DOMAIN")
-        self.ngauth = os.getenv("NGROK_AUTH")
-        self.db = os.getenv("DATABASE_URL")
+        self.clkey = os.getenv("PUBLIC_CLIENT", "")
+        self.svkey = os.getenv("SERVER_KEY", "")
+        self.ngdomain = os.getenv("NGROK_DOMAIN", "")
+        self.ngauth = os.getenv("NGROK_AUTH", "")
+        self.db = os.getenv("DATABASE_URL", "")
         
 class MainWindow(QMainWindow):
     def __init__(self):
