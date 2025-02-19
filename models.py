@@ -388,13 +388,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.browser)
 
         self.setWindowTitle("Minipos")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(0, 0, 2560, 1600)
 
     def run_gui():
         app = QApplication(sys.argv)
         screen_size = app.primaryScreen().size()
         app.setWindowIcon(QIcon("icon.ico"))
-        width, height = int(screen_size.width() * 0.9), int(screen_size.height() * 0.9)
+        width, height = int(screen_size.width() * 0.3), int(screen_size.height() * 0.4)
         window = MainWindow()
         window.resize(width, height)
         window.show()
