@@ -1,5 +1,5 @@
 @echo off
-set DB_NAME=mini.db
+set DB_NAME=database.db
 set ENV_FILE=.env
 
 :: Create SQLite database and insert the tables
