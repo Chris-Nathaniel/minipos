@@ -46,5 +46,5 @@ if exist %ENV_FILE% (
 
 echo .env file updated successfully!
 
-pause
+exit
 

@@ -136,7 +136,7 @@
                                         <span class="mx-2">Discount:</span>
                                     </div>
                                     <div class="col-md-4 d-flex justify-content-end align-items-end">
-                                        <span class="mx-2">{{discount}}%</span>
+                                        <span class="mx-2">{{discount|string + '%' if discount else 0}}</span>
                                     </div>
                                 </div>
                             </div>

@@ -8,6 +8,7 @@ from helpers import apology, login_required, thankYou, parseInt, formatCurrency,
 import os
 import ctypes
 import threading
+import subprocess
 
 
 def run_flask():
@@ -709,6 +710,21 @@ def run_flask():
         os.environ['NGROK_AUTH'] = auth
         
         return redirect("/settings")
+    
+    @app.route("/reset-database", methods=["POST"])
+    @login_required
+    def reset_database():
+        database = os.getenv("DATABASE_URL")
+
+        if database and database.endswith(".db"):
+            db_path = secure_filename(database)  # Ensure safety
+            if os.path.exists(db_path):
+                os.remove(db_path)  # Delete the database file
+
+        # Run the batch script to regenerate the database
+        subprocess.run(["dbgenerator.bat"], shell=True)
+
+        return redirect("/menu")
 
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)

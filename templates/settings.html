@@ -100,18 +100,11 @@
         <div class="container p-4 card-content">
             <form action="/database-settings" method="POST">
                 <div class="mb-3">
-                    <label for="newDatabaseName" class="form-label"><i class="fas fa-database"></i> New Database Name</label>
-                    <input type="text" class="form-control" id="newDatabaseName" name="newDatabaseName" required>
-                </div>
-                <div class="mb-3">
                     <label for="currentDatabase" class="form-label"><i class="fas fa-cogs"></i> Current Database</label>
                     <input type="text" class="form-control" id="currentDatabase" value="{{ masked.db }}" disabled>
                 </div>
                 <div class="mb-3">
-                    <button type="submit" class="btn btn-dark"><i class="fas fa-save"></i> Save Changes</button>
-                </div>
-                <div class="mb-3">
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDatabaseModal"><i class="fas fa-trash"></i> Delete Database</button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteDatabaseModal"><i class="fas fa-trash"></i> Reset Database</button>
                 </div>
             </form>
         </div>
