@@ -1,4 +1,5 @@
 from flask import redirect, render_template, request, session
+import requests
 from functools import wraps
 import string
 from conn import SQL
@@ -142,3 +143,25 @@ def set_key(dotenv_path, key, value):
 
     with open(dotenv_path, 'w') as f:
         f.writelines(lines)
+
+def sanitize_strings(filename):
+    # Remove or replace special characters with underscores
+    sanitized = re.sub(r'[^a-zA-Z]', '', filename).strip()
+    return sanitized
+
+def generate_name():
+    while True:  
+        random_letter = random.choice("abcdefghijklmnopqrstuvwxyz")
+
+        # Fetch character data from Jikan v4 API
+        response = requests.get(f"https://api.jikan.moe/v4/anime?q={random_letter}&limit=12")
+        data = response.json()
+
+        # Check if results are found
+        if "data" in data and data["data"]:
+            random_character = random.choice(data["data"])['title']
+            random_character = sanitize_strings(random_character)
+
+            # If name is at least 5 letters long, return it
+            if len(random_character) <= 15 and len(random_character) >= 4:
+                return random_character

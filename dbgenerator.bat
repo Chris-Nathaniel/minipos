@@ -1,6 +1,9 @@
 @echo off
-set DB_NAME=database.db
+set DB_NAME=%1.db
 set ENV_FILE=.env
+set TEMP_FILE=.env.tmp
+set FOUND_OLD=0
+set FOUND_DB=0
 
 :: Create SQLite database and insert the tables
 echo Creating SQLite database: %DB_NAME%
@@ -25,26 +28,43 @@ echo Database %DB_NAME% created successfully!
 echo All tables created successfully.
 
 :: Check if .env file exists
-if exist %ENV_FILE% (
-    echo Checking for existing DATABASE_URL in %ENV_FILE%
-    
-    :: Check if DATABASE_URL exists in the file
-    findstr /R "^DATABASE_URL *= *" %ENV_FILE% >nul
-    if %errorlevel% == 0 (
-        echo Updating DATABASE_URL in %ENV_FILE%
-        (for /f "delims=" %%i in ('type %ENV_FILE% ^| findstr /V /R "^DATABASE_URL *= *"') do echo %%i) > temp_env
-        echo DATABASE_URL = %DB_NAME% >> temp_env
-        move /Y temp_env %ENV_FILE% >nul
-    ) else (
-        echo Appending DATABASE_URL to %ENV_FILE%
-        echo DATABASE_URL = %DB_NAME% >> %ENV_FILE%
-    )
-) else (
-    echo Creating new .env file with DATABASE_URL
-    echo DATABASE_URL = %DB_NAME% > %ENV_FILE%
+if not exist %ENV_FILE% (
+    echo .env file not found.
+    exit /b
 )
 
-echo .env file updated successfully!
+:: Read the .env file and search for DATABASE_URL
+for /f "tokens=1,* delims==" %%A in (%ENV_FILE%) do (
+    if /I "%%A"=="DATABASE_URL" set "OLD_DB_NAME=%%B"
+)
+
+:: Process the .env file to update or insert OLD_DB_URL and DATABASE_URL
+(for /f "usebackq tokens=1,* delims==" %%A in ("%ENV_FILE%") do (
+    if /I "%%A"=="OLD_DB_URL" (
+        echo OLD_DB_URL=%OLD_DB_NAME%
+        set FOUND_OLD=1
+    ) else if /I "%%A"=="DATABASE_URL" (
+        echo DATABASE_URL=%DB_NAME%
+        set FOUND_DB=1
+    ) else (
+        echo %%A=%%B
+    )
+)) > %TEMP_FILE%
+
+:: If OLD_DB_URL was not found, append it
+if %FOUND_OLD%==0 (
+    echo OLD_DB_URL=%OLD_DB_NAME% >> %TEMP_FILE%
+)
+
+:: If DATABASE_URL was not found, append it
+if %FOUND_DB%==0 (
+    echo DATABASE_URL=%DB_NAME% >> %TEMP_FILE%
+)
+
+:: Replace the original .env file with the updated one
+move /Y %TEMP_FILE% %ENV_FILE% > nul
+
+echo DATABASE_URL updated successfully to %DB_NAME%.
 
 exit
 

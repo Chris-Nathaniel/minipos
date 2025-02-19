@@ -4,11 +4,12 @@ from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL, init_app
 from models import Menu, Discount, Users, Billing, Orders, Cart, Business, MainWindow, Ev
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key, set_key
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key, set_key, generate_name
 import os
 import ctypes
 import threading
 import subprocess
+import sys
 
 
 def run_flask():
@@ -18,7 +19,18 @@ def run_flask():
     # Initialize the app with environment variables and Midtrans client
     core, database_url = init_app(app)
     # connect to database
+    
     db = SQL(database_url)
+    
+    @app.route("/delete-database", methods=["POST"])
+    @login_required
+    def reset_database():
+        name = generate_name()
+        print(name)
+        # Run the batch script to regenerate the database
+        subprocess.run(["dbgenerator.bat", name], shell=True)
+
+        return redirect("/menu")
     
     @app.route('/')
     @login_required
@@ -141,6 +153,7 @@ def run_flask():
         """Log user out"""
         # Forget any user_id
         session.clear()
+        db.connection.close()
 
         # Redirect user to login form
         return redirect("/")
@@ -711,21 +724,6 @@ def run_flask():
         
         return redirect("/settings")
     
-    @app.route("/reset-database", methods=["POST"])
-    @login_required
-    def reset_database():
-        database = os.getenv("DATABASE_URL")
-
-        if database and database.endswith(".db"):
-            db_path = secure_filename(database)  # Ensure safety
-            if os.path.exists(db_path):
-                os.remove(db_path)  # Delete the database file
-
-        # Run the batch script to regenerate the database
-        subprocess.run(["dbgenerator.bat"], shell=True)
-
-        return redirect("/menu")
-
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)
 
