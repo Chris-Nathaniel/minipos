@@ -22,16 +22,6 @@ def run_flask():
     
     db = SQL(database_url)
     
-    @app.route("/delete-database", methods=["POST"])
-    @login_required
-    def reset_database():
-        name = generate_name()
-        print(name)
-        # Run the batch script to regenerate the database
-        subprocess.run(["dbgenerator.bat", name], shell=True)
-
-        return redirect("/menu")
-    
     @app.route('/')
     @login_required
     def choose_option():
@@ -722,6 +712,22 @@ def run_flask():
         os.environ['NGROK_DOMAIN'] = domain
         os.environ['NGROK_AUTH'] = auth
         
+        return redirect("/settings")
+    
+    @app.route("/delete-database", methods=["POST"])
+    @login_required
+    def reset_database():
+        oldDataBase = os.getenv("OLD_DB_URL", "")
+        name = generate_name()
+        if oldDataBase:
+            if oldDataBase and oldDataBase.endswith(".db"):
+                db_path = secure_filename(oldDataBase)  # Ensure safety
+                if os.path.exists(db_path):
+                    os.remove(db_path)
+        
+        # Run the batch script to regenerate the database
+        subprocess.run(["dbgenerator.bat", name], shell=True)
+
         return redirect("/settings")
     
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
