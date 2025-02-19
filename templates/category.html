@@ -6,6 +6,11 @@
         {% for item in categories %}
         <div class="headitem {{'active-nav' if category == item['category']|title }}"><a href="/{{item['category']|title}}">{{ item['category'] | title }}</a></div>
         {% endfor %}
+        <div class="headitem placeholder-category">
+            <a href="/customization">
+                <span class="plus-icon">+</span>
+            </a>
+        </div>
     </div>
 </div>
         
