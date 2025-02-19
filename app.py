@@ -4,11 +4,11 @@ from werkzeug.utils import secure_filename
 from urllib.parse import urlparse
 from conn import SQL, init_app
 from models import Menu, Discount, Users, Billing, Orders, Cart, Business, MainWindow, Ev
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key, set_key
 import os
 import ctypes
 import threading
-from dotenv import set_key
+
 
 def run_flask():
     
@@ -682,6 +682,7 @@ def run_flask():
     @login_required
     def ngrok_setup():
         domain, auth = request.form.get("domain"), request.form.get('auth')
+        print(domain, auth)
         dotenv_path = '.env'
         if not os.path.exists(dotenv_path):
             with open(dotenv_path, 'w') as f:

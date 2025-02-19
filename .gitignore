@@ -8,5 +8,4 @@ venv/
 .env
 
 # Ignore backup and database folders
-backup/
-.db/
+*.db

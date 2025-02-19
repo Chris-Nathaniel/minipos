@@ -127,3 +127,19 @@ def mask_key(key, visible=5):
     if len(key) <= visible * 2:
         return key  
     return f"{key[:visible]}{'*' * (len(key) - (visible * 2))}{key[-visible:]}"
+
+def set_key(dotenv_path, key, value):
+    """Update or add a key-value pair in the .env file without quotes."""
+    lines = []
+    if os.path.exists(dotenv_path):
+        with open(dotenv_path, 'r') as f:
+            lines = f.readlines()
+
+    # Remove any existing key
+    lines = [line for line in lines if not line.startswith(f"{key}=")]
+
+    # Add new key-value pair
+    lines.append(f"{key}={value}\n")
+
+    with open(dotenv_path, 'w') as f:
+        f.writelines(lines)

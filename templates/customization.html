@@ -72,7 +72,7 @@
             <button class="btn btn-dark back-button">
                 ❮ Back
             </button>
-            <select id="choice" class="form-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
+            <select id="choice" class="form-select custom-select" name="category" style="background-color: #ffffff; color: rgb(0, 0, 0); border: 3px solid var(--lg); width: 200px;" onchange="toggleForm()">
                 <option value="Add Menu" {% if session.get('menu_choice') == 'Add Menu' %}selected{% endif %}>New Menu</option>
                 <option value="Add Category" {% if session.get('menu_choice') == 'Add Category' %}selected{% endif %}>Add Categories</option>
                 <option value="Edit Menu" {% if session.get('menu_choice') == 'Edit Menu' %}selected{% endif %}>Edit Menu</option>
