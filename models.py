@@ -393,7 +393,7 @@ class MainWindow(QMainWindow):
         app = QApplication(sys.argv)
         screen_size = app.primaryScreen().size()
         app.setWindowIcon(QIcon("icon.ico"))
-        width, height = int(screen_size.width() * 0.8), int(screen_size.height() * 0.7)
+        width, height = int(screen_size.width() * 0.9), int(screen_size.height() * 0.9)
         window = MainWindow()
         window.resize(width, height)
         window.show()
