@@ -106,9 +106,24 @@
             </div>
             <br>
             <div class="list-group discount">
+                {% if not discount %}
                 <div class="list-group-item">
                     <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
                 </div>
+                {% else %}
+                <div class="list-group-item">
+                    <div class="offer-item border-0">
+                        <img src="{{voucherDetail.image}}" alt="Discount Icon">
+                        <div class="offer-details">
+                            <div class="title">{{voucherDetail.title}} | {{voucherDetail.discount}} off</div>
+                            <div class="Voucher">Voucher: {{voucherDetail.voucher}}</div>
+                        </div>
+                        <button class="btn btn-sm remove-discount">
+                            <span>Remove</span>
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
             </div>
             <br>
             <div class="list-group">

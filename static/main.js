@@ -988,6 +988,7 @@ function checkPaymentStatus(orderNumber) {
     document.addEventListener("DOMContentLoaded", function () {
         // Select all offer items
         const voucherList = document.querySelectorAll(".modal .offer-item");
+    
         // Add click event listener to each offer item
         voucherList.forEach(item => {
             item.addEventListener("click", function () {
@@ -996,21 +997,27 @@ function checkPaymentStatus(orderNumber) {
                 const title = this.querySelector(".title").getAttribute("data-item-title");
                 const image = this.querySelector(".title").getAttribute("data-item-image");
                 const voucher = this.querySelector(".title").getAttribute("data-item-voucher");
+    
                 // Send the discount value to the server via POST request
                 fetch("/addDiscount", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ discount: discount })
+                    body: JSON.stringify({ 
+                        discount: discount,
+                        title: title,
+                        image: image,
+                        voucher: voucher
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
                     console.log("Discount added successfully:", data);
                     console.log(formatCurrency(data.discountedTotal));
+    
                     const discountDiv = document.querySelector(".discount");
-                    // Optionally, provide user feedback
-                    discountDiv.innerHTML = " ";
+                    // Update the discount display
                     discountDiv.innerHTML = `
                         <div class="list-group-item">
                             <div class="offer-item border-0">
@@ -1019,22 +1026,28 @@ function checkPaymentStatus(orderNumber) {
                                     <div class="title">${title} | ${discount}% off</div>
                                     <div class="Voucher">Voucher: ${voucher}</div>
                                 </div>
-                                <div>Using</div>
+                                <button class="btn btn-sm remove-discount">
+                                    <span>Remove</span>
+                                </button>
                             </div>
-                        </div
+                        </div>
                     `;
+    
                     var myModal = document.getElementById('discountSelection');
                     var backdrop = document.querySelector('.modal-backdrop');
-                    myModal.classList.remove('show');
-                    backdrop.classList.remove('show');
-
+                    if (myModal) myModal.classList.remove('show');
+                    if (backdrop) backdrop.classList.remove('show');
+    
                     // Update the discount display in the DOM
                     const discountDisplay = document.querySelector(".row .col-md-4 span");
-                    const cartTotal =  document.querySelector('.cartTotalValue');
+                    const cartTotal = document.querySelector('.cartTotalValue');
                     if (discountDisplay) {
                         discountDisplay.textContent = discount + "%";
                         cartTotal.textContent = formatCurrency(data.discountedTotal);
                     }
+    
+                    // Attach event listener to the remove button
+                    removeDiscountListener();
                 })
                 .catch(error => {
                     console.error("Error adding discount:", error);
@@ -1042,7 +1055,47 @@ function checkPaymentStatus(orderNumber) {
                 });
             });
         });
+    
+        // Function to attach event listener to remove discount button
+        function removeDiscountListener() {
+            const removeBtn = document.querySelector(".remove-discount");
+            if (removeBtn) {
+                removeBtn.addEventListener("click", function (event) {
+                    event.preventDefault(); 
+    
+                    fetch("/removeDiscount", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Discount removed successfully:", data);
+    
+                        const discountDiv = document.querySelector(".discount");
+                        discountDiv.innerHTML = `
+                            <div class="list-group-item">
+                                <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
+                            </div>
+                        `;
+                        updateDiscountDisplay(0, data.originalTotal);
+                    })
+                    .catch(error => {
+                        console.error("Error removing discount:", error);
+                        alert("Failed to remove the discount. Please try again.");
+                    });
+                });
+            }
+        }
+        function updateDiscountDisplay(discount, total) {
+            const discountDisplay = document.querySelector(".row .col-md-4 span");
+            const cartTotal = document.querySelector(".cartTotalValue");
+            if (discountDisplay) discountDisplay.textContent = discount + "%";
+            if (cartTotal) cartTotal.textContent = formatCurrency(total);
+        }
     });
+    
 
     document.addEventListener("DOMContentLoaded", function() {
         let toastElements = document.querySelectorAll('.toast');

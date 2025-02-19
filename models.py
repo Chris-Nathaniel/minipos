@@ -142,6 +142,7 @@ class Billing:
         self.finish_edit_order = session.get('edit_order', '')
         self.change = parseInt(self.cashValue) - parseInt(self.total)
         self.discount = session.get('discount', 0)
+        self.voucherDetail = session.get('voucherDetail', "")
 
         if form:
             self.payment_method = form.get('paymentMethod')

@@ -63,6 +63,7 @@ def run_flask():
         if not main:
             session['category'] = category
 
+        
         billing = Billing(session)
         billing.format_currency()
 
@@ -629,6 +630,7 @@ def run_flask():
     @app.route('/addDiscount', methods=['POST'])
     def addDiscount():
         data = request.json
+        session['voucherDetail'] = data
         session['discount'] = int(data['discount'])
         discount = session['discount']/100
         total = parseInt(session.get('total', 0))
@@ -637,6 +639,20 @@ def run_flask():
         session['total'] = '{:,.0f}'.format(discountedTotal)
 
         return jsonify({'discountValue': session['discount'], 'discountedTotal': discountedTotal})
+    
+    @app.route("/removeDiscount", methods=['POST'])
+    def removeDiscount():
+        discount = parseInt(session.get('discount', ""))/100
+        total = parseInt(session.get('total', 0))
+        tax = parseInt(session.get('tax', 0))
+        originalTotal = int(total - (tax*discount))/(1-discount)
+        session['total'] = '{:,.0f}'.format(originalTotal)
+        session.pop('discount', None)
+        session.pop('voucherDetail', None)
+        return jsonify({
+        "message": "Discount removed successfully",
+        "originalTotal": originalTotal
+    })
     
     @app.route("/settings", methods=['GET'])
     @login_required

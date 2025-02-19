@@ -93,11 +93,10 @@ def generate_order_number(prefix):
         WHERE CAST(SUBSTR(order_number, 9) AS INTEGER) = (
             SELECT MAX(CAST(SUBSTR(order_number, 9) AS INTEGER)) FROM orders
         )
-    """).fetchone()[0]
-    print(latest_order_number)
+    """).fetchone()
     # Generate new order_number with prefix
     if latest_order_number:
-        latest_number = int(latest_order_number.replace(prefix, '')) + 1
+        latest_number = int(latest_order_number[0].replace(prefix, '')) + 1
     else:
         latest_number = 1  # Start from 1 if no orders exist yet
 
