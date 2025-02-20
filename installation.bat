@@ -1,19 +1,26 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Check if Python is installed
-python3 --version >nul 2>nul
+REM Check if Python (any version) is installed
+python --version >nul 2>nul
 IF %ERRORLEVEL% NEQ 0 (
-    	echo Python is not installed. Installing Python...
-    	REM Install Python (modify the URL with the latest version if needed)
-    	winget install -e --id Python.Python.3.11
+    python3 --version >nul 2>nul
+    IF %ERRORLEVEL% NEQ 0 (
+        echo Python is not installed. Installing Python...
+        
+        REM Install Python using winget
+        winget install -e --id Python.Python.3.11
+
         echo Python installation complete. Restarting script...
         start "" /b "%~f0"
         exit /b
-
-) else (
-	echo Python already installed
-	python3 --version
+    ) ELSE (
+        echo Python3 is already installed.
+        python3 --version
+    )
+) ELSE (
+    echo Python is already installed.
+    python --version
 )
 
 REM Check if pip is installed
