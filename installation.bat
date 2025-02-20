@@ -2,12 +2,15 @@
 setlocal enabledelayedexpansion
 
 REM Check if Python is installed
-where python >nul 2>nul
+python3 --version >nul 2>nul
 IF %ERRORLEVEL% NEQ 0 (
-    echo Python is not installed. Installing Python...
-    REM Install Python (modify the URL with the latest version if needed)
-    start chrome.exe "https://www.python.org/downloads/"
-    exit /b 1
+    	echo Python is not installed. Installing Python...
+    	REM Install Python (modify the URL with the latest version if needed)
+    	winget install -e --id Python.Python.3.11
+
+) else (
+	echo Python already installed
+	python3 --version
 )
 
 REM Check if pip is installed
@@ -20,7 +23,7 @@ IF %ERRORLEVEL% NEQ 0 (
     where pip >nul 2>nul
     IF %ERRORLEVEL% NEQ 0 (
         echo Failed to install pip. Please install pip manually.
-        exit /b 1
+       
     )
 )
 
