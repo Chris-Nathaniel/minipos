@@ -11,9 +11,10 @@ IF %ERRORLEVEL% NEQ 0 (
         REM Install Python using winget
         winget install -e --id Python.Python.3.11
 
-        echo Python installation complete. Restarting script...
-        start "" /b "%~f0"
-        exit /b
+        echo Python installation complete. Please rerun installation.bat to finish the installation.
+        pause
+	exit
+
     ) ELSE (
         echo Python3 is already installed.
         python3 --version
@@ -47,8 +48,6 @@ if %errorlevel% neq 0 (
     echo SQLite3 is already installed.
 )
 
-:: Verify installation
-sqlite3 -version
 :: Verify installation
 sqlite3 -version
 
