@@ -88,7 +88,7 @@ powershell -command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateS
 echo Shortcut created at %SHORTCUT_PATH%
 
 ::Create a fresh database
-start /min "" "%SCRIPT_DIR%dbgenerator.bat database"
+start /min "" "%SCRIPT_DIR%dbgenerator.bat" database
 
 endlocal
 pause
