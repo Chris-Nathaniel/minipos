@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+
 REM Check if Python is installed
 where python >nul 2>nul
 IF %ERRORLEVEL% NEQ 0 (
@@ -21,6 +23,36 @@ IF %ERRORLEVEL% NEQ 0 (
         exit /b 1
     )
 )
+
+:: Check if sqlite3 is installed
+where sqlite3 >nul 2>nul
+if %errorlevel% neq 0 (
+    echo SQLite3 is not installed. Installing...
+    
+    :: Set SQLite download URL and destination folder
+    set "URL=https://www.sqlite.org/2024/sqlite-tools-win-x64-3450100.zip"
+    set "ZIPFILE=%TEMP%\sqlite3.zip"
+    set "INSTALLDIR=C:\sqlite"
+
+    :: Create installation directory if not exists
+    if not exist "%INSTALLDIR%" mkdir "%INSTALLDIR%"
+
+    :: Download SQLite
+    powershell -Command "(New-Object System.Net.WebClient).DownloadFile('%URL%', '%ZIPFILE%')"
+
+    :: Extract the ZIP file
+    powershell -Command "Expand-Archive -Path '%ZIPFILE%' -DestinationPath '%INSTALLDIR%' -Force"
+
+    :: Add SQLite to the system PATH
+    setx PATH "%INSTALLDIR%;%PATH%" /M
+
+    echo SQLite3 has been installed successfully.
+) else (
+    echo SQLite3 is already installed.
+)
+
+:: Verify installation
+sqlite3 -version
 
 REM Check if requirements.txt exists
 IF NOT EXIST requirements.txt (
@@ -72,6 +104,8 @@ echo Shortcut created at %SHORTCUT_PATH%
 
 ::Create a fresh database
 start /min "" "%SCRIPT_DIR%dbgenerator.bat"
+
+endlocal
 pause
 
 
