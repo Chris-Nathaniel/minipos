@@ -7,6 +7,9 @@ IF %ERRORLEVEL% NEQ 0 (
     	echo Python is not installed. Installing Python...
     	REM Install Python (modify the URL with the latest version if needed)
     	winget install -e --id Python.Python.3.11
+        echo Python installation complete. Restarting script...
+        start "" /b "%~f0"
+        exit /b
 
 ) else (
 	echo Python already installed
