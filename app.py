@@ -18,8 +18,8 @@ def run_flask():
 
     # Initialize the app with environment variables and Midtrans client
     core, database_url = init_app(app)
+
     # connect to database
-    
     db = SQL(database_url)
     
     @app.route('/')
@@ -66,7 +66,6 @@ def run_flask():
         if not main:
             session['category'] = category
 
-        
         billing = Billing(session)
         billing.format_currency()
 
@@ -200,8 +199,10 @@ def run_flask():
         Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
         #process payments
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
+        print(payment_status)
         if isinstance(payment_status, dict):
-                status = next(iter(status), None) 
+                status = next(iter(payment_status), None) 
+                print(status)
                 if status == "failed":
                     return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
         if payment_status == "success":
@@ -726,7 +727,7 @@ def run_flask():
                     os.remove(db_path)
         
         # Run the batch script to regenerate the database
-        subprocess.run(["dbgenerator.bat", name], shell=True)
+        subprocess.run([r'scripts\dbgenerator.bat', name], shell=True)
 
         return redirect("/settings")
     

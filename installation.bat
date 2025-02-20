@@ -74,7 +74,7 @@ setlocal
 set "SCRIPT_DIR=%~dp0"
 
 :: Set the target batch file
-set "TARGET_FILE=%SCRIPT_DIR%Minipos.bat"
+set "TARGET_FILE=%SCRIPT_DIR%Minipos.exe"
 
 :: Get the user's Desktop path
 for /f "tokens=*" %%a in ('powershell -command "[System.Environment]::GetFolderPath('Desktop')"') do (
@@ -100,7 +100,7 @@ powershell -command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateS
 echo Shortcut created at %SHORTCUT_PATH%
 
 ::Create a fresh database
-start /min "" "%SCRIPT_DIR%dbgenerator.bat" database
+start /min "" "%SCRIPT_DIR%/Scripts/dbgenerator.bat" database
 
 endlocal
 pause
