@@ -6,7 +6,7 @@ where python >nul 2>nul
 IF %ERRORLEVEL% NEQ 0 (
     echo Python is not installed. Installing Python...
     REM Install Python (modify the URL with the latest version if needed)
-    start https://www.python.org/downloads/
+    start chrome.exe "https://www.python.org/downloads/"
     exit /b 1
 )
 
@@ -28,29 +28,14 @@ IF %ERRORLEVEL% NEQ 0 (
 where sqlite3 >nul 2>nul
 if %errorlevel% neq 0 (
     echo SQLite3 is not installed. Installing...
-    
-    :: Set SQLite download URL and destination folder
-    set "URL=https://www.sqlite.org/2024/sqlite-tools-win-x64-3450100.zip"
-    set "ZIPFILE=%TEMP%\sqlite3.zip"
-    set "INSTALLDIR=C:\sqlite"
-
-    :: Create installation directory if not exists
-    if not exist "%INSTALLDIR%" mkdir "%INSTALLDIR%"
-
-    :: Download SQLite
-    powershell -Command "(New-Object System.Net.WebClient).DownloadFile('%URL%', '%ZIPFILE%')"
-
-    :: Extract the ZIP file
-    powershell -Command "Expand-Archive -Path '%ZIPFILE%' -DestinationPath '%INSTALLDIR%' -Force"
-
-    :: Add SQLite to the system PATH
-    setx PATH "%INSTALLDIR%;%PATH%" /M
-
+    winget install SQLite.sqlite
     echo SQLite3 has been installed successfully.
 ) else (
     echo SQLite3 is already installed.
 )
 
+:: Verify installation
+sqlite3 -version
 :: Verify installation
 sqlite3 -version
 
@@ -103,7 +88,7 @@ powershell -command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateS
 echo Shortcut created at %SHORTCUT_PATH%
 
 ::Create a fresh database
-start /min "" "%SCRIPT_DIR%dbgenerator.bat"
+start /min "" "%SCRIPT_DIR%dbgenerator.bat database"
 
 endlocal
 pause

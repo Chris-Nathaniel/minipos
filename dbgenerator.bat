@@ -28,9 +28,9 @@ echo Database %DB_NAME% created successfully!
 echo All tables created successfully.
 
 :: Check if .env file exists
-if not exist %ENV_FILE% (
-    echo .env file not found.
-    exit /b
+if not exist "%ENV_FILE%" (
+    type nul > "%ENV_FILE%"
+    echo .env file created.
 )
 
 :: Read the .env file and search for DATABASE_URL
