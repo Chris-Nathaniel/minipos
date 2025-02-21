@@ -85,6 +85,11 @@
     <div class="secondcol">
         {% block secondCol %}{% endblock %}
     </div>
+    <div class="shoppingCart">
+        <div class="counter">
+            {{ cart|length }}
+        </div>
+    </div>
 </div>
 {% endblock %}
 </body>
