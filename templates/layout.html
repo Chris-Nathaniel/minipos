@@ -85,11 +85,18 @@
     <div class="secondcol">
         {% block secondCol %}{% endblock %}
     </div>
+    {% if request.endpoint in ['menu_by_category', 'orders'] %}
     <div class="shoppingCart">
         <div class="counter">
             {{ cart|length }}
         </div>
     </div>
+    {% else %}
+    <div class="moreMenu">
+
+    </div>
+    {% endif %}
+    
 </div>
 {% endblock %}
 </body>

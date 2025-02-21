@@ -845,6 +845,7 @@ html {
     background-repeat: no-repeat;
     display: flex;
     cursor: pointer;
+    border-radius:10px;
   }
 
   .moreMenu{
@@ -865,6 +866,7 @@ html {
     background-repeat: no-repeat;
     display: flex;
     cursor: pointer;
+    border-radius: 10px;
   }
 
   .secondcol.clicked {
