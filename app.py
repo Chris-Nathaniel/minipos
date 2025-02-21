@@ -158,8 +158,13 @@ def run_flask():
         Cart.update_cart_item(data, session)
         Cart.calculate_cart_totals(session)
         cash = session.get('cashPaid', 0)
-
-        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount']}), 200
+        billing = Billing(session)
+        billing.discount = billing.discount/100
+        if billing.discount:
+            billing.total = Discount.addDiscount(parseInt(billing.total), parseInt(billing.tax), billing.discount)
+            session['total'] = '{:,.0f}'.format(billing.total)
+            
+        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount'], 'voucher': billing.voucherDetail}), 200
 
 
     @app.route('/remove_from_cart', methods=['POST'])
@@ -169,8 +174,13 @@ def run_flask():
         Cart.remove_cart_item(data, session)
         Cart.calculate_cart_totals(session)
         cash = session.get('cashPaid', 0)
+        billing = Billing(session)
+        billing.discount = billing.discount/100
+        if billing.discount:
+            billing.total = Discount.addDiscount(parseInt(billing.total), parseInt(billing.tax), billing.discount)
+            session['total'] = '{:,.0f}'.format(billing.total)
 
-        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount']}), 200
+        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount'], 'voucher': billing.voucherDetail}), 200
 
 
     @app.route('/process_order', methods=['POST', 'GET'])
@@ -640,7 +650,7 @@ def run_flask():
         discount = session['discount']/100
         total = parseInt(session.get('total', 0))
         tax = parseInt(session.get('tax', 0))
-        discountedTotal = int(total - ((total - tax)*discount))
+        discountedTotal = Discount.addDiscount(total, tax, discount)
         session['total'] = '{:,.0f}'.format(discountedTotal)
 
         return jsonify({'discountValue': session['discount'], 'discountedTotal': discountedTotal})
@@ -650,7 +660,7 @@ def run_flask():
         discount = parseInt(session.get('discount', ""))/100
         total = parseInt(session.get('total', 0))
         tax = parseInt(session.get('tax', 0))
-        originalTotal = int(total - (tax*discount))/(1-discount)
+        originalTotal = Discount.removeDiscount(total, tax, discount)
         session['total'] = '{:,.0f}'.format(originalTotal)
         session.pop('discount', None)
         session.pop('voucherDetail', None)

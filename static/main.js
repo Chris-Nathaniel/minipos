@@ -1,37 +1,20 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const cartButtons = document.querySelectorAll('.add-to-cart');
+    const cartButtons = document.querySelectorAll('.menu-card');
 
     cartButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-item-id')
-            const itemName = this.getAttribute('data-item-name');
-            const itemQuantity = this.getAttribute('data-item-quantity')
-            const itemPrice = this.getAttribute('data-item-price');
-            const itemImage = this.getAttribute('data-item-image');
-
+            const itemId = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-id');
+            const itemName = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-name');
+            const itemQuantity = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-quantity');
+            const itemPrice = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-price');
+            const itemImage = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-image');
 
             // Call the function to add the item to the cart
             addToCart(itemId, itemName, itemQuantity, itemPrice, itemImage);
             console.log(itemId, itemName, itemQuantity, itemPrice, itemImage);
-
-
         });
     });
 });
-
-function addCashPaid(cashPaid){
-    fetch('/add_cash_paid', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-},
-    body: JSON.stringify({cashPaid: cashPaid})
-    }).then(response => response.json())
-    .then(data =>{
-        console.log(data.message);
-    })
-
-}
 
 function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
     fetch('/add_to_cart', {
@@ -45,13 +28,14 @@ function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
             item_quantity: itemQuantty,
             item_price: itemPrice,
             item_image: itemImage
+    
         })
     })
     .then(response => response.json())
     .then(data => {
         console.log(data.message);
         console.log(data.tax)
-        updateCartUI(data.cart, data.total, data.tax, data.cashPaid);
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
         updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
@@ -76,7 +60,7 @@ function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, it
     .then(response => response.json())
     .then(data => {
         console.log(data.message);
-        updateCartUI(data.cart, data.total, data.tax, data.cashPaid);
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
         updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
@@ -90,7 +74,7 @@ function updateCartCount(count) {
 }
 
 // Function to update the cart
-function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
+function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalContainer = document.getElementById('cart-total');
     const cartOtherContainer = document.getElementById('cart-other');
@@ -221,7 +205,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
                             <span class="mx-2">Discount:</span>
                         </div>
                         <div class="col-md-4 d-flex justify-content-end align-items-end">
-                            <span class="mx-2">0</span>
+                            <span class="mx-2">${voucher.discount}%</span>
                         </div>
                     </div>
                 </div>
@@ -263,10 +247,68 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
     newDiscountSub.innerHTML = `
         <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
     `;
-
-    // Append the new discount item
-    discountDiv.appendChild(newDiscountSub);
     
+    
+    // Append the new discount item
+    if (voucher){
+        discountVouchers = createVoucherItem(voucher)
+        discountDiv.appendChild(discountVouchers)
+    } else{
+        discountDiv.appendChild(newDiscountSub);
+    }
+
+}
+
+function createVoucherItem(voucherDetail) {
+    const listItem = document.createElement("div");
+    listItem.classList.add("list-group-item");
+
+    const offerItem = document.createElement("div");
+    offerItem.classList.add("offer-item", "border-0");
+
+    const img = document.createElement("img");
+    img.src = voucherDetail.image;
+    img.alt = "Discount Icon";
+
+    const offerDetails = document.createElement("div");
+    offerDetails.classList.add("offer-details");
+
+    const title = document.createElement("div");
+    title.classList.add("title");
+    title.textContent = `${voucherDetail.title} | ${voucherDetail.discount}% off`;
+
+    const voucher = document.createElement("div");
+    voucher.classList.add("Voucher");
+    voucher.textContent = `Voucher: ${voucherDetail.voucher}`;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.classList.add("btn", "btn-sm", "remove-discount");
+    removeBtn.innerHTML = "<span>Remove</span>";
+    removeBtn.addEventListener("click", () => {
+        listItem.remove();
+    });
+
+    offerDetails.appendChild(title);
+    offerDetails.appendChild(voucher);
+    offerItem.appendChild(img);
+    offerItem.appendChild(offerDetails);
+    offerItem.appendChild(removeBtn);
+    listItem.appendChild(offerItem);
+
+    return listItem;
+}
+
+function addCashPaid(cashPaid){
+    fetch('/add_cash_paid', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+},
+    body: JSON.stringify({cashPaid: cashPaid})
+    }).then(response => response.json())
+    .then(data =>{
+        console.log(data.message);
+    })
 
 }
 

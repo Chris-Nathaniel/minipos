@@ -84,7 +84,15 @@ class Discount:
         db.execute("INSERT INTO discount_ticket (title, description, discount, expiration_date, discount_code, image ) VALUES (?, ?, ?, ?, ?, ?)",
                        (title, description, discount, expiration, discountCode, imageUrl))
         db.connection.commit()
+    
+    def addDiscount(total, tax, discount):
+        discountedTotal = int(total - ((total - tax)*discount))
+        return discountedTotal
 
+    def removeDiscount(total, tax, discount):
+        originalTotal = int(total - (tax*discount))/(1-discount)
+        return originalTotal
+    
 class Users:
     def search_username(username):
         return db.execute("SELECT * FROM users WHERE username = ?",
