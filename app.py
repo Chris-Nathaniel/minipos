@@ -9,7 +9,7 @@ import os
 import ctypes
 import threading
 import subprocess
-import sys
+
 
 
 def run_flask():
