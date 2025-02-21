@@ -205,7 +205,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
                             <span class="mx-2">Discount:</span>
                         </div>
                         <div class="col-md-4 d-flex justify-content-end align-items-end">
-                            <span class="mx-2">${voucher.discount}%</span>
+                            <span class="mx-2">${voucher.discount? voucher.discount + '%': 0}</span>
                         </div>
                     </div>
                 </div>
