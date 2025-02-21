@@ -9,6 +9,7 @@ import time
 import random
 import os
 import urllib
+from datetime import date
 
 
 load_dotenv()
@@ -104,6 +105,10 @@ def generate_order_number(prefix):
     new_order_number = f"{prefix}{latest_number}"
     return new_order_number
 
+def formatOrderNumber(orderNumber):
+    result = f"{orderNumber}{date.today()}"
+    return result
+
 
 def clear_session():
     keys_to_keep = ['user_id']  # List of keys you want to keep
@@ -165,3 +170,5 @@ def generate_name():
             # If name is at least 5 letters long, return it
             if len(random_character) <= 15 and len(random_character) >= 4:
                 return random_character
+            
+    

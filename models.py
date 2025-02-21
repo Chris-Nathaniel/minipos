@@ -1,6 +1,6 @@
 from conn import SQL
 import os
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl
+from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, formatOrderNumber
 from dotenv import load_dotenv
 from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QIcon
@@ -212,6 +212,7 @@ class Billing:
             return "success"
         # check if payment is m-banking
         if paymentMethod == "m-banking":
+            orderNumber = formatOrderNumber(orderNumber)
             param = bankTransfer(orderNumber, total)
             try:
                 charge_response = core.charge(param)
