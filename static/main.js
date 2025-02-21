@@ -284,9 +284,38 @@ function createVoucherItem(voucherDetail) {
     const removeBtn = document.createElement("button");
     removeBtn.classList.add("btn", "btn-sm", "remove-discount");
     removeBtn.innerHTML = "<span>Remove</span>";
-    removeBtn.addEventListener("click", () => {
+    removeBtn.addEventListener("click", (event) => {
         listItem.remove();
+        event.preventDefault();
+        fetch("/removeDiscount", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Discount removed successfully:", data);
+
+            const discountDiv = document.querySelector(".discount");
+            discountDiv.innerHTML = `
+                <div class="list-group-item">
+                    <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
+                </div>
+            `;
+            updateDiscountDisplay(0, data.originalTotal);
+        })
+        .catch(error => {
+            console.error("Error removing discount:", error);
+            alert("Failed to remove the discount. Please try again.");
+        }); 
     });
+    function updateDiscountDisplay(discount, total) {
+        const discountDisplay = document.querySelector(".row .col-md-4 span");
+        const cartTotal = document.querySelector(".cartTotalValue");
+        if (discountDisplay) discountDisplay.textContent = discount + "%";
+        if (cartTotal) cartTotal.textContent = formatCurrency(total);
+    }
 
     offerDetails.appendChild(title);
     offerDetails.appendChild(voucher);
@@ -334,7 +363,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
 });
-
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -1104,47 +1132,46 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
     removeDiscountListener();
-    // Function to attach event listener to remove discount button
-    function removeDiscountListener() {
-        const removeBtn = document.querySelector(".remove-discount");
-        if (removeBtn) {
-            removeBtn.addEventListener("click", function (event) {
-                event.preventDefault(); 
-
-                fetch("/removeDiscount", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                })
-                .then(response => response.json())
-                .then(data => {
-                    console.log("Discount removed successfully:", data);
-
-                    const discountDiv = document.querySelector(".discount");
-                    discountDiv.innerHTML = `
-                        <div class="list-group-item">
-                            <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
-                        </div>
-                    `;
-                    updateDiscountDisplay(0, data.originalTotal);
-                })
-                .catch(error => {
-                    console.error("Error removing discount:", error);
-                    alert("Failed to remove the discount. Please try again.");
-                });
-            });
-        }
-    }
-    function updateDiscountDisplay(discount, total) {
-        const discountDisplay = document.querySelector(".row .col-md-4 span");
-        const cartTotal = document.querySelector(".cartTotalValue");
-        if (discountDisplay) discountDisplay.textContent = discount + "%";
-        if (cartTotal) cartTotal.textContent = formatCurrency(total);
-    }
+    
 });
+function updateDiscountDisplay(discount, total) {
+    const discountDisplay = document.querySelector(".row .col-md-4 span");
+    const cartTotal = document.querySelector(".cartTotalValue");
+    if (discountDisplay) discountDisplay.textContent = discount + "%";
+    if (cartTotal) cartTotal.textContent = formatCurrency(total);
+}
+ // Function to attach event listener to remove discount button
+function removeDiscountListener() {
+    const removeBtn = document.querySelector(".remove-discount");
+    if (removeBtn) {
+        removeBtn.addEventListener("click", function (event) {
+            event.preventDefault(); 
 
+            fetch("/removeDiscount", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Discount removed successfully:", data);
 
+                const discountDiv = document.querySelector(".discount");
+                discountDiv.innerHTML = `
+                    <div class="list-group-item">
+                        <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
+                    </div>
+                `;
+                updateDiscountDisplay(0, data.originalTotal);
+            })
+            .catch(error => {
+                console.error("Error removing discount:", error);
+                alert("Failed to remove the discount. Please try again.");
+            });
+        });
+    }
+}
 document.addEventListener("DOMContentLoaded", function() {
     let toastElements = document.querySelectorAll('.toast');
     toastElements.forEach(toast => new bootstrap.Toast(toast, { delay: 3000 }).show());
