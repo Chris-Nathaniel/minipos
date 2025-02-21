@@ -94,6 +94,9 @@ class Discount:
         return originalTotal
     
 class Users:
+    def check_user():
+        return db.execute("SELECT * FROM users").fetchall()
+    
     def search_username(username):
         return db.execute("SELECT * FROM users WHERE username = ?",
                           (username,)).fetchall()

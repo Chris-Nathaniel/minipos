@@ -76,9 +76,8 @@ def run_flask():
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
-        """Log user in"""
         session.clear()
-
+        """Log user in"""
         # User reached route via POST (as by submitting a form via POST)
         if request.method == "POST":
             # Ensure username was submitted
@@ -103,13 +102,19 @@ def run_flask():
             return redirect("/")
 
         else:
-            return render_template("login.html")
+            # if existing user exist return true and user cant register anymore
+            existinguser = {user["id"]: dict(user) for user in Users.check_user()}
+            if existinguser:
+                existinguser = True
+
+            return render_template("login.html", existinguser=existinguser)
 
 
     @app.route("/register", methods=["GET", "POST"])
     def register():
-        """Register user"""
+        
         if request.method == "POST":
+            """Register user"""
             # Ensure username was submitted
             username = request.form.get('username')
             password = request.form.get('password')
@@ -124,16 +129,20 @@ def run_flask():
                 hashed_password = generate_password_hash(password)
             else:
                 return apology("please confirm password")
-
-            # check if user already registered, if not registered
-            existinguser = Users.search_username(username)
+            
+            # check if a user already registered, if yes log in
+            existinguser = Users.check_user()
             if existinguser:
-                return apology("user already registered", code=400)
+                return redirect("/login")
             else:
                 Users.register(username, hashed_password)
                 return redirect("/login")
-
         else:
+            # check if a user already registered, if yes log in
+            existinguser = Users.check_user()
+            if existinguser:
+                return redirect("/login")
+            
             return render_template("register.html")
 
 
