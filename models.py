@@ -189,7 +189,6 @@ class Billing:
             db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
                     (order_number, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), order_date))
         
-        db.connection.commit()
 
     def process_payments(orderNumber, paymentMethod, total, cashValue, core):
         # check if payment is cash

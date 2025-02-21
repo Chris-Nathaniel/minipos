@@ -491,6 +491,27 @@ td:hover .row-actions{
   transform: translate(-50%, -60%) rotate(45deg); /* Rotate to form the checkmark */
 }
 
+.placeholder-category {
+  display: inline-block;
+  background-color: rgba(210, 194, 194, 0.1);
+  border-radius: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.placeholder-category:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.plus-icon {
+  font-weight: bold;
+  color: white;
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }

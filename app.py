@@ -213,17 +213,15 @@ def run_flask():
         if billing.deliveryType == "take out" and not billing.payment_method:
             flash("Error: Takeaway orders must provide a payment method", "error")
             return redirect("/menu")
-
-        #save the order to database
-        Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
         #process payments
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
-        print(payment_status)
         if isinstance(payment_status, dict):
                 status = next(iter(payment_status), None) 
                 print(status)
                 if status == "failed":
                     return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
+        #save the order to database
+        Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
         if payment_status == "success":
             clear_session()
             return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
