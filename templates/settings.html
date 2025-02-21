@@ -1,24 +1,6 @@
 {% extends 'layout.html' %}
 {% block main %}
 {% include 'modal.html' %}
-{% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
-            {% for category, message in messages %}
-                <div class="toast align-items-center text-white bg-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">
-                            <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' if category == 'error' else 'fa-info-circle' }}"></i>
-                            {{ message }}
-                        </div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-{% endwith %}
-
 {% endblock %}
 {% block firstCol %}
 <div class="mycontainer settings m-0 p-2" style="max-height: 100vh; display: flex; flex-direction: column; overflow: auto; align-items: center;">

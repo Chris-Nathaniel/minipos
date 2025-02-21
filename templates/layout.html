@@ -73,7 +73,24 @@
         </div>
     </div>
 </nav>
-
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+            {% for category, message in messages %}
+                <div class="toast show align-items-center border-0 shadow-lg rounded-3 p-2" role="alert" aria-live="assertive" aria-atomic="true"
+                    style="background-color: rgb(176, 213, 202); color: #0c3b2e;">
+                    <div class="d-flex">
+                        <div class="toast-body d-flex align-items-center">
+                            <i class="me-2 fs-5 {{ 'fas fa-check-circle' if category == 'success' else 'fas fa-times-circle' if category == 'error' else 'fas fa-info-circle' }}"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
 {% block main %}
 {% endblock %}
 

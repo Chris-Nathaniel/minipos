@@ -9,6 +9,7 @@ import os
 import ctypes
 import threading
 import subprocess
+import time
 
 
 
@@ -713,14 +714,13 @@ def run_flask():
         set_key(dotenv_path, 'SERVER_KEY', svk)
         os.environ['PUBLIC_CLIENT'] = clk
         os.environ['SERVER_KEY'] = svk
-        
-        return redirect("/settings")
+        flash("Conecting to Midtrans, Please restart the app again to apply the changes!")
+        return redirect("/settings#mdi")
     
     @app.route("/ngrok-settings", methods=["POST"])
     @login_required
     def ngrok_setup():
         domain, auth = request.form.get("domain"), request.form.get('auth')
-        print(domain, auth)
         dotenv_path = '.env'
         if not os.path.exists(dotenv_path):
             with open(dotenv_path, 'w') as f:
@@ -729,8 +729,8 @@ def run_flask():
         set_key(dotenv_path, 'NGROK_AUTH', auth)
         os.environ['NGROK_DOMAIN'] = domain
         os.environ['NGROK_AUTH'] = auth
-        
-        return redirect("/settings")
+        flash("You are now connected, your app is now available at that domain. Don't forget to place the domain on midtrans to start receiving notifications.")
+        return redirect("/settings#ngrk")
     
     @app.route("/delete-database", methods=["POST"])
     @login_required
@@ -745,7 +745,7 @@ def run_flask():
         
         # Run the batch script to regenerate the database
         subprocess.run([r'scripts\dbgenerator.bat', name], shell=True)
-
+        flash("You need to restart the app to apply the changes.")
         return redirect("/settings")
     
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
