@@ -272,7 +272,7 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, discount = 0) {
 
 document.addEventListener('DOMContentLoaded', function() {
     const removeButton = document.querySelectorAll('.remove-from-cart')
-
+    
     removeButton.forEach(button => {
         button.addEventListener('click', function(event) {
             event.preventDefault();
@@ -290,7 +290,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
         });
     });
+    
 });
+
+
 
 document.addEventListener("DOMContentLoaded", function() {
     // Get all view buttons
@@ -801,305 +804,308 @@ function checkPaymentStatus(orderNumber) {
         .catch(error => console.error('Error:', error));
 }
 
-    function toggleForm() {
-        const choice = document.getElementById('choice').value;
-        const addMenuForm = document.getElementById('addMenuForm');
-        const addCategoryForm = document.getElementById('addCategoryForm');
-        const editMenuForm = document.getElementById('editMenuForm');
-        const rightMenuHeader = document.querySelector('.right-menu-header');
-        rightMenuHeader.innerHTML = choice;
-        if (choice === 'Add Menu') {
-            addMenuForm.classList.remove('d-none');
-            addCategoryForm.classList.add('d-none');
-            editMenuForm.classList.add('d-none');
-        } else if (choice === 'Add Category') {
-            addCategoryForm.classList.remove('d-none');
-            addMenuForm.classList.add('d-none');
-            editMenuForm.classList.add('d-none');
-        } else if (choice === 'Edit Menu' ){
-            editMenuForm.classList.remove('d-none');
-            addMenuForm.classList.add('d-none');
-            addCategoryForm.classList.add('d-none');
-        }
+function toggleForm() {
+    const choice = document.getElementById('choice').value;
+    const addMenuForm = document.getElementById('addMenuForm');
+    const addCategoryForm = document.getElementById('addCategoryForm');
+    const editMenuForm = document.getElementById('editMenuForm');
+    const rightMenuHeader = document.querySelector('.right-menu-header');
+    rightMenuHeader.innerHTML = choice;
+    if (choice === 'Add Menu') {
+        addMenuForm.classList.remove('d-none');
+        addCategoryForm.classList.add('d-none');
+        editMenuForm.classList.add('d-none');
+    } else if (choice === 'Add Category') {
+        addCategoryForm.classList.remove('d-none');
+        addMenuForm.classList.add('d-none');
+        editMenuForm.classList.add('d-none');
+    } else if (choice === 'Edit Menu' ){
+        editMenuForm.classList.remove('d-none');
+        addMenuForm.classList.add('d-none');
+        addCategoryForm.classList.add('d-none');
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const editButtons = document.querySelectorAll('.edit');
+    const secondCol = document.querySelector(".secondcol");
+    const backButton = document.querySelector(".back-button");
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            // Extract the menu item details from the clicked row
+            const row = button.closest('tr');
+            const id = row.querySelector('.id').textContent.split('ID: ')[1].trim();
+            const itemName = row.querySelector('td:nth-child(3)').firstChild.textContent.trim();
+            const category = row.querySelector('td:nth-child(4)').textContent.trim();
+            const price = parseCurrency(row.querySelector('td:nth-child(5)').textContent);
+            const imageUrl = row.querySelector('.card-image img').src;
+            const cardImage = document.querySelector('.preview-image');
+
+            cardImage.innerHTML = '';
+            // Populate the form fields with the menu item data
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-item-name').value = itemName;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-price').value = price;
+            document.getElementById('current-image').value = imageUrl;
+            let imageTag = document.createElement('img');
+            imageTag.id = 'image-preview';
+            imageTag.src = imageUrl;
+            imageTag.alt = 'Current image';
+            imageTag.style.maxWidth = '200px';
+            imageTag.style.height = 'auto';
+            imageTag.style.display = 'block';
+            imageTag.style.marginBottom = '10px';
+
+            cardImage.append(imageTag);
+
+            // Set the choice to "Edit Menu" and show the form
+            document.getElementById('choice').value = "Edit Menu";
+            toggleForm();
+            secondCol.classList.toggle('clicked')
+            if (backButton){
+                backButton.addEventListener('click', () => {
+                    secondCol.classList.remove('clicked');
+            })};
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const secondCol = document.querySelector(".secondcol");
+    const shoppingCart = document.querySelector(".shoppingCart");
+    const closeButton = document.querySelector(".close-button-wrapper");
+    if (shoppingCart) {
+        shoppingCart.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            shoppingCart.classList.add('d-none');
+        });
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const editButtons = document.querySelectorAll('.edit');
-        const secondCol = document.querySelector(".secondcol");
-        const backButton = document.querySelector(".back-button");
+    if (closeButton){
+        closeButton.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            shoppingCart.classList.remove('d-none');
+    })};
+});
 
-        editButtons.forEach(button => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-
-                // Extract the menu item details from the clicked row
-                const row = button.closest('tr');
-                const id = row.querySelector('.id').textContent.split('ID: ')[1].trim();
-                const itemName = row.querySelector('td:nth-child(3)').firstChild.textContent.trim();
-                const category = row.querySelector('td:nth-child(4)').textContent.trim();
-                const price = parseCurrency(row.querySelector('td:nth-child(5)').textContent);
-                const imageUrl = row.querySelector('.card-image img').src;
-                const cardImage = document.querySelector('.preview-image');
-
-                cardImage.innerHTML = '';
-                // Populate the form fields with the menu item data
-                document.getElementById('edit-id').value = id;
-                document.getElementById('edit-item-name').value = itemName;
-                document.getElementById('edit-category').value = category;
-                document.getElementById('edit-price').value = price;
-                document.getElementById('current-image').value = imageUrl;
-                let imageTag = document.createElement('img');
-                imageTag.id = 'image-preview';
-                imageTag.src = imageUrl;
-                imageTag.alt = 'Current image';
-                imageTag.style.maxWidth = '200px';
-                imageTag.style.height = 'auto';
-                imageTag.style.display = 'block';
-                imageTag.style.marginBottom = '10px';
-
-                cardImage.append(imageTag);
-
-                // Set the choice to "Edit Menu" and show the form
-                document.getElementById('choice').value = "Edit Menu";
-                toggleForm();
-                secondCol.classList.toggle('clicked')
-                if (backButton){
-                    backButton.addEventListener('click', () => {
-                        secondCol.classList.remove('clicked');
-                })};
-            });
+document.addEventListener("DOMContentLoaded", function() {
+    const secondCol = document.querySelector(".secondcol");
+    const moreMenu = document.querySelector(".moreMenu");
+    const backButton = document.querySelector(".back-button");
+    if (moreMenu) {
+        moreMenu.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            moreMenu.classList.add('d-none');
         });
+    }
+
+    if (backButton){
+        backButton.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            moreMenu.classList.remove('d-none');
+    })};
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAll = document.getElementById("select-all");
+    const deleteButton = document.querySelector(".deleteselected");
+    const checkboxes = document.querySelectorAll(".allcheckbox");
+
+    function toggleDeleteButton() {
+        const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
+        deleteButton.classList.toggle("showdeletebutton", anyChecked);
+        deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
+    }
+
+    selectAll.addEventListener("click", function () {
+        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+        toggleDeleteButton();
     });
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const secondCol = document.querySelector(".secondcol");
-        const shoppingCart = document.querySelector(".shoppingCart");
-        const closeButton = document.querySelector(".close-button-wrapper");
-        if (shoppingCart) {
-            shoppingCart.addEventListener('click', () => {
-                secondCol.classList.toggle('clicked');
-                shoppingCart.classList.add('d-none');
-            });
-        }
+    checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
+});
 
-        if (closeButton){
-            closeButton.addEventListener('click', () => {
-                secondCol.classList.toggle('clicked');
-                shoppingCart.classList.remove('d-none');
-        })};
-    });
+document.addEventListener("DOMContentLoaded", function(){
+    const voucherSearchForm = document.getElementById("voucherSearch")
+    voucherSearchForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const code = document.getElementById('codeSearch').value;
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const secondCol = document.querySelector(".secondcol");
-        const moreMenu = document.querySelector(".moreMenu");
-        const backButton = document.querySelector(".back-button");
-        if (moreMenu) {
-            moreMenu.addEventListener('click', () => {
-                secondCol.classList.toggle('clicked');
-                moreMenu.classList.add('d-none');
-            });
-        }
-
-        if (backButton){
-            backButton.addEventListener('click', () => {
-                secondCol.classList.toggle('clicked');
-                moreMenu.classList.remove('d-none');
-        })};
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const selectAll = document.getElementById("select-all");
-        const deleteButton = document.querySelector(".deleteselected");
-        const checkboxes = document.querySelectorAll(".allcheckbox");
-
-        function toggleDeleteButton() {
-            const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
-            deleteButton.classList.toggle("showdeletebutton", anyChecked);
-            deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
-        }
-
-        selectAll.addEventListener("click", function () {
-            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
-            toggleDeleteButton();
-        });
-
-        checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
-    });
-
-    document.addEventListener("DOMContentLoaded", function(){
-        const voucherSearchForm = document.getElementById("voucherSearch")
-        voucherSearchForm.addEventListener('submit', function(e){
-            e.preventDefault();
-            const code = document.getElementById('codeSearch').value;
-
-            fetch('/searchVoucher', {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({code: code})
-            }).then(response => response.json())
-            .then(data =>{
-                discountVouchers(data.tickets)
-            })
-
+        fetch('/searchVoucher', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({code: code})
+        }).then(response => response.json())
+        .then(data =>{
+            discountVouchers(data.tickets)
         })
+
     })
-    function discountVouchers(tickets) {
-        const modalBody = document.querySelector("#discountSelection .modal-body");
+})
+function discountVouchers(tickets) {
+    const modalBody = document.querySelector("#discountSelection .modal-body");
 
 
-        // Clear previous content
-        const existingOffers = modalBody.querySelectorAll('.offer-item');
-        existingOffers.forEach(item => item.remove());
+    // Clear previous content
+    const existingOffers = modalBody.querySelectorAll('.offer-item');
+    existingOffers.forEach(item => item.remove());
 
-        const existingNoOffers = modalBody.querySelector('.no-offers');
-        if (existingNoOffers) {
-            existingNoOffers.remove();
-        }
+    const existingNoOffers = modalBody.querySelector('.no-offers');
+    if (existingNoOffers) {
+        existingNoOffers.remove();
+    }
 
-        // Add tickets to the modal
-        if (tickets.length > 0) {
-            tickets.forEach(ticket => {
-                const offerItem = document.createElement('div');
-                offerItem.classList.add('offer-item');
+    // Add tickets to the modal
+    if (tickets.length > 0) {
+        tickets.forEach(ticket => {
+            const offerItem = document.createElement('div');
+            offerItem.classList.add('offer-item');
 
-                offerItem.innerHTML = `
-                    <img src="${ticket.image}" alt="Discount Icon">
-                    <div class="offer-details">
-                        <div class="title">${ticket.title} | ${ticket.discount}% off</div>
-                        <div class="Voucher">Voucher: ${ticket.discount_code}</div>
-                        <div class="description">${ticket.description}</div>
+            offerItem.innerHTML = `
+                <img src="${ticket.image}" alt="Discount Icon">
+                <div class="offer-details">
+                    <div class="title">${ticket.title} | ${ticket.discount}% off</div>
+                    <div class="Voucher">Voucher: ${ticket.discount_code}</div>
+                    <div class="description">${ticket.description}</div>
+                </div>
+                <div class="offer-action">+</div>
+            `;
+
+            modalBody.appendChild(offerItem);
+        });
+    } else {
+        // Display a message if no tickets are found
+        const noOffers = document.createElement('div');
+        noOffers.classList.add('no-offers');
+        noOffers.textContent = "No discounts found.";
+        modalBody.appendChild(noOffers);
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    // Select all offer items
+    const voucherList = document.querySelectorAll(".modal .offer-item");
+
+    // Add click event listener to each offer item
+    voucherList.forEach(item => {
+        item.addEventListener("click", function () {
+            // Extract the discount value from the data attribute
+            const discount = this.querySelector(".title").getAttribute("data-item-discount");
+            const title = this.querySelector(".title").getAttribute("data-item-title");
+            const image = this.querySelector(".title").getAttribute("data-item-image");
+            const voucher = this.querySelector(".title").getAttribute("data-item-voucher");
+
+            // Send the discount value to the server via POST request
+            fetch("/addDiscount", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    discount: discount,
+                    title: title,
+                    image: image,
+                    voucher: voucher
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Discount added successfully:", data);
+                console.log(formatCurrency(data.discountedTotal));
+
+                const discountDiv = document.querySelector(".discount");
+                // Update the discount display
+                discountDiv.innerHTML = `
+                    <div class="list-group-item">
+                        <div class="offer-item border-0">
+                            <img src="${image}" alt="Discount Icon">
+                            <div class="offer-details">
+                                <div class="title">${title} | ${discount}% off</div>
+                                <div class="Voucher">Voucher: ${voucher}</div>
+                            </div>
+                            <button class="btn btn-sm remove-discount">
+                                <span>Remove</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="offer-action">+</div>
                 `;
 
-                modalBody.appendChild(offerItem);
-            });
-        } else {
-            // Display a message if no tickets are found
-            const noOffers = document.createElement('div');
-            noOffers.classList.add('no-offers');
-            noOffers.textContent = "No discounts found.";
-            modalBody.appendChild(noOffers);
-        }
-    }
+                var myModal = document.getElementById('discountSelection');
+                var backdrop = document.querySelector('.modal-backdrop.show');
+                if (myModal) myModal.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+                
+                myModal.style.display = 'none';
+                backdrop.style.display = 'none';
+                
+                // Update the discount display in the DOM
+                const discountDisplay = document.querySelector(".row .col-md-4 span");
+                const cartTotal = document.querySelector('.cartTotalValue');
+                if (discountDisplay) {
+                    discountDisplay.textContent = discount + "%";
+                    cartTotal.textContent = formatCurrency(data.discountedTotal);
+                }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        // Select all offer items
-        const voucherList = document.querySelectorAll(".modal .offer-item");
-    
-        // Add click event listener to each offer item
-        voucherList.forEach(item => {
-            item.addEventListener("click", function () {
-                // Extract the discount value from the data attribute
-                const discount = this.querySelector(".title").getAttribute("data-item-discount");
-                const title = this.querySelector(".title").getAttribute("data-item-title");
-                const image = this.querySelector(".title").getAttribute("data-item-image");
-                const voucher = this.querySelector(".title").getAttribute("data-item-voucher");
-    
-                // Send the discount value to the server via POST request
-                fetch("/addDiscount", {
+                // Attach event listener to the remove button
+                removeDiscountListener();
+            })
+            .catch(error => {
+                console.error("Error adding discount:", error);
+                alert("Failed to apply the discount. Please try again.");
+            });
+        });
+    });
+    removeDiscountListener();
+    // Function to attach event listener to remove discount button
+    function removeDiscountListener() {
+        const removeBtn = document.querySelector(".remove-discount");
+        if (removeBtn) {
+            removeBtn.addEventListener("click", function (event) {
+                event.preventDefault(); 
+
+                fetch("/removeDiscount", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ 
-                        discount: discount,
-                        title: title,
-                        image: image,
-                        voucher: voucher
-                    })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Discount added successfully:", data);
-                    console.log(formatCurrency(data.discountedTotal));
-    
+                    console.log("Discount removed successfully:", data);
+
                     const discountDiv = document.querySelector(".discount");
-                    // Update the discount display
                     discountDiv.innerHTML = `
                         <div class="list-group-item">
-                            <div class="offer-item border-0">
-                                <img src="${image}" alt="Discount Icon">
-                                <div class="offer-details">
-                                    <div class="title">${title} | ${discount}% off</div>
-                                    <div class="Voucher">Voucher: ${voucher}</div>
-                                </div>
-                                <button class="btn btn-sm remove-discount">
-                                    <span>Remove</span>
-                                </button>
-                            </div>
+                            <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
                         </div>
                     `;
-    
-                    var myModal = document.getElementById('discountSelection');
-                    var backdrop = document.querySelector('.modal-backdrop');
-                    if (myModal) myModal.classList.remove('show');
-                    if (backdrop) backdrop.classList.remove('show');
-    
-                    // Update the discount display in the DOM
-                    const discountDisplay = document.querySelector(".row .col-md-4 span");
-                    const cartTotal = document.querySelector('.cartTotalValue');
-                    if (discountDisplay) {
-                        discountDisplay.textContent = discount + "%";
-                        cartTotal.textContent = formatCurrency(data.discountedTotal);
-                    }
-    
-                    // Attach event listener to the remove button
-                    removeDiscountListener();
+                    updateDiscountDisplay(0, data.originalTotal);
                 })
                 .catch(error => {
-                    console.error("Error adding discount:", error);
-                    alert("Failed to apply the discount. Please try again.");
+                    console.error("Error removing discount:", error);
+                    alert("Failed to remove the discount. Please try again.");
                 });
             });
-        });
-    
-        // Function to attach event listener to remove discount button
-        function removeDiscountListener() {
-            const removeBtn = document.querySelector(".remove-discount");
-            if (removeBtn) {
-                removeBtn.addEventListener("click", function (event) {
-                    event.preventDefault(); 
-    
-                    fetch("/removeDiscount", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log("Discount removed successfully:", data);
-    
-                        const discountDiv = document.querySelector(".discount");
-                        discountDiv.innerHTML = `
-                            <div class="list-group-item">
-                                <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
-                            </div>
-                        `;
-                        updateDiscountDisplay(0, data.originalTotal);
-                    })
-                    .catch(error => {
-                        console.error("Error removing discount:", error);
-                        alert("Failed to remove the discount. Please try again.");
-                    });
-                });
-            }
         }
-        function updateDiscountDisplay(discount, total) {
-            const discountDisplay = document.querySelector(".row .col-md-4 span");
-            const cartTotal = document.querySelector(".cartTotalValue");
-            if (discountDisplay) discountDisplay.textContent = discount + "%";
-            if (cartTotal) cartTotal.textContent = formatCurrency(total);
-        }
-    });
-    
+    }
+    function updateDiscountDisplay(discount, total) {
+        const discountDisplay = document.querySelector(".row .col-md-4 span");
+        const cartTotal = document.querySelector(".cartTotalValue");
+        if (discountDisplay) discountDisplay.textContent = discount + "%";
+        if (cartTotal) cartTotal.textContent = formatCurrency(total);
+    }
+});
 
-    document.addEventListener("DOMContentLoaded", function() {
-        let toastElements = document.querySelectorAll('.toast');
-        toastElements.forEach(toast => new bootstrap.Toast(toast, { delay: 3000 }).show());
-    });
+
+document.addEventListener("DOMContentLoaded", function() {
+    let toastElements = document.querySelectorAll('.toast');
+    toastElements.forEach(toast => new bootstrap.Toast(toast, { delay: 3000 }).show());
+});
 
 
