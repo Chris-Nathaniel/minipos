@@ -1,21 +1,6 @@
-from flask import redirect, render_template, request, session
-import requests
-from functools import wraps
-import string
-from conn import SQL
-from dotenv import load_dotenv
-import re
-import time
-import random
-import os
-import urllib
-from datetime import date
+from helpers_module.__init__ import *
+from conn import *
 
-
-load_dotenv()
-
-database_url = os.getenv('DATABASE_URL')
-db = SQL(database_url)
 
 def apology(message, categories="", code=400):
     """Render message as an apology to user and include the cart."""
@@ -55,7 +40,6 @@ def parseInt(placeholder):
 def formatCurrency(currency, value):
     return "{} {:,.0f}".format(currency, value)
 
-
 def bankTransfer(order_number, total_amount):
     total_amount = parseInt(total_amount)
     request_body = {
@@ -67,7 +51,6 @@ def bankTransfer(order_number, total_amount):
         "bank_transfer":{"bank":"bca"},
     }
     return request_body
-
 
 def generate_random_string(length=5):
     """Generate a random string of fixed length."""
@@ -108,7 +91,6 @@ def generate_order_number(prefix):
 def formatOrderNumber(orderNumber):
     result = f"{orderNumber}{date.today()}"
     return result
-
 
 def clear_session():
     keys_to_keep = ['user_id']  # List of keys you want to keep

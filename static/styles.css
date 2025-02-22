@@ -146,7 +146,6 @@
 
 .cart-menu {
   border: 1px solid var(--lg);
-  height: 100%;
   justify-content: center;
   display: flex;
   background-color: white;
@@ -154,13 +153,20 @@
   padding-bottom: 30px;
   overflow: auto;
   font-size: 0.8em;
-  max-height: 100dvh;
   width: 100%;
+  max-height: 100dvh;
+  height:100%;
 }
 
 .cart-wrapper {
   overflow: auto;
   width: 100vw;
+  padding: 20px;
+
+}
+
+#paymentForm{
+  align-content:center
 
 }
 
@@ -816,11 +822,17 @@ html {
   background-color: #ffffff;
   color: #000;
 }
-  @media screen and (min-width: 969px) {
-    .back-button {
-      display: none!important;
-    }
+
+.quick-menu-section{
+  width: 100%;
+  align-items: center;
+}
+
+@media screen and (min-width: 969px) {
+  .back-button {
+    display: none!important;
   }
+}
 
 @media screen and (min-width: 330px) and (max-width: 968px) {
   .shoppingCart{
@@ -914,6 +926,7 @@ html {
     border: none !important;
     display: block;
     width:80px;
+    align-self: start;
   }
 
 }

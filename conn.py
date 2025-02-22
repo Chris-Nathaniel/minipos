@@ -1,8 +1,4 @@
-import sqlite3
-import os
-import secrets
-from dotenv import load_dotenv
-import midtransclient
+from helpers_module.__init__ import *
 
 def SQL(database):
     conn = sqlite3.connect(database, check_same_thread=False)
@@ -30,3 +26,11 @@ def init_app(app):
 
     # Return the initialized API client and database URL for later use
     return core, database_url
+
+app = Flask(__name__)
+
+    # Initialize the app with environment variables and Midtrans client
+core, database_url = init_app(app)
+
+# connect to database
+db = SQL(database_url)

@@ -1,27 +1,9 @@
-from flask import Flask, render_template, request, session, redirect, flash, jsonify, current_app, url_for
-from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
-from urllib.parse import urlparse
-from conn import SQL, init_app
-from models import Menu, Discount, Users, Billing, Orders, Cart, Business, MainWindow, Ev
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, mask_key, set_key, generate_name
-import os
-import ctypes
-import threading
-import subprocess
-import time
-
+from helpers_module.__init__ import *
+from helpers_module.helpers import *
+from models import *
 
 
 def run_flask():
-    
-    app = Flask(__name__)
-
-    # Initialize the app with environment variables and Midtrans client
-    core, database_url = init_app(app)
-
-    # connect to database
-    db = SQL(database_url)
     
     @app.route('/')
     @login_required
@@ -152,7 +134,6 @@ def run_flask():
         """Log user out"""
         # Forget any user_id
         session.clear()
-        db.connection.close()
 
         # Redirect user to login form
         return redirect("/")

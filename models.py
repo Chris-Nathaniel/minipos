@@ -1,15 +1,7 @@
-from conn import SQL
-import os
-from helpers import apology, login_required, thankYou, parseInt, formatCurrency, bankTransfer, generate_order_number, clear_session, generate_random_string, createImageUrl, formatOrderNumber
-from dotenv import load_dotenv
-from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-import sys
+from conn import *
+from helpers_module.helpers import *
+from helpers_module.__init__ import *
 
-load_dotenv()
-db = SQL(os.getenv('DATABASE_URL'))
 
 class Business:
     def __init__(self, name, address, contact, email):
@@ -154,6 +146,7 @@ class Billing:
         self.change = parseInt(self.cashValue) - parseInt(self.total)
         self.discount = session.get('discount', 0)
         self.voucherDetail = session.get('voucherDetail', "")
+        self.itemCount = session.get("itemCount", 0)
 
         if form:
             self.payment_method = form.get('paymentMethod')

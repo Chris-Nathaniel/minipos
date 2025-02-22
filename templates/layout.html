@@ -105,7 +105,7 @@
     {% if request.endpoint in ['menu_by_category', 'orders'] %}
     <div class="shoppingCart">
         <div class="counter">
-            {{ cart|length }}
+            {{ itemCount if itemCount else cart | length}}
         </div>
     </div>
     {% else %}
