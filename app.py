@@ -1,6 +1,6 @@
 from helpers_module.__init__ import *
 from helpers_module.helpers import *
-from models import *
+from helpers_module.models import *
 
 
 def run_flask():
