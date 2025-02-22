@@ -25,6 +25,9 @@ class Business:
                    (self.name, self.address, self.contact, self.email))
         db.connection.commit()
 
+    def check_email(input):
+        return db.execute("SELECT * FROM business WHERE email = ?", (input,)).fetchone()
+    
 class Menu:
     def get_all_menu():
         return db.execute('SELECT * FROM menu_list').fetchall()
@@ -97,6 +100,10 @@ class Users:
     def register(username, password):
         db.execute("INSERT INTO users (username, hash) VALUES (?,?)",
                        (username, password,))
+        db.connection.commit()
+    
+    def reset_password(password):
+        db.execute("UPDATE Users SET hash = ? WHERE id = 1", (password, ))
         db.connection.commit()
 
 class Cart:
@@ -448,8 +455,7 @@ class Emailer:
         """
         self.send_email(subject, body)
     
-    def send_password_reset(self, user_name):
-        reset_link = ""
+    def send_password_reset(self, user_name, reset_link):
         subject = "🔒Password Reset Request - Minipos"
         body = f"""
         <html>
@@ -469,3 +475,13 @@ class Emailer:
         </html>
         """
         self.send_email(subject, body)
+
+    def save_expiration_token(id, token, expiration):
+        # Save the expiration token to the database 
+        db.execute("INSERT INTO password_reset (business_id, token, expiration) VALUES (?, ?, ?)", (id, token, expiration))
+        db.connection.commit()
+    
+    def search_token(token):
+        # Search for the token in the database
+        return db.execute("SELECT token FROM password_reset WHERE token = ? AND expiration > datetime('now')",  (token, ))
+        

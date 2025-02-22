@@ -24,6 +24,8 @@ sqlite3 %DB_NAME% "CREATE TABLE IF NOT EXISTS discount_ticket (id INTEGER PRIMAR
 
 sqlite3 %DB_NAME% "CREATE TABLE IF NOT EXISTS business (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT, contact TEXT, email TEXT);"
 
+sqlite3 %DB_NAME% "CREATE TABLE IF NOT EXISTS password_reset (id INTEGER PRIMARY KEY AUTOINCREMENT, business_id INTEGER NOT NULL, token TEXT UNIQUE NOT NULL, expiration DATETIME NOT NULL, used BOOLEAN DEFAULT 0, FOREIGN KEY (business_id) REFERENCES business(id) ON DELETE CASCADE);"
+
 echo Database %DB_NAME% created successfully!
 echo All tables created successfully.
 

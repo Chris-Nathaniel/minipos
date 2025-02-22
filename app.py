@@ -731,9 +731,55 @@ def run_flask():
         flash("You need to restart the app to apply the changes.")
         return redirect("/settings")
     
-    @app.route("/password-reset", methods=["POST"])
+    @app.route("/resetpwdrequest", methods=["GET", "POST"])
     def password_reset():
-        return
+        if request.method == "POST":
+            token = request.args.get('token')
+            dbtoken = Emailer.search_token(token)
+            if not dbtoken:
+                flash("Token has expired, please request another from email!")
+            else:
+                password = request.form.get('new_password')
+                confirmation = request.form.get('confirm_password')
+                if not password:
+                    return apology("Password is required!")
+                if password == confirmation:
+                    hashed_password = generate_password_hash(password)
+                else:
+                    return apology("please confirm password")
+                Users.reset_password(hashed_password)
+                flash("Password has been changed!")
+                
+        return render_template("password_reset.html")
+    
+    @app.route("/pwdemailconfirmation", methods=["GET", "POST"])
+    def pwdemailconfirmation():
+        if request.method == "POST":
+            # check if the email is registered send link
+            email = request.form.get("email")
+            try:
+                # Check if email is registered
+                email = dict(Business.check_email(email))
+                # Generate secure token and expiration time
+                token = secrets.token_urlsafe(32)   
+                expiration = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1)
+
+                # Store in password_reset table
+                db.execute("INSERT INTO password_reset (business_id, token, expiration) VALUES (?, ?, ?)", (email['id'], token, expiration))
+                db.connection.commit()
+                
+                # Generate password reset link url
+                reset_link = url_for('password_reset', token=token, _external=True)
+                
+                # send email with link to reset password
+                emailer = Emailer(email['email'])
+                emailer.send_password_reset(email['name'], reset_link)
+                flash("Password reset link has been sent to your email.")
+
+            except Exception as e:
+                flash(f"{e}")
+
+        return render_template("email_confirmation.html")
     
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)

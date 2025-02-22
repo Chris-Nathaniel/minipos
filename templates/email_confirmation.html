@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block main %}
+<div class="centered-container w-100 h-100" style="background-color: var(--theme);">
+    <div class="col-md-3">
+        <div class="text-center text-white">
+            <h1>Forgot Password</h1>
+            <small>we will sent a verification link</small>
+        </div>
+        <form class="p-5" action="/pwdemailconfirmation" method="post">
+            <div class="mb-3 text-start">
+                <label  for="email" class="form-label d-block text-white">Email Address</label>
+                <input class="form-control" type="email" id="email" name="email" required>
+            </div>
+            <div class="text-center">
+                <button type="submit" class="btn btn-dark">Send Link</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block content %}
+{% endblock %}
