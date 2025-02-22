@@ -237,7 +237,7 @@ def run_flask():
         notification = core.transactions.notification(notification_json)
 
         # Extract necessary data from the notification
-        order_id = notification['order_id']
+        order_id = reverseFormatOrderNumber(notification['order_id'])
         transaction_status = notification['transaction_status']
 
         # If the transaction is successful

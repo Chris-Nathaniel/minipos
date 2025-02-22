@@ -212,8 +212,8 @@ class Billing:
             return "success"
         # check if payment is m-banking
         if paymentMethod == "m-banking":
-            orderNumber = formatOrderNumber(orderNumber)
-            param = bankTransfer(orderNumber, total)
+            formattedordernumber = formatOrderNumber(orderNumber)
+            param = bankTransfer(formattedordernumber, total)
             try:
                 charge_response = core.charge(param)
             except Exception as e:
