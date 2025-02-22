@@ -675,12 +675,14 @@ def run_flask():
         business_address = request.form.get("businessAddress")
         business_contact = request.form.get("businessContact")
         business_email = request.form.get("businessEmail")
+        emailer = Emailer(business_email)
         business = Business(business_name, business_address, business_contact, business_email)
         if Business.get_business():
             business.update_business()
         else:
             business.insert_business()
         flash("business settings has been updated!")
+        emailer.send_registration_email(business_name)
         return redirect("/settings")
     
     @app.route("/midtrans-integration", methods=["POST"])
@@ -728,6 +730,10 @@ def run_flask():
         subprocess.run([r'scripts\dbgenerator.bat', name], shell=True)
         flash("You need to restart the app to apply the changes.")
         return redirect("/settings")
+    
+    @app.route("/password-reset", methods=["POST"])
+    def password_reset():
+        return
     
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)

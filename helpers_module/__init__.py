@@ -22,6 +22,9 @@ import requests
 import sqlite3
 from urllib.parse import urlparse
 import midtransclient
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # PyQt6 Imports
 from PyQt6.QtCore import QUrl

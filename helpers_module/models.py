@@ -25,7 +25,6 @@ class Business:
                    (self.name, self.address, self.contact, self.email))
         db.connection.commit()
 
-
 class Menu:
     def get_all_menu():
         return db.execute('SELECT * FROM menu_list').fetchall()
@@ -404,3 +403,69 @@ class MainWindow(QMainWindow):
         window.resize(width, height)
         window.show()
         sys.exit(app.exec())
+
+class Emailer:
+    def __init__(self, receiver_email):
+        self.sender_email = "minipos.tech@gmail.com"
+        self.sender_password = os.getenv("APP_PASS", "")
+        self.receiver_email = receiver_email
+        self.smtp_server = "smtp.gmail.com"
+        self.smtp_port = 587
+
+    def send_email(self, subject, body):
+        # Create message
+        msg = MIMEMultipart()
+        msg["From"] = self.sender_email
+        msg["To"] = self.receiver_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "html"))
+
+        # Send email
+        try:
+            server = smtplib.SMTP(self.smtp_server, self.smtp_port)
+            server.starttls()  
+            server.login(self.sender_email, self.sender_password)
+            server.sendmail(self.sender_email, self.receiver_email, msg.as_string())
+            server.quit()
+            print("Email sent successfully!")
+        except Exception as e:
+            print(f"Error: {e}")
+    
+    def send_registration_email(self, user_name):
+        subject = "🎉Welcome to Minipos - Registration Successful!"
+        body = f"""
+        <html>
+            <body>
+                <div class="container">
+                    <h2>Welcome to Minipos, {user_name}! </h2>
+                    <p>We're excited to welcome you to Minipos! Your email <b>({self.receiver_email})</b> has been successfully registered.</p>
+                    <p>You can now log in and start exploring our features. If you didn't register for this account, please ignore this email.</p>
+                    <p>If you have any questions, feel free to contact us at <a href="mailto:minipos.tech@gmail.com">minipos.tech@gmail.com</a>.</p>
+                    <p class="footer">Best regards,<br><b>The Minipos Team</b></p>
+                </div>
+            </body>
+        </html>
+        """
+        self.send_email(subject, body)
+    
+    def send_password_reset(self, user_name):
+        reset_link = ""
+        subject = "🔒Password Reset Request - Minipos"
+        body = f"""
+        <html>
+            <body>
+                <div class="container">
+                    <p class="header">Password Reset Request</p>
+                    <p>Hello { user_name },</p>
+                    <p>We received a request to reset your password for your account ({self.receiver_email}).</p>
+                    <p>If you didn't request this, you can ignore this email.</p>
+                    <p>To reset your password, click the button below:</p>
+                    <p><a class="btn" href="{ reset_link }">Reset Password</a></p>
+                    <p>If the button doesn’t work, copy and paste this link into your browser:</p>
+                    <p>{ reset_link }</p>
+                    <div class="footer">Best regards, <br> The Minipos Team</div>
+                </div>
+            </body>
+        </html>
+        """
+        self.send_email(subject, body)
