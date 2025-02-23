@@ -760,6 +760,7 @@ def run_flask():
             try:
                 # Check if email is registered
                 email = dict(Business.check_email(email))
+                
                 # Generate secure token and expiration time
                 token = secrets.token_urlsafe(32)   
                 expiration = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1)
