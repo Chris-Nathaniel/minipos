@@ -59,6 +59,8 @@ IF NOT EXIST requirements.txt (
 
 REM Install the packages from requirements.txt
 echo Installing required packages from requirements.txt...
+python -m venv .venv
+call .venv\Scripts\activate.bat
 pip install -r requirements.txt
 
 REM Check if the installation was successful
