@@ -1,5 +1,5 @@
 # Minipos
-#### Video Demo: https://www.youtube.com/watch?v=HQXEEZAdVIA
+#### Video Demo: 
 
 ## Description
 Minipos is a simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
@@ -21,21 +21,21 @@ there are a few things that installation.bat does:
 ~set up env and sqlite3 database tables.
 
 ## compatibality
-Windows - fully-compatible.
-Mac- semi-compatible. (manually install dependencies, reset/create new database wont work.)
+- Windows - fully-compatible.
+- Mac- semi-compatible. (manually install dependencies, reset/create new database wont work.)
 
 ## interface
 The program can be run on windowed gui mode or on browser making it very flexible choice.
 
 ## Features
-Menu system
-Cart system
-Order tracking
-Discount vouchers
-Menu customization
-Order management
-Midtrans integration
-SMTP email support
+- Menu system
+- Cart system
+- Order tracking
+- Discount vouchers
+- Menu customization
+- Order management
+- Midtrans integration
+- SMTP email support
 
 ## Source Files
 
