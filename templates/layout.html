@@ -64,10 +64,11 @@
                 </ul>
             {% else %}
                 <ul class="navbar-nav ms-auto">
-                    {% if not existinguser %}
+                    {% if not existinguser and not is_apology %}
                         <li class="nav-item"><a class="nav-link" href="/register">Register</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
+                    
                 </ul>
             {% endif %}
         </div>
@@ -108,7 +109,8 @@
             {{ itemCount if itemCount else cart | length}}
         </div>
     </div>
-    {% else %}
+    {% endif %}
+    {% if request.endpoint in ['customizations', 'discount', 'settings'] %}
     <div class="moreMenu">
 
     </div>

@@ -10,9 +10,9 @@ def apology(message, categories="", code=400):
     category = session.get('category', [])
     categories = session.get('categories', [])
     if categories:
-        return render_template("apology.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
+        return render_template("apology.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories, is_apology=True), code
     if not categories:
-        return render_template("apologyg.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories), code
+        return render_template("apologyg.html", error=code, message=message, cart=cart, total=total, category=category, categories=categories, is_apology=True), code
 
 def thankYou(message, orderNumber, code=200):
     """Render message as a thank you to user and include the cart."""
