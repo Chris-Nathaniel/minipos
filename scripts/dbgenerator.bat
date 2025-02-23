@@ -4,6 +4,7 @@ set ENV_FILE=.env
 set TEMP_FILE=.env.tmp
 set FOUND_OLD=0
 set FOUND_DB=0
+set FOUND=0
 set APP_PASS=desp snde octd wudy
 
 :: Create SQLite database and insert the tables
@@ -54,6 +55,19 @@ for /f "tokens=1,* delims==" %%A in (%ENV_FILE%) do (
     )
 )) > %TEMP_FILE%
 
+:: Replace the APP_PASS if found
+(for /f "usebackq delims=" %%A in ("%ENV_FILE%") do (
+    echo %%A | findstr /B "APP_PASS=" >nul
+    if not errorlevel 1 (
+        set FOUND=1
+    ) 
+))
+
+:: If app_pass is not found, append it
+if %FOUND%==0 (
+   echo APP_PASS=%APP_PASS% >> %TEMP_FILE%
+)
+
 :: If OLD_DB_URL was not found, append it
 if %FOUND_OLD%==0 (
     echo OLD_DB_URL=%OLD_DB_NAME% >> %TEMP_FILE%
@@ -63,8 +77,6 @@ if %FOUND_OLD%==0 (
 if %FOUND_DB%==0 (
     echo DATABASE_URL=%DB_NAME% >> %TEMP_FILE%
 )
-
-echo APP_PASS=%APP_PASS% >> %TEMP_FILE%
 
 :: Replace the original .env file with the updated one
 move /Y %TEMP_FILE% %ENV_FILE% > nul
