@@ -390,26 +390,33 @@ class Ev:
         self.ngdomain = os.getenv("NGROK_DOMAIN", "")
         self.ngauth = os.getenv("NGROK_AUTH", "")
         self.db = os.getenv("DATABASE_URL", "")
-        
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl("http://127.0.0.1:5000"))  # Wrap the URL with QUrl
-        self.setCentralWidget(self.browser)
 
-        self.setWindowTitle("Minipos")
-        self.setGeometry(0, 0, 2560, 1600)
 
-    def run_gui():
-        app = QApplication(sys.argv)
-        screen_size = app.primaryScreen().size()
-        app.setWindowIcon(QIcon("icon.ico"))
-        width, height = int(screen_size.width() * 0.3), int(screen_size.height() * 0.4)
-        window = MainWindow()
-        window.resize(width, height)
-        window.show()
-        sys.exit(app.exec())
+if gui:
+    from PyQt6.QtCore import QUrl
+    from PyQt6.QtGui import QIcon
+    from PyQt6.QtWidgets import QApplication, QMainWindow
+    from PyQt6.QtWebEngineWidgets import QWebEngineView
+
+    class MainWindow(QMainWindow):
+        def __init__(self):
+            super().__init__()
+            self.browser = QWebEngineView()
+            self.browser.setUrl(QUrl("http://127.0.0.1:5000"))  
+            self.setCentralWidget(self.browser)
+
+            self.setWindowTitle("Minipos")
+            self.setGeometry(0, 0, 2560, 1600)
+
+        def run_gui():
+            app = QApplication(sys.argv)
+            screen_size = app.primaryScreen().size()
+            app.setWindowIcon(QIcon("icon.ico"))
+            width, height = int(screen_size.width() * 0.3), int(screen_size.height() * 0.4)
+            window = MainWindow()
+            window.resize(width, height)
+            window.show()
+            sys.exit(app.exec())
 
 class Emailer:
     def __init__(self, receiver_email):

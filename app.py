@@ -199,7 +199,6 @@ def run_flask():
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
         if isinstance(payment_status, dict):
                 status = next(iter(payment_status), None) 
-                print(status)
                 if status == "failed":
                     return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
         #save the order to database
@@ -250,7 +249,6 @@ def run_flask():
 
     @app.route("/payment_status/<on>", methods=['POST', 'GET'])
     def check_payment_status(on):
-        print(on)
         status = Billing.check_payment_status(on)
 
         return jsonify({'payment_status': status})
@@ -410,7 +408,6 @@ def run_flask():
 
                 return redirect('/orders')
 
-
     @app.route("/finish_edit_order", methods=['POST', 'GET'])
     @login_required
     def finish_edit_order():
@@ -436,7 +433,6 @@ def run_flask():
 
         return redirect('/orders')
 
-
     @app.route('/thank', methods=['POST'])
     def thank():
         order_number = request.form.get('order_number')
@@ -448,18 +444,15 @@ def run_flask():
         else:
             return redirect('/waiting_for_payment')
 
-
     @app.route('/sync_payment/<on>', methods=['GET'])
     def sync_payment(on):
         transaction_status = core.transactions.status(on)['transaction_status']
-        print(transaction_status)
         # If the transaction is successful
         if transaction_status == 'settlement':
             # Update the payment status to 'paid' in the database
             Billing.update_payment_status(on)
 
         return redirect('/orders')
-
 
     @app.route("/customization", methods=['GET'])
     @login_required
@@ -476,7 +469,6 @@ def run_flask():
         categories = Menu.get_category()
 
         return render_template('customization.html', name=name, main=main, categories=categories, query=query, mode='customize')
-
 
     @app.route("/add_menu", methods=['POST'])
     @login_required
@@ -500,7 +492,6 @@ def run_flask():
                 flash("Please fill in all fields.", "warning")
             return redirect('/customization')
 
-
     @app.route('/add_category', methods=['POST'])
     @login_required
     def add_category():
@@ -511,9 +502,8 @@ def run_flask():
             try:
                 Menu.add_category(inputCategory)
             except Exception as e:
-                print("Error adding category: " + str(e))
+                logging.error("Error adding category: " + str(e))
         return redirect('/customization')
-
 
     @app.route('/remove_category', methods=['POST'])
     @login_required
@@ -525,10 +515,8 @@ def run_flask():
             try:
                 Menu.remove_category(deleteCategory)
             except Exception as e:
-                print("Error removing category: " + str(e))
+                logging.error("Error removing category: " + str(e))
         return redirect('/customization')
-
-
 
     @app.route('/delete_menu', methods=['GET'])
     @login_required
@@ -560,7 +548,6 @@ def run_flask():
     def edit_menu():
         if request.method == 'POST':
             id = parseInt(request.form.get('id'))
-            print(id)
             name = request.form.get('item_name')
             category = request.form.get('category')
             price = request.form.get('price')
@@ -787,8 +774,8 @@ def run_flask():
 
 if __name__ == '__main__':
     # Run Flask in a separate thread
-    threading.Thread(target=run_flask, daemon=True).start()
+    threading.Thread(target=run_flask, daemon=True).start() if gui else run_flask()
     threading.Thread(target=connect_ngrok, daemon=True).start()
 
     # Run the PyQt6 GUI
-    MainWindow.run_gui()
+    MainWindow.run_gui() if gui else None

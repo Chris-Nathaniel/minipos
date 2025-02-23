@@ -11,6 +11,7 @@ import ctypes
 import random
 import urllib.parse
 import datetime
+import logging
 from datetime import date
 from functools import wraps 
 
@@ -28,10 +29,19 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import ngrok
 
+
 # PyQt6 Imports
-from PyQt6.QtCore import QUrl
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtWebEngineWidgets import QWebEngineView
+def check_gui():
+    try:
+        from PyQt6.QtCore import QUrl
+        from PyQt6.QtGui import QIcon
+        from PyQt6.QtWidgets import QApplication, QMainWindow
+        from PyQt6.QtWebEngineWidgets import QWebEngineView
+        return True
+    except Exception as e:
+        print(f"GUI import failed: {e}")
+        return False
+
+gui = check_gui()
 
 

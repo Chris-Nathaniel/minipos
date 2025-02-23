@@ -1,5 +1,11 @@
 from helpers_module.__init__ import *
 
+# Configure logging
+logging.basicConfig(
+    filename="app.log",  
+    level=logging.INFO,  
+    format="%(asctime)s [%(levelname)s]: %(message)s",  
+)    
 
 def SQL(database):
     conn = sqlite3.connect(database, check_same_thread=False)
@@ -34,12 +40,12 @@ def connect_ngrok():
     authtoken=os.getenv("NGROK_AUTH")
     if domain and authtoken:
         listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
-        print(f"ngrok tunnel established: {listener.url()}")
+        logging.info(f"ngrok tunnel established: {listener.url()}")
         # Keep ngrok running as long as the app is running
         while threading.main_thread().is_alive():
             time.sleep(1)
     else:
-        flash("ngrok disconnected")
+        logging.error("ngrok disconnected (missing environment variables")
 
 app = Flask(__name__)
 
