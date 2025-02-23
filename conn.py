@@ -1,4 +1,5 @@
 from helpers_module.__init__ import *
+import ngrok
 
 def SQL(database):
     conn = sqlite3.connect(database, check_same_thread=False)
@@ -26,6 +27,15 @@ def init_app(app):
 
     # Return the initialized API client and database URL for later use
     return core, database_url
+
+def connect_ngrok():
+    """Start ngrok tunnel and keep it alive."""
+    listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
+    print(f"ngrok tunnel established: {listener.url()}")
+
+    # Keep ngrok running as long as the app is running
+    while threading.main_thread().is_alive():
+        time.sleep(1)
 
 app = Flask(__name__)
 

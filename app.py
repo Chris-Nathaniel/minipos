@@ -777,7 +777,7 @@ def run_flask():
                 flash("Password reset link has been sent to your email.")
 
             except Exception as e:
-                flash(f"{e}")
+                flash(f"Email not found")
 
         return render_template("email_confirmation.html")
     
@@ -787,6 +787,7 @@ def run_flask():
 if __name__ == '__main__':
     # Run Flask in a separate thread
     threading.Thread(target=run_flask, daemon=True).start()
+    threading.Thread(target=connect_ngrok, daemon=True).start()
 
     # Run the PyQt6 GUI
     MainWindow.run_gui()
