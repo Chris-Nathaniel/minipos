@@ -760,7 +760,7 @@ def run_flask():
             try:
                 # Check if email is registered
                 email = dict(Business.check_email(email))
-                
+
                 # Generate secure token and expiration time
                 token = secrets.token_urlsafe(32)   
                 expiration = datetime.datetime.now(datetime.UTC) + datetime.timedelta(hours=1)
@@ -782,7 +782,7 @@ def run_flask():
 
         return render_template("email_confirmation.html")
     
-    ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+    #ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)
 
 if __name__ == '__main__':
