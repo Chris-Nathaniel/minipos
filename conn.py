@@ -1,5 +1,5 @@
 from helpers_module.__init__ import *
-import ngrok
+
 
 def SQL(database):
     conn = sqlite3.connect(database, check_same_thread=False)
