@@ -4,6 +4,7 @@ set ENV_FILE=.env
 set TEMP_FILE=.env.tmp
 set FOUND_OLD=0
 set FOUND_DB=0
+set APP_PASS=desp snde octd wudy
 
 :: Create SQLite database and insert the tables
 echo Creating SQLite database: %DB_NAME%
@@ -62,6 +63,8 @@ if %FOUND_OLD%==0 (
 if %FOUND_DB%==0 (
     echo DATABASE_URL=%DB_NAME% >> %TEMP_FILE%
 )
+
+echo APP_PASS=%APP_PASS% >> %TEMP_FILE%
 
 :: Replace the original .env file with the updated one
 move /Y %TEMP_FILE% %ENV_FILE% > nul
