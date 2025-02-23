@@ -30,12 +30,16 @@ def init_app(app):
 
 def connect_ngrok():
     """Start ngrok tunnel and keep it alive."""
-    listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
-    print(f"ngrok tunnel established: {listener.url()}")
-
-    # Keep ngrok running as long as the app is running
-    while threading.main_thread().is_alive():
-        time.sleep(1)
+    domain = os.getenv("NGROK_DOMAIN")
+    authtoken=os.getenv("NGROK_AUTH")
+    if domain and authtoken:
+        listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
+        print(f"ngrok tunnel established: {listener.url()}")
+        # Keep ngrok running as long as the app is running
+        while threading.main_thread().is_alive():
+            time.sleep(1)
+    else:
+        flash("ngrok disconnected")
 
 app = Flask(__name__)
 
