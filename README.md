@@ -47,7 +47,7 @@ The program can run in windowed GUI mode or via a web browser, making it a flexi
 - Discount vouchers - Provides the ability to apply promotional discounts.
 - Menu customization - Allows full control over menu pricing
 - Order management- Facilitates modifying or canceling orders as needed.
-- Midtrans integration - Supports secure payment processing.
+- Midtrans integration - Automate online banking transaction validation.
 - SMTP email support - Enables email receipts and notifications.
 
 ## Source Files
