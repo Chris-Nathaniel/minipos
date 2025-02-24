@@ -39,7 +39,7 @@ def check_gui():
         from PyQt6.QtWebEngineWidgets import QWebEngineView
         return True
     except Exception as e:
-        print(f"GUI import failed: {e}")
+        logging.log(f"GUI import failed: {e}")
         return False
 
 gui = check_gui()
