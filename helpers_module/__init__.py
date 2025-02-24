@@ -29,6 +29,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import ngrok
 
+# custom Imports
+from helpers_module.dbinit import *
 
 # PyQt6 Imports
 def check_gui():

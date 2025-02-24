@@ -1,12 +1,5 @@
 from helpers_module.__init__ import *
 
-# Configure logging
-logging.basicConfig(
-    filename="app.log",  
-    level=logging.INFO,  
-    format="%(asctime)s [%(levelname)s]: %(message)s",  
-)    
-
 def SQL(database):
     conn = sqlite3.connect(database, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -45,7 +38,7 @@ def connect_ngrok():
         while threading.main_thread().is_alive():
             time.sleep(1)
     else:
-        logging.error("ngrok disconnected (missing environment variables")
+        logging.error("ngrok disconnected (missing environment variables)")
 
 app = Flask(__name__)
 
