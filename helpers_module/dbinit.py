@@ -115,7 +115,7 @@ def create_database(name="database"):
 
     conn.commit()
     conn.close()
-    logging.log(f"Database '{db_name}' created successfully with all tables.")
+    logging.info(f"Database '{db_name}' created successfully with all tables.")
     return db_name
 
 # Update .env file
@@ -141,4 +141,4 @@ def update_env(db_name):
         for key, value in env_data.items():
             f.write(f"{key}={value}\n")
 
-    print(".env file updated successfully.")
+    logging.info(".env file updated successfully.")
