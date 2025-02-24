@@ -1,4 +1,4 @@
-from __init__ import *
+from  helpers_module.__init__ import *
 
 def create_database(name="database"):
     db_name = f"{name}.db"
