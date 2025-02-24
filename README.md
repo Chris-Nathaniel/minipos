@@ -1,15 +1,16 @@
 # Minipos
-#### Video Demo: 
+#### Video Demo:
 
 ## Description
-Minipos is a simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
+Minipos is a standalone simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
 The app was developed using VisualStudio Code and was completed in Jakarta, Indonesia.
 
-## Getting Started - Installation
-i wanted to make an app that feels like an app. meaning that i wanted my program to run locally and easy to set up and install, the user should not know write any code to run my app with. With that in my i came up with a solution to use batch script to help me run my python app from the desktop and help with the installation process. I got this inpiration while i was trying to learn how to use stable diffusion web ui and finally came up with this. Since Minipos are built on windows operating system, i made it only with windows compatibility, thus .bat files are not supported
-any other operating system. However in this cs50 codespace for this demo i have created a pre-made database to help run the app without having to run installation.bat files.
+## Designs
+There are three things my app requires, my app runs on a single machine and doesn't require constant public access, Easy installation the user should not know write any code to run my app, dealing with dependencies and envs, Lastly a public url for integrations. With that in my i came up with these solution, batch script to help me run my python app from the desktop and help me with managing dependencies. This may not be the best approach of installing a standalone application but this is the solution that i had came up with at that time and most familiar with it. Ngrok provided me with a static public url that helps me expose my local app to the public for a limited time period untill my app closes.
 
->>Installtion process
+This app are built with a one user and one database in mind which means that only one user can registered to the app. I was debating whether pre registering an account or put a mock data inside or make a completely empty database submission However in this cs50 codespace for this demo i have created a pre-made database to help run the app without having to run installation.bat files.
+
+## Getting Started - Installation
 1. Download the app to your local file
 2. Run installation.bat > a shortcut to minipos.exe should be created on your desktop
 3. Run minipos.exe
@@ -21,8 +22,10 @@ there are a few things that installation.bat does:
 ~set up env and sqlite3 database tables.
 
 ## compatibality
+Since Minipos are built on windows operating system, i made it only with windows compatibility, thus any functionality that .bat files use may not work well in other operating system.
+
 - Windows - fully-compatible.
-- Mac- semi-compatible. (manually install dependencies, reset/create new database wont work.)
+- Mac- semi-compatible. (manually install dependencies, reset/create new database wont work, .bat files not working)
 
 ## interface
 The program can be run on windowed gui mode or on browser making it very flexible choice.
@@ -48,6 +51,8 @@ conn.py - Connecting to database, port forwarding with ngrok, connecting to midt
 Models.py - classes and database queries along with gui
 
 Helpers.py - contains functions
+
+## Design
 
 ## Technology
 Minipos is built with Python using the Flask framework for my back-end. I used Javascript, Html and CSS using Bootstrap to streamlined the front-end. I chosed to use sqlite3 for my project due to its simplicity and portability.
