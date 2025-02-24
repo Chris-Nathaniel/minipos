@@ -1,5 +1,13 @@
 import sqlite3
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    filename="app.log",  
+    level=logging.INFO,  
+    format="%(asctime)s [%(levelname)s]: %(message)s",  
+)    
 
 def create_database(name="database"):
     db_name = f"{name}.db"
@@ -107,7 +115,7 @@ def create_database(name="database"):
 
     conn.commit()
     conn.close()
-    print(f"Database '{db_name}' created successfully with all tables.")
+    logging.log(f"Database '{db_name}' created successfully with all tables.")
     return db_name
 
 # Update .env file

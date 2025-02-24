@@ -526,23 +526,6 @@ def run_flask():
         Menu.delete_menu(menu_id)
         return redirect('/customization')
 
-
-    def saveImage(image):
-        if image.filename == "":
-            return "No Selected files"
-
-        if image:
-            # Create a safe filename
-            image_path = os.path.join(current_app.root_path, 'static/images', image.filename)
-
-            # Ensure the directory exists
-            os.makedirs(os.path.dirname(image_path), exist_ok=True)
-
-            image.save(image_path)
-
-        return f'/static/images/{image.filename}'
-
-
     @app.route('/edit_menu', methods=['POST'])
     @login_required
     def edit_menu():
