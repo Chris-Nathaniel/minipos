@@ -33,12 +33,12 @@ def connect_ngrok():
     authtoken=os.getenv("NGROK_AUTH")
     if domain and authtoken:
         listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
-        logging.info(f"ngrok tunnel established: {listener.url()}")
+        print(f"ngrok tunnel established: {listener.url()}")
         # Keep ngrok running as long as the app is running
         while threading.main_thread().is_alive():
             time.sleep(1)
     else:
-        logging.error("ngrok disconnected (missing environment variables)")
+        print("ngrok disconnected (missing environment variables)")
 
 app = Flask(__name__)
 

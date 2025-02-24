@@ -3,12 +3,13 @@ import os
 import logging
 
 # Configure logging
+'''
 logging.basicConfig(
     filename="app.log",  
-    level=logging.INFO,  
+    level=logging.info,  
     format="%(asctime)s [%(levelname)s]: %(message)s",  
 )    
-
+'''
 def create_database(name="database"):
     db_name = f"{name}.db"
     tables = [
@@ -115,7 +116,7 @@ def create_database(name="database"):
 
     conn.commit()
     conn.close()
-    logging.info(f"Database '{db_name}' created successfully with all tables.")
+    print(f"Database '{db_name}' created successfully with all tables.")
     return db_name
 
 # Update .env file
@@ -141,4 +142,4 @@ def update_env(db_name):
         for key, value in env_data.items():
             f.write(f"{key}={value}\n")
 
-    logging.info(".env file updated successfully.")
+    print(".env file updated successfully.")

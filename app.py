@@ -289,10 +289,11 @@ def run_flask():
     def retrieve_details():
 
         order_number = request.json['order_number']
+        print(order_number)
         order_items = []
 
         data = Orders.fetch_invoice_details(order_number)
-
+        print(data)
         # Convert the result into a list of dictionaries
         for row in data:
             order_items.append(dict(row))
@@ -501,7 +502,7 @@ def run_flask():
             try:
                 Menu.add_category(inputCategory)
             except Exception as e:
-                logging.error("Error adding category: " + str(e))
+                print("Error adding category: " + str(e))
         return redirect('/customization')
 
     @app.route('/remove_category', methods=['POST'])
@@ -514,7 +515,7 @@ def run_flask():
             try:
                 Menu.remove_category(deleteCategory)
             except Exception as e:
-                logging.error("Error removing category: " + str(e))
+                print("Error removing category: " + str(e))
         return redirect('/customization')
 
     @app.route('/delete_menu', methods=['GET'])

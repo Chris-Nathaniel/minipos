@@ -382,10 +382,16 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-
-            retrieveOrderDetails(orderNumber,'view');
-            retrieveOrderDetails(orderNumber,'view', "hidden");
-            setTimeout(()=>{printTheReceipt()}, 500);
+    
+            retrieveOrderDetails(orderNumber, 'view');
+    
+            setTimeout(() => {
+                retrieveOrderDetails(orderNumber, 'view', "hidden");
+            }, 10); 
+    
+            setTimeout(() => {
+                printTheReceipt();
+            }, 1000);
         });
     });
 });
@@ -407,9 +413,16 @@ document.addEventListener("DOMContentLoaded", function() {
         button.addEventListener('click', function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-
-            retrieveOrderDetails(orderNumber,'receipt', "hidden");
-            setTimeout(()=>{printTheReceipt()}, 500);
+    
+            retrieveOrderDetails(orderNumber, 'receipt');
+    
+            setTimeout(() => {
+                retrieveOrderDetails(orderNumber, 'receipt', "hidden");
+            }, 50); 
+    
+            setTimeout(() => {
+                printTheReceipt();
+            }, 1000); 
         });
     });
 });
