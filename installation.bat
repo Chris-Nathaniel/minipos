@@ -102,7 +102,7 @@ powershell -command "$ws = New-Object -ComObject WScript.Shell; $s = $ws.CreateS
 echo Shortcut created at %SHORTCUT_PATH%
 
 ::Create a fresh database
-start /min "" "%SCRIPT_DIR%/Scripts/dbgenerator.bat" database
+python "%SCRIPT_DIR%/helpers_module/dbgenerator.py" 
 
 endlocal
 pause

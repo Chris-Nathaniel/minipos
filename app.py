@@ -1,7 +1,7 @@
 from helpers_module.__init__ import *
 from helpers_module.helpers import *
 from helpers_module.models import *
-
+from helpers_module.dbinit import *
 
 def run_flask():
     
@@ -709,12 +709,14 @@ def run_flask():
         name = generate_name()
         if oldDataBase:
             if oldDataBase and oldDataBase.endswith(".db"):
-                db_path = secure_filename(oldDataBase)  # Ensure safety
+                db_path = secure_filename(oldDataBase) 
                 if os.path.exists(db_path):
                     os.remove(db_path)
         
         # Run the batch script to regenerate the database
-        subprocess.run([r'scripts\dbgenerator.bat', name], shell=True)
+        # subprocess.run([r'scripts\dbgenerator.bat', name], shell=True) --> depreciated
+        db_name = create_database(name)
+        update_env(db_name)
         flash("You need to restart the app to apply the changes.")
         return redirect("/settings")
     

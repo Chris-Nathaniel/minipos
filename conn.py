@@ -49,7 +49,7 @@ def connect_ngrok():
 
 app = Flask(__name__)
 
-    # Initialize the app with environment variables and Midtrans client
+# Initialize the app with environment variables and Midtrans client
 core, database_url = init_app(app)
 
 # connect to database
