@@ -2,13 +2,23 @@
 #### Video Demo:
 
 ## Description
-Minipos is a standalone simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
-The app was developed using VisualStudio Code and was completed in Jakarta, Indonesia.
+Minipos is a standalone, simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
+
+The app was developed using Visual Studio Code and was completed in Jakarta, Indonesia.
 
 ## Designs
-There are three things my app requires, my app runs on a single machine and doesn't require constant public access, Easy installation the user should not know write any code to run my app, dealing with dependencies and envs, Lastly a public url for integrations. With that in my i came up with these solution, batch script to help me run my python app from the desktop and help me with managing dependencies. This may not be the best approach of installing a standalone application but this is the solution that i had came up with at that time and most familiar with it. Ngrok provided me with a static public url that helps me expose my local app to the public for a limited time period untill my app closes.
+There are three key aspects I considered while designing Minipos:
 
-This app are built with a one user and one database in mind which means that only one user can registered to the app. I was debating whether pre registering an account or put a mock data inside or make a completely empty database submission However in this cs50 codespace for this demo i have created a pre-made database to help run the app without having to run installation.bat files.
+- Local Operation – The app runs on a single machine and does not require constant public access.
+- Easy Installation – Users should not need to write any code, manage dependencies, or set up environments manually.
+- Public URL for Integrations – The system should allow limited external access when needed.
+
+To address these requirements, I created a batch script to help users run the Python app from their desktop while managing dependencies. While this may not be the best approach for installing a standalone application, it was the most practical solution I was familiar with at the time. Additionally, I used Ngrok to provide a temporary static public URL, allowing limited external access until the app is closed.
+
+This app is designed with a single user and a single database in mind, meaning only one user can be registered. For this CS50 project, I have created a pre-registered account with mock data:
+
+- username: admin
+- password: 1234
 
 ## Getting Started - Installation
 1. Download the app to your local file
@@ -16,57 +26,55 @@ This app are built with a one user and one database in mind which means that onl
 3. Run minipos.exe
 
 there are a few things that installation.bat does:
-~install python3.11
-~install sqlite3
-~install all dependencies from requirements.txt
-~set up env and sqlite3 database tables.
+- install python3.11
+- install sqlite3
+- install all dependencies from requirements.txt
+- set up env and sqlite3 database tables.
 
 ## compatibality
-Since Minipos are built on windows operating system, i made it only with windows compatibility, thus any functionality that .bat files use may not work well in other operating system.
+Since Minipos was developed for Windows, it is fully compatible with that operating system. Some functionality (such as .bat and .exe files) may not work properly on other operating systems.
 
 - Windows - fully-compatible.
-- Mac- semi-compatible. (manually install dependencies, reset/create new database wont work, .bat files not working)
+- Mac – Semi-compatible (Users must manually install dependencies; .bat and .exe files will not work, and the app must be started manually.)
 
 ## interface
-The program can be run on windowed gui mode or on browser making it very flexible choice.
+The program can run in windowed GUI mode or via a web browser, making it a flexible choice for different usage scenarios.
 
 ## Features
-- Menu system
-- Cart system
-- Order tracking
-- Discount vouchers
-- Menu customization
-- Order management
-- Midtrans integration
-- SMTP email support
+- Menu system - Allows users to create Orders
+- Cart system - Enables easy order selection before finalizing transactions.
+- Order tracking - Keeps a record of past orders for easy reference.
+- Discount vouchers - Provides the ability to apply promotional discounts.
+- Menu customization - Allows full control over menu pricing
+- Order management- Facilitates modifying or canceling orders as needed.
+- Midtrans integration - Supports secure payment processing.
+- SMTP email support - Enables email receipts and notifications.
 
 ## Source Files
 
-__init__.py manage imports
+__init__.py Manages imports and application setup.
 
-app.py - Main app file containing the routes to all other html pages
+app.py - The main app file containing all route definitions.
 
-conn.py - Connecting to database, port forwarding with ngrok, connecting to midtrans
+conn.py - Handles database connections, port forwarding with Ngrok, and Midtrans payment gateway integration.
 
-Models.py - classes and database queries along with gui
+Models.py - Defines classes and database queries for the application.
 
-Helpers.py - contains functions
+Helpers.py - Contains utility functions to support the main app.
 
-## Design
+dbgenerator.py - Helps in rebuilding and resetting database tables when needed.
 
 ## Technology
-Minipos is built with Python using the Flask framework for my back-end. I used Javascript, Html and CSS using Bootstrap to streamlined the front-end. I chosed to use sqlite3 for my project due to its simplicity and portability.
+Minipos is built using Python with the Flask framework for the backend. The frontend is built using HTML, CSS, and JavaScript with Bootstrap for styling. SQLite3 is used as the database due to its simplicity and portability.
 
-Flask - I used Flask as my primary web framework as it is one i am familiar with, including in Week 9 Finance of CS50. It is easy to use, and the app is simple enough that it doesn't require performance benefits that might have been provided by other frameworks.
+Frameworks & Libraries
+- Flask – Chosen for its ease of use and familiarity (as introduced in Week 9: Finance of CS50). The app is simple enough that it does not require a more complex framework.
 
-SQLite3 – I chose SQLite3 as the database for this project because it is lightweight, requires minimal setup, and is well-suited for small to medium-sized applications like this one. Since Flask comes with built-in support for SQLite, it integrates seamlessly without needing a separate database server. Additionally, SQLite stores data in a single file, making it easy to manage and deploy.
-
-Bootstrap - I am using Bootstrap 5 for my front-end framework. It provides a fairly easy to use toolset to quickly provide high-quality, professional looking design.
+- SQLite3 – A lightweight, self-contained database, ideal for small to medium-sized applications. Since Flask has built-in support for SQLite, integration is seamless. SQLite stores data in a single file, making it easy to manage and deploy.
+- Bootstrap 5 – Used for the frontend to provide a clean, professional-looking design with minimal effort.
 
 ## Hosting
 This project is designed to run locally, so it is not hosted on any cloud platform. Since SQLite3 is a file-based database, it does not require a separate database server, making local development and testing straightforward. Flask's built-in development server is sufficient for running the app during development.
 
-I was able to get the app working seamlessly using .bat file, I have also tried setting up a port forwarding using ngrok so that any notifications from the payment gateway can be directly received back to the ngrok address.
-
 ## Inspiration
-I had wanted to open a small cafe and thats where i got my inspiration of making a small POS system.
+I have always wanted to open a small cafe, and that inspired me to create a simple POS system made for such businesses. The idea was to build something that I, or someone in a similar position, could actually use without needing an expensive or complex system. Developing this project for CS50x gave me the opportunity to turn that idea into a working application.
