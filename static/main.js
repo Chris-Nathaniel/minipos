@@ -371,27 +371,32 @@ document.addEventListener("DOMContentLoaded", function() {
     const printOrder = document.querySelectorAll('.print-order');
     // Add click event listeners to each button
     viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
 
-            retrieveOrderDetails(orderNumber,'view');
+            await retrieveOrderDetails(orderNumber,'view');
         });
     });
     printOrder.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
-    
-            retrieveOrderDetails(orderNumber, 'view');
-    
-            setTimeout(() => {
-                retrieveOrderDetails(orderNumber, 'view', "hidden");
-            }, 10); 
-    
-            setTimeout(() => {
-                printTheReceipt();
-            }, 1000);
+            try{
+                const source = await retrieveOrderDetails(orderNumber, 'view');
+                console.log(`${window}`);
+                setTimeout(async () => {
+                    await retrieveOrderDetails(orderNumber, 'view', "hidden");
+                }, 5); 
+        
+                setTimeout(() => {
+                    printTheReceipt(source);
+                }, 1000);
+
+            }catch (error){
+                console.error("Error retrieving order details:", error);
+            }
+             
         });
     });
 });
@@ -400,59 +405,70 @@ document.addEventListener("DOMContentLoaded", function() {
     // Get all view buttons
     const viewButtons = document.querySelectorAll('.receipt-button');
     const printReceipt = document.querySelectorAll('.print-receipt');
+
     // Add click event listeners to each button
     viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Get the order number from the data attribute
+        button.addEventListener('click', async function() {
             const orderNumber = this.getAttribute('data-order');
-
-            retrieveOrderDetails(orderNumber,'receipt');
+            await retrieveOrderDetails(orderNumber, 'receipt');
         });
     });
+
     printReceipt.forEach(button => {
-        button.addEventListener('click', function() {
-            // Get the order number from the data attribute
+        button.addEventListener('click', async function() {
             const orderNumber = this.getAttribute('data-order');
-    
-            retrieveOrderDetails(orderNumber, 'receipt');
-    
-            setTimeout(() => {
-                retrieveOrderDetails(orderNumber, 'receipt', "hidden");
-            }, 50); 
-    
-            setTimeout(() => {
-                printTheReceipt();
-            }, 1000); 
+
+            try {
+                const source = await retrieveOrderDetails(orderNumber, 'receipt');
+                console.log(`${window}`);
+
+                setTimeout(async () => {
+                    await retrieveOrderDetails(orderNumber, 'receipt', "hidden");
+                }, 5);
+
+                setTimeout(() => {
+                    printTheReceipt(source);
+                }, 1000);
+            } catch (error) {
+                console.error("Error retrieving order details:", error);
+            }
         });
     });
 });
 
 
-function retrieveOrderDetails(orderNumber, actionType, display="show") {
-    fetch('/retrieve_details', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            order_number: orderNumber
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
+async function retrieveOrderDetails(orderNumber, actionType, display="show") {
+    try {
+        const response = await fetch('/retrieve_details', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                order_number: orderNumber
+            })
+        });
+
+        const data = await response.json();
+
         console.log(data.message);
-        console.log(data.items)
-        console.log(data.number)
-        console.log(document.title)
-        if (document.title =='thankyou')
+        console.log(data.items);
+        console.log(data.number);
+        console.log(data.window);
+        console.log(document.title);
+
+        if (document.title === 'thankyou') {
             updateDetails2(data.items, data.number);
-        else{
+        } else {
             updateDetails(data.items, data.number, actionType, display);
         }
-
-    })
-    .catch(error => console.error('Error:', error));
+        return data.window; 
+    } catch (error) {
+        console.error('Error:', error);
+        return null; 
+    }
 }
+
 
 function updateDetails2(orderItems, orderNumber){
     const result = document.querySelector('.data');
@@ -683,18 +699,14 @@ function parseCurrency(currencyStr) {
     return parseInt(numberStr, 10);
 }
 
-function printTheReceipt(){
+function receiptContent(){
     // Locate the dynamically injected order details row
     const orderDetailsRow = document.querySelector('.order-details-row');
     const data = document.querySelector('.data')
 
     if (orderDetailsRow || data) {
-        // Open a new window
-        const printWindow = window.open('', 'Print', 'width=600,height=600');
-
-        // Write the HTML for the new window, including the necessary styles
-        printWindow.document.write(`
-            <html>
+        var html_content = 
+        `<html>
             <head>
                 <title>Print Order</title>
                 <meta charset="UTF-8">
@@ -722,19 +734,47 @@ function printTheReceipt(){
                     </div>
                 </div>
             </body>
-            </html>
-        `);
+            </html>`;
+        return html_content;
+        
+    } else {
+        alert('No order details found to print!');
+    }
+    
+}
+
+async function printTheReceipt(source){
+    const content = receiptContent();
+    if (source){
+        try {
+            const response =  await fetch('/receive-html', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    html: content
+                })
+            });
+    
+            const data = await response.json();
+            console.log(data)    
+        } catch (error) {
+            console.error('Error:', error);
+            return null; 
+        }
+    } else{
+        // Open a new window
+        const printWindow = window.open('', 'Print', 'width=600,height=600');
+
+        // Write the HTML for the new window, including the necessary styles
+        printWindow.document.write(content);
 
         // Trigger print
         printWindow.document.close();
         printWindow.focus();
         printWindow.print();
-
-    } else {
-        alert('No order details found to print!');
     }
-
-
 }
 
 function showDiscount(){

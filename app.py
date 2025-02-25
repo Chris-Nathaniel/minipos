@@ -287,18 +287,23 @@ def run_flask():
     @app.route("/retrieve_details", methods=['POST'])
     @login_required
     def retrieve_details():
-
+        # check if request came from app gui or browser
+        user_agent = request.headers.get('User-Agent', '')
+        window = False
+        if "QtWebEngine" in user_agent:
+            window = True
+        else:
+            window = False
+        print(window)
         order_number = request.json['order_number']
-        print(order_number)
         order_items = []
-
         data = Orders.fetch_invoice_details(order_number)
-        print(data)
+    
         # Convert the result into a list of dictionaries
         for row in data:
             order_items.append(dict(row))
 
-        return jsonify({'items': order_items, 'number': order_number})
+        return jsonify({'items': order_items, 'number': order_number, 'window':window})
 
 
     @app.route("/update/<on>/<status>", methods=['POST', 'GET'])
@@ -754,6 +759,20 @@ def run_flask():
 
         return render_template("email_confirmation.html")
     
+    @app.route("/receive-html", methods=["POST", "GET"])
+    def receive_html():
+        if request.method == "POST":
+            data = request.get_json()
+            if not data or "html" not in data:
+                # Return error if no HTML data
+                return jsonify({"error": "No HTML content received"}), 400 
+
+            html_content = data.get("html","")
+            print("Received HTML:", html_content)
+            multiprocessing.Process(target=run_qt, args=(html_content,)).start()
+            # Send a success response
+            return jsonify({"message": "HTML received successfully"}), 200
+        
     #ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
     app.run(debug=True, use_reloader=False)
 

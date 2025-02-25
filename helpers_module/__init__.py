@@ -14,6 +14,7 @@ import datetime
 import logging
 from datetime import date
 from functools import wraps 
+import multiprocessing
 
 # Third-Party Imports
 from flask import Flask, render_template, request, session, redirect, flash, jsonify, current_app, url_for
@@ -36,8 +37,9 @@ from helpers_module.dbinit import *
 def check_gui():
     try:
         from PyQt6.QtCore import QUrl
-        from PyQt6.QtGui import QIcon
-        from PyQt6.QtWidgets import QApplication, QMainWindow
+        from PyQt6.QtGui import QIcon, QTextDocument
+        from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
+        from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
         from PyQt6.QtWebEngineWidgets import QWebEngineView
         return True
     except Exception as e:

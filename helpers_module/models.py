@@ -394,8 +394,9 @@ class Ev:
 
 if gui:
     from PyQt6.QtCore import QUrl
-    from PyQt6.QtGui import QIcon
-    from PyQt6.QtWidgets import QApplication, QMainWindow
+    from PyQt6.QtGui import QIcon, QTextDocument
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
+    from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
     from PyQt6.QtWebEngineWidgets import QWebEngineView
 
     class MainWindow(QMainWindow):
@@ -417,6 +418,44 @@ if gui:
             window.resize(width, height)
             window.show()
             sys.exit(app.exec())
+
+    class PrintHTML(QWidget):
+        def __init__(self, html):
+            super().__init__()
+            self.html = html
+            self.initUI()
+
+        def initUI(self):
+            self.text_edit = QTextEdit(self)
+            self.text_edit.setReadOnly(True) 
+            self.text_edit.setHtml(self.html)
+
+            self.print_button = QPushButton("Print", self)
+            self.print_button.clicked.connect(self.print_html)
+
+            layout = QVBoxLayout()
+            layout.addWidget(self.text_edit)
+            layout.addWidget(self.print_button)
+            self.setLayout(layout)
+
+            self.setWindowTitle("Print Box")
+            self.resize(400, 300)
+
+        def print_html(self):
+            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+
+            # Open print dialog
+            dialog = QPrintDialog(printer, self)
+            if dialog.exec() == QPrintDialog.DialogCode.Accepted:
+                doc = QTextDocument()
+                doc.setHtml(self.html)  # Use direct HTML instead of text_edit.toHtml()
+                doc.print(printer)
+                
+    def run_qt(html):
+        app = QApplication(sys.argv)
+        window = PrintHTML(html)
+        window.show()
+        app.exec()
 
 class Emailer:
     def __init__(self, receiver_email):
