@@ -32,7 +32,7 @@ def connect_ngrok():
     domain = os.getenv("NGROK_DOMAIN")
     authtoken=os.getenv("NGROK_AUTH")
     if domain and authtoken:
-        listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"))
+        listener = ngrok.forward(5000, domain=os.getenv("NGROK_DOMAIN"), authtoken=os.getenv("NGROK_AUTH"), region="ap")
         print(f"ngrok tunnel established: {listener.url()}")
         # Keep ngrok running as long as the app is running
         while threading.main_thread().is_alive():

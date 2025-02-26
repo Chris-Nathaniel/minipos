@@ -383,14 +383,13 @@ document.addEventListener("DOMContentLoaded", function() {
             // Get the order number from the data attribute
             const orderNumber = this.getAttribute('data-order');
             try{
-                const source = await retrieveOrderDetails(orderNumber, 'view');
-                console.log(`${window}`);
+                const {source, orderitems} = await retrieveOrderDetails(orderNumber, 'view');
                 setTimeout(async () => {
                     await retrieveOrderDetails(orderNumber, 'view', "hidden");
                 }, 5); 
         
                 setTimeout(() => {
-                    printTheReceipt(source);
+                    printTheReceipt(source, orderitems);
                 }, 1000);
 
             }catch (error){
@@ -419,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function() {
             const orderNumber = this.getAttribute('data-order');
 
             try {
-                const source = await retrieveOrderDetails(orderNumber, 'receipt');
+                const {source, orderitems} = await retrieveOrderDetails(orderNumber, 'receipt');
                 console.log(`${window}`);
 
                 setTimeout(async () => {
@@ -427,7 +426,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }, 5);
 
                 setTimeout(() => {
-                    printTheReceipt(source);
+                    printTheReceipt(source, orderitems);
                 }, 1000);
             } catch (error) {
                 console.error("Error retrieving order details:", error);
@@ -450,19 +449,15 @@ async function retrieveOrderDetails(orderNumber, actionType, display="show") {
         });
 
         const data = await response.json();
-
-        console.log(data.message);
-        console.log(data.items);
         console.log(data.number);
-        console.log(data.window);
-        console.log(document.title);
+      
 
         if (document.title === 'thankyou') {
             updateDetails2(data.items, data.number);
         } else {
             updateDetails(data.items, data.number, actionType, display);
         }
-        return data.window; 
+        return { source: data.window, orderitems: data.items }; 
     } catch (error) {
         console.error('Error:', error);
         return null; 
@@ -743,7 +738,7 @@ function receiptContent(){
     
 }
 
-async function printTheReceipt(source){
+async function printTheReceipt(source, orderitems){
     const content = receiptContent();
     if (source){
         try {
@@ -753,7 +748,7 @@ async function printTheReceipt(source){
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    html: content
+                    orderitems: orderitems
                 })
             });
     

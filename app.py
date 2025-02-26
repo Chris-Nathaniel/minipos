@@ -179,10 +179,10 @@ def run_flask():
 
         orders = session.get("cart", [])
         billing = Billing(session, request.form)
-        totalValue = parseInt(billing.total)
+        billing.total = parseInt(billing.total)
         order_number = generate_order_number("TESTORD-")
         
-        if int(billing.cashValue) < totalValue and billing.payment_method == "Cash":
+        if int(billing.cashValue) < billing.total and billing.payment_method == "Cash":
             flash("Invalid paid amount!", "error")
             return redirect('/menu')
 
@@ -195,6 +195,8 @@ def run_flask():
             flash("Error: Takeaway orders must provide a payment method", "error")
             return redirect("/menu")
         #process payments
+        print(f"Process Order Cash Value: {billing.cashValue}")
+        print(f"Process Order total {billing.total}")
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
         if isinstance(payment_status, dict):
                 status = next(iter(payment_status), None) 
@@ -294,14 +296,14 @@ def run_flask():
             window = True
         else:
             window = False
-        print(window)
         order_number = request.json['order_number']
         order_items = []
         data = Orders.fetch_invoice_details(order_number)
-    
+        
         # Convert the result into a list of dictionaries
         for row in data:
             order_items.append(dict(row))
+        print(order_items)
 
         return jsonify({'items': order_items, 'number': order_number, 'window':window})
 
@@ -763,13 +765,8 @@ def run_flask():
     def receive_html():
         if request.method == "POST":
             data = request.get_json()
-            if not data or "html" not in data:
-                # Return error if no HTML data
-                return jsonify({"error": "No HTML content received"}), 400 
-
-            html_content = data.get("html","")
-            print("Received HTML:", html_content)
-            multiprocessing.Process(target=run_qt, args=(html_content,)).start()
+            receipt = data['orderitems']
+            multiprocessing.Process(target=Receipt.printer_window, args=(receipt,)).start()
             # Send a success response
             return jsonify({"message": "HTML received successfully"}), 200
         

@@ -178,7 +178,7 @@ class Billing:
     def insertOrders(orders, orderNumber, deliveryType, tableNumber, total, discount):
         # save order to database
         result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount) VALUES (?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
-                        (orderNumber, deliveryType, tableNumber, "new", int(total.replace(",", "")), discount,)).fetchone()
+                        (orderNumber, deliveryType, tableNumber, "new", total, discount,)).fetchone()
         
         # Fetch the returned order number and order_date
         order_number, order_date = result
@@ -393,10 +393,10 @@ class Ev:
 
 
 if gui:
-    from PyQt6.QtCore import QUrl
-    from PyQt6.QtGui import QIcon, QTextDocument
-    from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
-    from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
+    from PyQt6.QtCore import QUrl, Qt
+    from PyQt6.QtGui import QIcon,  QPainter, QPageSize, QPageLayout
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame
+    from PyQt6.QtPrintSupport import QPrinter, QPrintPreviewDialog
     from PyQt6.QtWebEngineWidgets import QWebEngineView
 
     class MainWindow(QMainWindow):
@@ -419,43 +419,180 @@ if gui:
             window.show()
             sys.exit(app.exec())
 
-    class PrintHTML(QWidget):
-        def __init__(self, html):
+    class Receipt(QWidget):
+        def __init__(self, orders):
             super().__init__()
-            self.html = html
-            self.initUI()
+            
+            self.setWindowTitle("Receipt")
+            self.setFixedWidth(330)   # Adjusted for print button
+            self.adjustSize()
 
-        def initUI(self):
-            self.text_edit = QTextEdit(self)
-            self.text_edit.setReadOnly(True) 
-            self.text_edit.setHtml(self.html)
+            # ======= Main Layout =======
+            main_layout = QVBoxLayout()
+            main_layout.setContentsMargins(10, 10, 10, 10)
 
-            self.print_button = QPushButton("Print", self)
-            self.print_button.clicked.connect(self.print_html)
+            # ======= Card Frame (Receipt Border) =======
+            card = QFrame()
+            card.setFrameStyle(QFrame.Shape.NoFrame)
+            card.setLineWidth(1)
+            card.setStyleSheet("font-family: monospace; background-color: white; color: black;")
 
-            layout = QVBoxLayout()
-            layout.addWidget(self.text_edit)
-            layout.addWidget(self.print_button)
-            self.setLayout(layout)
+            card_layout = QVBoxLayout()
+            card_layout.setContentsMargins(10, 10, 10, 10)
 
-            self.setWindowTitle("Print Box")
-            self.resize(400, 300)
+            # ======= Header (Cafe Info) =======
+            header = QVBoxLayout()
+            title = QLabel("<b>Mini Cafe</b>")
+            title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            address = QLabel("Jl. Kembang Harum XI xy-2\nPhone: 1234567890\nJakarta Barat")
+            address.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            header.addWidget(title)
+            header.addWidget(address)
 
-        def print_html(self):
-            printer = QPrinter(QPrinter.PrinterMode.HighResolution)
+            # ======= Order Info =======
+            if orders:
+                order_number = orders[0]["order_number"]
+                invoice_number = orders[0]["invoice_number"]
+                total_amount = orders[0]["total_amount"]
+                payment_method = orders[0]["payment_method"]
+                payment_amount = orders[0]["payment_amount"]
+                discount = orders[0]["discount"]
+                change =  0 if orders[0]["change"] < 0 else orders[0]["change"]  
+            else:
+                order_number, invoice_number, total_amount, payment_method, payment_amount, discount, change = ("-", "-", 0, "-", "-", 0, 0)
 
-            # Open print dialog
-            dialog = QPrintDialog(printer, self)
-            if dialog.exec() == QPrintDialog.DialogCode.Accepted:
-                doc = QTextDocument()
-                doc.setHtml(self.html)  # Use direct HTML instead of text_edit.toHtml()
-                doc.print(printer)
+            order_info = QLabel(f"Order #{order_number}\nInvoice Number: {invoice_number}")
+            order_info.setAlignment(Qt.AlignmentFlag.AlignLeft)
+            order_info.setStyleSheet("border-bottom: 1px dashed black; padding: 5px 0px; font-size: 11px; border-top: 1px dashed black;")
+
+            # ======= Items List =======
+            items_layout = QHBoxLayout()
+            left_items = QVBoxLayout()
+            right_prices = QVBoxLayout()
+
+            left_items.addWidget(QLabel("<b>Items</b>"))
+            right_prices.addWidget(QLabel("<b>Total</b>"))
+
+            for idx, item in enumerate(orders, start=1):
+                item_name = item["item_name"]
+                price = item["price"]
+                quantity = item["quantity"]
+                total_price = item["total"]
+
+                left_items.addWidget(QLabel(f"{idx}. {item_name}"))
+                left_items.addWidget(QLabel(f"<small>Rp {price:,.0f}/pcs x {quantity}</small>"))
+
+                right_prices.addWidget(QLabel(f"Rp {total_price:,.0f}"))
+                right_prices.addWidget(QLabel(""))
+
+            items_layout.addLayout(left_items)
+            items_layout.addSpacing(85)
+            items_layout.addLayout(right_prices)
+
+            # ======= Summary (Tax, Payment, Grand Total) =======
+            summary_layout = QHBoxLayout()
+
+            left_summary = QVBoxLayout()
+            right_summary = QVBoxLayout()
+
+            # Assume tax is 10% of total amount
+            tax = total_amount * 0.1
+
+            left_summary.addWidget(QLabel("Tax:"))
+            left_summary.addWidget(QLabel("Payment method:"))
+            left_summary.addWidget(QLabel("Paid amount:"))
+            left_summary.addWidget(QLabel("Change:"))
+            left_summary.addWidget(QLabel("Discount:"))
+            left_summary.addWidget(QLabel("Grand Total:"))
+
+            right_summary.addWidget(QLabel(f"Rp {tax:,.0f}"))
+            right_summary.addWidget(QLabel(payment_method))
+            right_summary.addWidget(QLabel(f"Rp {payment_amount:,.0f}"))
+            right_summary.addWidget(QLabel(f"Rp {change:,.0f}"))
+            right_summary.addWidget(QLabel(f"{discount}%"))
+            right_summary.addWidget(QLabel(f"Rp {total_amount:,.0f}"))
+
+            summary_layout.addLayout(left_summary)
+            summary_layout.addSpacing(120)
+            summary_layout.addLayout(right_summary)
+
+            # ======= Thank You Note =======
+            footer = QLabel("<small>Thank you, please come again!</small>")
+            footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            footer.setStyleSheet("padding: 5px 0px; font-size: 11px; border-top: 1px dashed black; display:block")
+
+            # ======= Print Button =======
+            print_button = QPushButton("Print Receipt")
+            print_button.clicked.connect(self.print_receipt)
+
+            # ======= Add Widgets to Card Layout =======
+            card_layout.addLayout(header)
+            card_layout.addWidget(order_info)
+            card_layout.addLayout(items_layout)
+            card_layout.addSpacing(20)
+            card_layout.addLayout(summary_layout)
+            card_layout.addWidget(footer)
+
+            card.setLayout(card_layout)
+
+            # ======= Add Card to Main Layout =======
+            main_layout.addWidget(card)
+            main_layout.addWidget(print_button, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.setLayout(main_layout)
+
+
+        def print_receipt(self):
+            """Shows a print preview before printing the receipt."""
+            printer = QPrinter(QPrinter.PrinterMode.ScreenResolution)
+
+            # Set A4 page size & orientation
+            printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4Small))
+            printer.setPageOrientation(QPageLayout.Orientation.Portrait)
+
+            # Create Print Preview Dialog
+            preview_dialog = QPrintPreviewDialog(printer, self)
+            preview_dialog.resize(900, 700)  
+            preview_dialog.setWindowTitle("Print Preview - Receipt") 
+            preview_dialog.paintRequested.connect(lambda p: self.render_receipt(p))
+            preview_dialog.exec()  # Show preview
+
+        def render_receipt(self, printer):
+            """Handles rendering the receipt to the printer or print preview."""
+            painter = QPainter(printer)
+
+            # Get the printable area (adjust for margins)
+            page_rect = printer.pageRect(QPrinter.Unit.Millimeter)
+            widget_rect = self.findChild(QFrame).rect()  
+
+            # Convert QRect to float values
+            page_width = page_rect.width()
+            page_height = page_rect.height()
+            widget_width = widget_rect.width()
+            widget_height = widget_rect.height()
+
+            # Set background to white
+            painter.fillRect(printer.pageRect(QPrinter.Unit.Point), Qt.GlobalColor.white)
+
+            # Calculate proper scaling
+            scale_x = page_width / widget_width * 2
+            scale_y = page_height / widget_height * 2 
+            scale = min(scale_x, scale_y)  
+
+            # Apply transformations to center and scale the receipt
+            painter.translate(page_width / 2 + 480, page_height / 2 + 700)
+            painter.scale(scale, scale)
+            painter.translate(-widget_width / 2, -widget_height / 2)
+
+            # Render only the receipt card (not the entire window)
+            self.findChild(QFrame).render(painter)
+
+            painter.end()
                 
-    def run_qt(html):
-        app = QApplication(sys.argv)
-        window = PrintHTML(html)
-        window.show()
-        app.exec()
+        def printer_window(orders):
+            app = QApplication([])
+            window = Receipt(orders)
+            window.show()
+            app.exec()
 
 class Emailer:
     def __init__(self, receiver_email):
