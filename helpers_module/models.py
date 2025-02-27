@@ -51,6 +51,7 @@ class Menu:
     
     def delete_menu(menu_id):
         db.execute("DELETE FROM menu_list WHERE id = ?", (menu_id, ))
+        db.connection.commit()
 
     def add_category(category):
         db.execute("INSERT INTO categories (category) VALUES (?)", (category,))

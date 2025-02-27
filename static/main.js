@@ -1,79 +1,5 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const cartButtons = document.querySelectorAll('.menu-card');
 
-    cartButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const itemId = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-id');
-            const itemName = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-name');
-            const itemQuantity = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-quantity');
-            const itemPrice = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-price');
-            const itemImage = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-image');
-
-            // Call the function to add the item to the cart
-            addToCart(itemId, itemName, itemQuantity, itemPrice, itemImage);
-            console.log(itemId, itemName, itemQuantity, itemPrice, itemImage);
-        });
-    });
-});
-
-function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
-    fetch('/add_to_cart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            item_id: itemId,
-            item_name: itemName,
-            item_quantity: itemQuantty,
-            item_price: itemPrice,
-            item_image: itemImage
-    
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        console.log(data.tax)
-        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
-        updateCartCount(data.itemCount);
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, itemTotal, orderTime) {
-    fetch('/remove_from_cart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            item_id : itemId,
-            item_image: itemImage,
-            item_name: itemName,
-            item_price: itemPrice,
-            item_quantity: itemQuantity,
-            total: itemTotal,
-            ordertime: orderTime
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
-        updateCartCount(data.itemCount);
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-function updateCartCount(count) {
-    const counterElement = document.querySelector('.shoppingCart .counter');
-    if (counterElement) {
-        counterElement.textContent = count;
-    }
-}
-
-// Function to update the cart
+/* ========== update Ui  ========== */
 function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalContainer = document.getElementById('cart-total');
@@ -259,91 +185,41 @@ function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
 
 }
 
-function createVoucherItem(voucherDetail) {
-    const listItem = document.createElement("div");
-    listItem.classList.add("list-group-item");
-
-    const offerItem = document.createElement("div");
-    offerItem.classList.add("offer-item", "border-0");
-
-    const img = document.createElement("img");
-    img.src = voucherDetail.image;
-    img.alt = "Discount Icon";
-
-    const offerDetails = document.createElement("div");
-    offerDetails.classList.add("offer-details");
-
-    const title = document.createElement("div");
-    title.classList.add("title");
-    title.textContent = `${voucherDetail.title} | ${voucherDetail.discount}% off`;
-
-    const voucher = document.createElement("div");
-    voucher.classList.add("Voucher");
-    voucher.textContent = `Voucher: ${voucherDetail.voucher}`;
-
-    const removeBtn = document.createElement("button");
-    removeBtn.classList.add("btn", "btn-sm", "remove-discount");
-    removeBtn.innerHTML = "<span>Remove</span>";
-    removeBtn.addEventListener("click", (event) => {
-        listItem.remove();
-        event.preventDefault();
-        fetch("/removeDiscount", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Discount removed successfully:", data);
-
-            const discountDiv = document.querySelector(".discount");
-            discountDiv.innerHTML = `
-                <div class="list-group-item">
-                    <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
-                </div>
-            `;
-            updateDiscountDisplay(0, data.originalTotal);
-        })
-        .catch(error => {
-            console.error("Error removing discount:", error);
-            alert("Failed to remove the discount. Please try again.");
-        }); 
-    });
-    function updateDiscountDisplay(discount, total) {
-        const discountDisplay = document.querySelector(".row .col-md-4 span");
-        const cartTotal = document.querySelector(".cartTotalValue");
-        if (discountDisplay) discountDisplay.textContent = discount + "%";
-        if (cartTotal) cartTotal.textContent = formatCurrency(total);
+function updateCartCount(count) {
+    const counterElement = document.querySelector('.shoppingCart .counter');
+    if (counterElement) {
+        counterElement.textContent = count;
     }
-
-    offerDetails.appendChild(title);
-    offerDetails.appendChild(voucher);
-    offerItem.appendChild(img);
-    offerItem.appendChild(offerDetails);
-    offerItem.appendChild(removeBtn);
-    listItem.appendChild(offerItem);
-
-    return listItem;
 }
 
-function addCashPaid(cashPaid){
-    fetch('/add_cash_paid', {
-        method: 'POST',
-        headers: {
-        'Content-Type': 'application/json',
-},
-    body: JSON.stringify({cashPaid: cashPaid})
-    }).then(response => response.json())
-    .then(data =>{
-        console.log(data.message);
-    })
+/* ========== Cart ========== */
 
+document.addEventListener('DOMContentLoaded', () => {
+    initAddCart();
+    initRemoveCart();
+});
+
+function initAddCart(){
+    const cartButtons = document.querySelectorAll('.menu-card');
+
+    cartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const itemId = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-id');
+            const itemName = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-name');
+            const itemQuantity = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-quantity');
+            const itemPrice = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-price');
+            const itemImage = this.closest('.menu-card').querySelector('.add-to-cart').getAttribute('data-item-image');
+
+            // Call the function to add the item to the cart
+            addToCart(itemId, itemName, itemQuantity, itemPrice, itemImage);
+            console.log(itemId, itemName, itemQuantity, itemPrice, itemImage);
+        });
+    });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+function initRemoveCart(){
     const removeButton = document.querySelectorAll('.remove-from-cart')
-    
+
     removeButton.forEach(button => {
         button.addEventListener('click', function(event) {
             event.preventDefault();
@@ -361,10 +237,60 @@ document.addEventListener('DOMContentLoaded', function() {
 
         });
     });
+
+}
+
+function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
+    fetch('/add_to_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id: itemId,
+            item_name: itemName,
+            item_quantity: itemQuantty,
+            item_price: itemPrice,
+            item_image: itemImage
     
-});
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        console.log(data.tax)
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
+        updateCartCount(data.itemCount);
+    })
+    .catch(error => console.error('Error:', error));
+}
 
+function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, itemTotal, orderTime) {
+    fetch('/remove_from_cart', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            item_id : itemId,
+            item_image: itemImage,
+            item_name: itemName,
+            item_price: itemPrice,
+            item_quantity: itemQuantity,
+            total: itemTotal,
+            ordertime: orderTime
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
+        updateCartCount(data.itemCount);
+    })
+    .catch(error => console.error('Error:', error));
+}
 
+/* ========== Print/view Order/Receipt ========== */
 document.addEventListener("DOMContentLoaded", function() {
     // Get all view buttons
     const viewButtons = document.querySelectorAll('.view-button');
@@ -684,16 +610,6 @@ function createOrderDetails(orderItems, orderNumber, tbody, rows, actionType, di
 
 }
 
-function formatCurrency(amount) {
-    return amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).replace(/\./g, ',');
-}
-
-function parseCurrency(currencyStr) {
-    let numberStr = currencyStr.replace(/[^\d]/g, '');
-
-    return parseInt(numberStr, 10);
-}
-
 function receiptContent(){
     // Locate the dynamically injected order details row
     const orderDetailsRow = document.querySelector('.order-details-row');
@@ -772,12 +688,7 @@ async function printTheReceipt(source, orderitems, cls){
         printWindow.print();
     }
 }
-
-function showDiscount(){
-    var myModal = new bootstrap.Modal(document.getElementById('discountSelection'));
-    myModal.show();
-}
-
+/* ========== Cash payment ==========*/
 function payment(){
     showpayment();
     showModal();
@@ -788,9 +699,7 @@ document.addEventListener("DOMContentLoaded", function(){
     var check = localStorage.getItem('form-check');
     var cashAmount = document.querySelector('.cash_payment').textContent;
     if (check === 'open' && cashAmount != 0) {
-        showpayment();
-        showModal();
-        paymentSubmission();
+        payment();
     }
 });
 
@@ -843,211 +752,21 @@ function paymentSubmission(){
     });
 }
 
-
-function confirm_changes(){
-    const confirmSaveButton = document.getElementById('confirmSaveButton');
-    var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
-    myModal.show();
-
-    document.getElementById('saveChangesButton').setAttribute('form','editForm');
-
-     // Handle the confirmation button click
-    confirmSaveButton.addEventListener('click', function() {
-        // Submit the form
-        form.submit();
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function(){
-    const saveChangesButton = document.querySelector('.confirm-changes');
-    const confirmSaveButton = document.getElementById('confirmSaveButton');
-    saveChangesButton.addEventListener('click', function(event){
-        event.preventDefault()
-        var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
-        myModal.show();
-
+function addCashPaid(cashPaid){
+    fetch('/add_cash_paid', {
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json',
+},
+    body: JSON.stringify({cashPaid: cashPaid})
+    }).then(response => response.json())
+    .then(data =>{
+        console.log(data.message);
     })
-     // Handle the confirmation button click
-     confirmSaveButton.addEventListener('click', function() {
-        // Submit the form
-        form.submit();
-    });
 
-})
-
-
-window.onload = function() {
-    // Get the full text content of the paragraph
-    const orderNumberText = document.getElementById('pro-order-number').textContent;
-
-    // Extract the actual order number by trimming and removing the label part
-    const orderNumber = orderNumberText.replace('Order ID:', '').trim();
-    console.log('Getting order number...');
-    console.log('Order Number:', orderNumber); // Output the order number to console
-    startPolling(orderNumber); // Start polling with the extracted order number
-
-};
-
-
-// Function to start polling for payment status
-function startPolling(orderNumber) {
-    setInterval(() => checkPaymentStatus(orderNumber), 5000);
-    console.log('start polling...');
 }
 
-
-function checkPaymentStatus(orderNumber) {
-    fetch(`/payment_status/${orderNumber}`)
-        .then(response => response.json())
-        .then(data => {
-            const status = data.payment_status;
-            if (status === 'paid') {
-                console.log(`status is:${status}`);
-                document.getElementById('payment-process-title').innerText = 'Payment Successful!'
-                document.getElementById('payment-status').innerText = 'Payment Successful! Thank you for your order.';
-                document.getElementById('message').innerText = 'You will soon be redirected automatically..';
-                document.getElementById('proceed').innerText = 'Continue';
-                document.querySelector('.loading-animation').classList.add('complete'); // Add complete class
-            } else if (status === 'pending') {
-                console.log(`status is:${status}`);
-                document.getElementById('payment-status').innerText = 'Your payment is still being processed.';
-                document.getElementById('message').style.display = 'block'; // Show pending message
-                document.querySelector('.loading-animation').classList.remove('complete'); // Remove complete class
-            } else {
-                console.log(`status is:${status}`);
-                document.getElementById('payment-status').innerText = 'Payment Failed or Not Found.';
-                document.getElementById('message').style.display = 'block'; // Show error message
-                document.querySelector('.loading-animation').classList.remove('complete'); // Remove complete class
-            }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function toggleForm() {
-    const choice = document.getElementById('choice').value;
-    const addMenuForm = document.getElementById('addMenuForm');
-    const addCategoryForm = document.getElementById('addCategoryForm');
-    const editMenuForm = document.getElementById('editMenuForm');
-    const rightMenuHeader = document.querySelector('.right-menu-header');
-    rightMenuHeader.innerHTML = choice;
-    if (choice === 'Add Menu') {
-        addMenuForm.classList.remove('d-none');
-        addCategoryForm.classList.add('d-none');
-        editMenuForm.classList.add('d-none');
-    } else if (choice === 'Add Category') {
-        addCategoryForm.classList.remove('d-none');
-        addMenuForm.classList.add('d-none');
-        editMenuForm.classList.add('d-none');
-    } else if (choice === 'Edit Menu' ){
-        editMenuForm.classList.remove('d-none');
-        addMenuForm.classList.add('d-none');
-        addCategoryForm.classList.add('d-none');
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    const editButtons = document.querySelectorAll('.edit');
-    const secondCol = document.querySelector(".secondcol");
-    const backButton = document.querySelector(".back-button");
-
-    editButtons.forEach(button => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault();
-
-            // Extract the menu item details from the clicked row
-            const row = button.closest('tr');
-            const id = row.querySelector('.id').textContent.split('ID: ')[1].trim();
-            const itemName = row.querySelector('td:nth-child(3)').firstChild.textContent.trim();
-            const category = row.querySelector('td:nth-child(4)').textContent.trim();
-            const price = parseCurrency(row.querySelector('td:nth-child(5)').textContent);
-            const imageUrl = row.querySelector('.card-image img').src;
-            const cardImage = document.querySelector('.preview-image');
-
-            cardImage.innerHTML = '';
-            // Populate the form fields with the menu item data
-            document.getElementById('edit-id').value = id;
-            document.getElementById('edit-item-name').value = itemName;
-            document.getElementById('edit-category').value = category;
-            document.getElementById('edit-price').value = price;
-            document.getElementById('current-image').value = imageUrl;
-            let imageTag = document.createElement('img');
-            imageTag.id = 'image-preview';
-            imageTag.src = imageUrl;
-            imageTag.alt = 'Current image';
-            imageTag.style.maxWidth = '200px';
-            imageTag.style.height = 'auto';
-            imageTag.style.display = 'block';
-            imageTag.style.marginBottom = '10px';
-
-            cardImage.append(imageTag);
-
-            // Set the choice to "Edit Menu" and show the form
-            document.getElementById('choice').value = "Edit Menu";
-            toggleForm();
-            secondCol.classList.toggle('clicked')
-            if (backButton){
-                backButton.addEventListener('click', () => {
-                    secondCol.classList.remove('clicked');
-            })};
-        });
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const secondCol = document.querySelector(".secondcol");
-    const shoppingCart = document.querySelector(".shoppingCart");
-    const closeButton = document.querySelector(".close-button-wrapper");
-    if (shoppingCart) {
-        shoppingCart.addEventListener('click', () => {
-            secondCol.classList.toggle('clicked');
-            shoppingCart.classList.add('d-none');
-        });
-    }
-
-    if (closeButton){
-        closeButton.addEventListener('click', () => {
-            secondCol.classList.toggle('clicked');
-            shoppingCart.classList.remove('d-none');
-    })};
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const secondCol = document.querySelector(".secondcol");
-    const moreMenu = document.querySelector(".moreMenu");
-    const backButton = document.querySelector(".back-button");
-    if (moreMenu) {
-        moreMenu.addEventListener('click', () => {
-            secondCol.classList.toggle('clicked');
-            moreMenu.classList.add('d-none');
-        });
-    }
-
-    if (backButton){
-        backButton.addEventListener('click', () => {
-            secondCol.classList.toggle('clicked');
-            moreMenu.classList.remove('d-none');
-    })};
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const selectAll = document.getElementById("select-all");
-    const deleteButton = document.querySelector(".deleteselected");
-    const checkboxes = document.querySelectorAll(".allcheckbox");
-
-    function toggleDeleteButton() {
-        const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
-        deleteButton.classList.toggle("showdeletebutton", anyChecked);
-        deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
-    }
-
-    selectAll.addEventListener("click", function () {
-        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
-        toggleDeleteButton();
-    });
-
-    checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
-});
-
+/* ========== Discount Vouchers ========== */
 document.addEventListener("DOMContentLoaded", function(){
     const voucherSearchForm = document.getElementById("voucherSearch")
     voucherSearchForm.addEventListener('submit', function(e){
@@ -1183,12 +902,82 @@ document.addEventListener("DOMContentLoaded", function () {
     removeDiscountListener();
     
 });
+
 function updateDiscountDisplay(discount, total) {
     const discountDisplay = document.querySelector(".row .col-md-4 span");
     const cartTotal = document.querySelector(".cartTotalValue");
     if (discountDisplay) discountDisplay.textContent = discount + "%";
     if (cartTotal) cartTotal.textContent = formatCurrency(total);
 }
+
+function createVoucherItem(voucherDetail) {
+    const listItem = document.createElement("div");
+    listItem.classList.add("list-group-item");
+
+    const offerItem = document.createElement("div");
+    offerItem.classList.add("offer-item", "border-0");
+
+    const img = document.createElement("img");
+    img.src = voucherDetail.image;
+    img.alt = "Discount Icon";
+
+    const offerDetails = document.createElement("div");
+    offerDetails.classList.add("offer-details");
+
+    const title = document.createElement("div");
+    title.classList.add("title");
+    title.textContent = `${voucherDetail.title} | ${voucherDetail.discount}% off`;
+
+    const voucher = document.createElement("div");
+    voucher.classList.add("Voucher");
+    voucher.textContent = `Voucher: ${voucherDetail.voucher}`;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.classList.add("btn", "btn-sm", "remove-discount");
+    removeBtn.innerHTML = "<span>Remove</span>";
+    removeBtn.addEventListener("click", (event) => {
+        listItem.remove();
+        event.preventDefault();
+        fetch("/removeDiscount", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Discount removed successfully:", data);
+
+            const discountDiv = document.querySelector(".discount");
+            discountDiv.innerHTML = `
+                <div class="list-group-item">
+                    <label class="text-hover" style="cursor: pointer;" onclick="showDiscount()">Discount</label>
+                </div>
+            `;
+            updateDiscountDisplay(0, data.originalTotal);
+        })
+        .catch(error => {
+            console.error("Error removing discount:", error);
+            alert("Failed to remove the discount. Please try again.");
+        }); 
+    });
+    function updateDiscountDisplay(discount, total) {
+        const discountDisplay = document.querySelector(".row .col-md-4 span");
+        const cartTotal = document.querySelector(".cartTotalValue");
+        if (discountDisplay) discountDisplay.textContent = discount + "%";
+        if (cartTotal) cartTotal.textContent = formatCurrency(total);
+    }
+
+    offerDetails.appendChild(title);
+    offerDetails.appendChild(voucher);
+    offerItem.appendChild(img);
+    offerItem.appendChild(offerDetails);
+    offerItem.appendChild(removeBtn);
+    listItem.appendChild(offerItem);
+
+    return listItem;
+}
+
  // Function to attach event listener to remove discount button
 function removeDiscountListener() {
     const removeBtn = document.querySelector(".remove-discount");
@@ -1221,9 +1010,256 @@ function removeDiscountListener() {
         });
     }
 }
+
+/* ========== Midtrans Notification ========== */
+
+window.onload = function() {
+    // Get the full text content of the paragraph
+    const orderNumberText = document.getElementById('pro-order-number').textContent;
+
+    // Extract the actual order number by trimming and removing the label part
+    const orderNumber = orderNumberText.replace('Order ID:', '').trim();
+    console.log('Getting order number...');
+    console.log('Order Number:', orderNumber); // Output the order number to console
+    startPolling(orderNumber); // Start polling with the extracted order number
+
+};
+
+function startPolling(orderNumber) {
+    setInterval(() => checkPaymentStatus(orderNumber), 5000);
+    console.log('start polling...');
+}
+
+function checkPaymentStatus(orderNumber) {
+    fetch(`/payment_status/${orderNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            const status = data.payment_status;
+            if (status === 'paid') {
+                console.log(`status is:${status}`);
+                document.getElementById('payment-process-title').innerText = 'Payment Successful!'
+                document.getElementById('payment-status').innerText = 'Payment Successful! Thank you for your order.';
+                document.getElementById('message').innerText = 'You will soon be redirected automatically..';
+                document.getElementById('proceed').innerText = 'Continue';
+                document.querySelector('.loading-animation').classList.add('complete'); // Add complete class
+            } else if (status === 'pending') {
+                console.log(`status is:${status}`);
+                document.getElementById('payment-status').innerText = 'Your payment is still being processed.';
+                document.getElementById('message').style.display = 'block'; // Show pending message
+                document.querySelector('.loading-animation').classList.remove('complete'); // Remove complete class
+            } else {
+                console.log(`status is:${status}`);
+                document.getElementById('payment-status').innerText = 'Payment Failed or Not Found.';
+                document.getElementById('message').style.display = 'block'; // Show error message
+                document.querySelector('.loading-animation').classList.remove('complete'); // Remove complete class
+            }
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+/* ========== Menu Customization ========== */
+
+function toggleForm() {
+    const choice = document.getElementById('choice').value;
+    const addMenuForm = document.getElementById('addMenuForm');
+    const addCategoryForm = document.getElementById('addCategoryForm');
+    const editMenuForm = document.getElementById('editMenuForm');
+    const rightMenuHeader = document.querySelector('.right-menu-header');
+    rightMenuHeader.innerHTML = choice;
+    if (choice === 'Add Menu') {
+        addMenuForm.classList.remove('d-none');
+        addCategoryForm.classList.add('d-none');
+        editMenuForm.classList.add('d-none');
+    } else if (choice === 'Add Category') {
+        addCategoryForm.classList.remove('d-none');
+        addMenuForm.classList.add('d-none');
+        editMenuForm.classList.add('d-none');
+    } else if (choice === 'Edit Menu' ){
+        editMenuForm.classList.remove('d-none');
+        addMenuForm.classList.add('d-none');
+        addCategoryForm.classList.add('d-none');
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const editButtons = document.querySelectorAll('.edit');
+    const secondCol = document.querySelector(".secondcol");
+    const backButton = document.querySelector(".back-button");
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            // Extract the menu item details from the clicked row
+            const row = button.closest('tr');
+            const id = row.querySelector('.id').textContent.split('ID: ')[1].trim();
+            const itemName = row.querySelector('td:nth-child(3)').firstChild.textContent.trim();
+            const category = row.querySelector('td:nth-child(4)').textContent.trim();
+            const price = parseCurrency(row.querySelector('td:nth-child(5)').textContent);
+            const imageUrl = row.querySelector('.card-image img').src;
+            const cardImage = document.querySelector('.preview-image');
+
+            cardImage.innerHTML = '';
+            // Populate the form fields with the menu item data
+            document.getElementById('edit-id').value = id;
+            document.getElementById('edit-item-name').value = itemName;
+            document.getElementById('edit-category').value = category;
+            document.getElementById('edit-price').value = price;
+            document.getElementById('current-image').value = imageUrl;
+            let imageTag = document.createElement('img');
+            imageTag.id = 'image-preview';
+            imageTag.src = imageUrl;
+            imageTag.alt = 'Current image';
+            imageTag.style.maxWidth = '200px';
+            imageTag.style.height = 'auto';
+            imageTag.style.display = 'block';
+            imageTag.style.marginBottom = '10px';
+
+            cardImage.append(imageTag);
+
+            // Set the choice to "Edit Menu" and show the form
+            document.getElementById('choice').value = "Edit Menu";
+            toggleForm();
+            secondCol.classList.toggle('clicked')
+            if (backButton){
+                backButton.addEventListener('click', () => {
+                    secondCol.classList.remove('clicked');
+            })};
+        });
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const selectAll = document.getElementById("select-all");
+    const deleteButton = document.querySelector(".deleteselected");
+    const checkboxes = document.querySelectorAll(".allcheckbox");
+
+    function toggleDeleteButton() {
+        const anyChecked = selectAll.checked || Array.from(checkboxes).some(cb => cb.checked);
+        deleteButton.classList.toggle("showdeletebutton", anyChecked);
+        deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
+    }
+
+    selectAll.addEventListener("click", function () {
+        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+        toggleDeleteButton();
+    });
+
+    checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
+});
+
+/* ========== More Menu ========== */
+document.addEventListener("DOMContentLoaded", function() {
+    const secondCol = document.querySelector(".secondcol");
+    const moreMenu = document.querySelector(".moreMenu");
+    const backButton = document.querySelector(".back-button");
+    if (moreMenu) {
+        moreMenu.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            moreMenu.classList.add('d-none');
+        });
+    }
+
+    if (backButton){
+        backButton.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            moreMenu.classList.remove('d-none');
+    })};
+});
+
+
+/* ========== Shopping Cart ========== */
+document.addEventListener("DOMContentLoaded", function() {
+    const secondCol = document.querySelector(".secondcol");
+    const shoppingCart = document.querySelector(".shoppingCart");
+    const closeButton = document.querySelector(".close-button-wrapper");
+    if (shoppingCart) {
+        shoppingCart.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            shoppingCart.classList.add('d-none');
+        });
+    }
+
+    if (closeButton){
+        closeButton.addEventListener('click', () => {
+            secondCol.classList.toggle('clicked');
+            shoppingCart.classList.remove('d-none');
+    })};
+});
+
+/* ========== Helpers ========== */
+function formatCurrency(amount) {
+    return amount.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).replace(/\./g, ',');
+}
+
+function parseCurrency(currencyStr) {
+    let numberStr = currencyStr.replace(/[^\d]/g, '');
+
+    return parseInt(numberStr, 10);
+}
+/*========== Modals ==========*/
+function showDiscount(){
+    var myModal = new bootstrap.Modal(document.getElementById('discountSelection'));
+    myModal.show();
+}
+
+function confirm_changes(){
+    const confirmSaveButton = document.getElementById('confirmSaveButton');
+    var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
+    myModal.show();
+
+    document.getElementById('saveChangesButton').setAttribute('form','editForm');
+
+     // Handle the confirmation button click
+    confirmSaveButton.addEventListener('click', function() {
+        // Submit the form
+        form.submit();
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    const saveChangesButton = document.querySelector('.confirm-changes');
+    const confirmSaveButton = document.getElementById('confirmSaveButton');
+    saveChangesButton.addEventListener('click', function(event){
+        event.preventDefault()
+        var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
+        myModal.show();
+
+    })
+     // Handle the confirmation button click
+     confirmSaveButton.addEventListener('click', function() {
+        // Submit the form
+        form.submit();
+    });
+
+})
+
+/* ========== toast ========== */
+
 document.addEventListener("DOMContentLoaded", function() {
     let toastElements = document.querySelectorAll('.toast');
     toastElements.forEach(toast => new bootstrap.Toast(toast, { delay: 3000 }).show());
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

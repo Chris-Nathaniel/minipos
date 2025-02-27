@@ -11,3 +11,5 @@ venv/
 *.db
 
 *.log
+
+*.db-journal
