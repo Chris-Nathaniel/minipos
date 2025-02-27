@@ -1,6 +1,6 @@
 
 /* ========== update Ui  ========== */
-function updateBillingUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
+function updateCartUI(cartItems, cartTotal, cartTax, cashPaid, voucher) {
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalContainer = document.getElementById('cart-total');
     const cartOtherContainer = document.getElementById('cart-other');
@@ -259,7 +259,7 @@ function addToCart(itemId, itemName, itemQuantty, itemPrice, itemImage) {
     .then(data => {
         console.log(data.message);
         console.log(data.tax)
-        updateBillingUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
         updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
@@ -284,7 +284,7 @@ function removeFromCart(itemId, itemName, itemPrice, itemImage, itemQuantity, it
     .then(response => response.json())
     .then(data => {
         console.log(data.message);
-        updateBillingUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
+        updateCartUI(data.cart, data.total, data.tax, data.cashPaid, data.voucher);
         updateCartCount(data.itemCount);
     })
     .catch(error => console.error('Error:', error));
@@ -533,53 +533,47 @@ function orderTicketHtml(orderItems, orderNumber){
 }
 
 function receiptContent(){
+    // Locate the dynamically injected order details row
     const orderDetailsRow = document.querySelector('.order-details-row');
     const data = document.querySelector('.data')
-    if (!data && !orderDetailsRow) {
-        alert("No order details found to print!");
-        return "";
-    }
-    var html_content = 
-    `<html>
-        <head>
-            <title>Print Order</title>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link href="/static/styles.css" rel="stylesheet">
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-            <style>
-                /* Include necessary styles here or link to your CSS */
-                body { font-family: Arial, sans-serif; display:flex; justify-content:center;}
-                table {width: 280px;}
-            </style>
-        </head>
-        <body>
-        </body>
-        </html>`;
 
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html_content, 'text/html');
-    if (data){
-        const container = document.createElement("div");
-        container.classList.add("container", "mt-0", "mx-0", "py-5");
-        container.innerHTML = data.innerHTML;
-        doc.body.append(container);
-    } 
-
-    if (orderDetailsRow){
-        const table = document.createElement("table");
-        table.classList.add("table", "order-table");
-        const tbody = document.createElement("tbody");
-        tbody.innerHTML = orderDetailsRow.innerHTML;
-        table.append(tbody);
-        doc.body.append(table);
-    }
-    const receiptHtml = doc.documentElement.outerHTML;
-    console.log(receiptHtml)
-    return receiptHtml;
+    if (orderDetailsRow || data) {
+        var html_content = 
+        `<html>
+            <head>
+                <title>Print Order</title>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>POS System Cafe</title>
+                <link href="/static/styles.css" rel="stylesheet">
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+                <style>
+                    /* Include necessary styles here or link to your CSS */
+                    body { font-family: Arial, sans-serif; display:flex; justify-content:center;}
+                    table {width: 280px;}
+                </style>
+            </head>
+            <body>
+                <div class="container mt-0 mx-0 py-5">
+                    ${data?data.innerHTML:""}
+                    <div class="orderstable table-responsive">
+                        <table table order-table>
+                            <tbody>
+                                ${orderDetailsRow?orderDetailsRow.innerHTML:""}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </body>
+            </html>`;
+        return html_content;
         
+    } else {
+        alert('No order details found to print!');
+    }
+    
 }
 
 async function printTheReceipt(source, orderitems, cls){
