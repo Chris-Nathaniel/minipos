@@ -419,7 +419,62 @@ if gui:
             window.show()
             sys.exit(app.exec())
 
-    class Receipt(QWidget):
+    class Printable(QWidget):
+        def print_receipt(self):
+            """Shows a print preview before printing the receipt."""
+            printer = QPrinter(QPrinter.PrinterMode.ScreenResolution)
+
+            # Set A4 page size & orientation
+            printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4Small))
+            printer.setPageOrientation(QPageLayout.Orientation.Portrait)
+
+            # Create Print Preview Dialog
+            preview_dialog = QPrintPreviewDialog(printer, self)
+            preview_dialog.resize(900, 700)  
+            preview_dialog.setWindowTitle("Print Preview - Receipt") 
+            preview_dialog.paintRequested.connect(lambda p: self.render_receipt(p))
+            preview_dialog.exec()  # Show preview
+
+        def render_receipt(self, printer):
+            """Handles rendering the receipt to the printer or print preview."""
+            painter = QPainter(printer)
+
+            # Get the printable area (adjust for margins)
+            page_rect = printer.pageRect(QPrinter.Unit.Millimeter)
+            widget_rect = self.findChild(QFrame).rect()  
+
+            # Convert QRect to float values
+            page_width = page_rect.width()
+            page_height = page_rect.height()
+            widget_width = widget_rect.width()
+            widget_height = widget_rect.height()
+
+            # Set background to white
+            painter.fillRect(printer.pageRect(QPrinter.Unit.Point), Qt.GlobalColor.white)
+
+            # Calculate proper scaling
+            scale_x = page_width / widget_width * 2
+            scale_y = page_height / widget_height * 2 
+            scale = min(scale_x, scale_y)  
+
+            # Apply transformations to center and scale the receipt
+            painter.translate(page_width / 2 + 480, page_height / 2 + 700)
+            painter.scale(scale, scale)
+            painter.translate(-widget_width / 2, -widget_height / 2)
+
+            # Render only the receipt card (not the entire window)
+            self.findChild(QFrame).render(painter)
+
+            painter.end()
+
+        
+        def printer_window(cls,orders):
+            app = QApplication([])
+            window = cls(orders)
+            window.show()
+            app.exec()
+
+    class Receipt(Printable):
         def __init__(self, orders):
             super().__init__()
             
@@ -441,13 +496,19 @@ if gui:
             card_layout.setContentsMargins(10, 10, 10, 10)
 
             # ======= Header (Cafe Info) =======
-            header = QVBoxLayout()
-            title = QLabel("<b>Mini Cafe</b>")
-            title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            address = QLabel("Jl. Kembang Harum XI xy-2\nPhone: 1234567890\nJakarta Barat")
-            address.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            header.addWidget(title)
-            header.addWidget(address)
+            if orders[0]["payment_method"]:
+                header = QVBoxLayout()
+                title = QLabel("<b>Mini Cafe</b>")
+                title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                address = QLabel("Jl. Kembang Harum XI xy-2\nPhone: 1234567890\nJakarta Barat")
+                address.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                header.addWidget(title)
+                header.addWidget(address)
+            else:
+                header = QVBoxLayout()
+                title = QLabel("<h2>Temporary Invoice</h2>")
+                title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                header.addWidget(title)
 
             # ======= Order Info =======
             if orders:
@@ -540,60 +601,62 @@ if gui:
             main_layout.addWidget(print_button, alignment=Qt.AlignmentFlag.AlignCenter)
             self.setLayout(main_layout)
 
+    class Ticket(Printable):
+        def __init__(self, orders):
+            super().__init__()
+            
+            self.setWindowTitle("Order Summary")
+            self.setFixedWidth(330)   
+            self.adjustSize()    
+        
+             # ======= Main Layout =======
+            main_layout = QVBoxLayout()
+            main_layout.setContentsMargins(10, 10, 10, 10)
 
-        def print_receipt(self):
-            """Shows a print preview before printing the receipt."""
-            printer = QPrinter(QPrinter.PrinterMode.ScreenResolution)
+            # ======= Card Frame (Receipt Border) =======
+            card = QFrame()
+            card.setFrameStyle(QFrame.Shape.NoFrame)
+            card.setLineWidth(1)
+            card.setStyleSheet("font-family: monospace; background-color: white; color: black;")
 
-            # Set A4 page size & orientation
-            printer.setPageSize(QPageSize(QPageSize.PageSizeId.A4Small))
-            printer.setPageOrientation(QPageLayout.Orientation.Portrait)
+            card_layout = QVBoxLayout()
+            card_layout.setContentsMargins(10, 10, 10, 10)
 
-            # Create Print Preview Dialog
-            preview_dialog = QPrintPreviewDialog(printer, self)
-            preview_dialog.resize(900, 700)  
-            preview_dialog.setWindowTitle("Print Preview - Receipt") 
-            preview_dialog.paintRequested.connect(lambda p: self.render_receipt(p))
-            preview_dialog.exec()  # Show preview
+            # ======= Header (Cafe Info) =======
+            header = QVBoxLayout()
+            title = QLabel("<h2>Order Summary</h2>")
+            title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            title.setStyleSheet("border-bottom:1px dashed black; padding: 5px;")
+            header.addWidget(title)
 
-        def render_receipt(self, printer):
-            """Handles rendering the receipt to the printer or print preview."""
-            painter = QPainter(printer)
+            # ======= Items List =======
+            items_layout = QHBoxLayout()
+            left_items = QVBoxLayout()
+            
+            left_items.addWidget(QLabel("<b>Items</b>"))
 
-            # Get the printable area (adjust for margins)
-            page_rect = printer.pageRect(QPrinter.Unit.Millimeter)
-            widget_rect = self.findChild(QFrame).rect()  
-
-            # Convert QRect to float values
-            page_width = page_rect.width()
-            page_height = page_rect.height()
-            widget_width = widget_rect.width()
-            widget_height = widget_rect.height()
-
-            # Set background to white
-            painter.fillRect(printer.pageRect(QPrinter.Unit.Point), Qt.GlobalColor.white)
-
-            # Calculate proper scaling
-            scale_x = page_width / widget_width * 2
-            scale_y = page_height / widget_height * 2 
-            scale = min(scale_x, scale_y)  
-
-            # Apply transformations to center and scale the receipt
-            painter.translate(page_width / 2 + 480, page_height / 2 + 700)
-            painter.scale(scale, scale)
-            painter.translate(-widget_width / 2, -widget_height / 2)
-
-            # Render only the receipt card (not the entire window)
-            self.findChild(QFrame).render(painter)
-
-            painter.end()
+            for idx, item in enumerate(orders, start=1):
+                item_name = item["item_name"]
                 
-        def printer_window(orders):
-            app = QApplication([])
-            window = Receipt(orders)
-            window.show()
-            app.exec()
+                quantity = item["quantity"]
+                
+                left_items.addWidget(QLabel(f"{idx}. {item_name} x {quantity}"))
 
+            items_layout.addLayout(left_items)
+            # ======= Print Button =======
+            print_button = QPushButton("Print Order")
+            print_button.clicked.connect(self.print_receipt)
+
+            # ======= Add Widgets to Card Layout =======
+            card_layout.addLayout(header)
+            card_layout.addLayout(items_layout)
+            card.setLayout(card_layout)
+
+            # ======= Add Card to Main Layout =======
+            main_layout.addWidget(card)
+            main_layout.addWidget(print_button, alignment=Qt.AlignmentFlag.AlignCenter)
+            self.setLayout(main_layout)
+    
 class Emailer:
     def __init__(self, receiver_email):
         self.sender_email = "minipos.tech@gmail.com"

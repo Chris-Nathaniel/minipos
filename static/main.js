@@ -389,7 +389,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }, 5); 
         
                 setTimeout(() => {
-                    printTheReceipt(source, orderitems);
+                    printTheReceipt(source, orderitems, 'view');
                 }, 1000);
 
             }catch (error){
@@ -426,7 +426,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 }, 5);
 
                 setTimeout(() => {
-                    printTheReceipt(source, orderitems);
+                    printTheReceipt(source, orderitems, 'receipt');
                 }, 1000);
             } catch (error) {
                 console.error("Error retrieving order details:", error);
@@ -738,7 +738,7 @@ function receiptContent(){
     
 }
 
-async function printTheReceipt(source, orderitems){
+async function printTheReceipt(source, orderitems, cls){
     const content = receiptContent();
     if (source){
         try {
@@ -748,7 +748,8 @@ async function printTheReceipt(source, orderitems){
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    orderitems: orderitems
+                    orderitems: orderitems,
+                    cls: cls
                 })
             });
     

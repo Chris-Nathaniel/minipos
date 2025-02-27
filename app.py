@@ -766,7 +766,9 @@ def run_flask():
         if request.method == "POST":
             data = request.get_json()
             receipt = data['orderitems']
-            multiprocessing.Process(target=Receipt.printer_window, args=(receipt,)).start()
+            cls = data['cls']
+            cls = Ticket if cls == 'view' else Receipt
+            multiprocessing.Process(target=Printable.printer_window, args=(cls,receipt)).start()
             # Send a success response
             return jsonify({"message": "HTML received successfully"}), 200
         
