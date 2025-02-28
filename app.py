@@ -482,6 +482,7 @@ def run_flask():
     def add_menu():
         if request.method == 'POST':
             session['menu'] = 'menu'
+            session['menu_choice'] = 'Add Menu'
             product_title = request.form.get('title')
             product_image = request.files['image']
             product_description = request.form.get('description')
@@ -503,7 +504,7 @@ def run_flask():
     @login_required
     def add_category():
         session['menu'] = 'category'
-        session['menu_choice'] = 'Add Category'  # Store the selected menu choice
+        session['menu_choice'] = 'Add Category'  
         inputCategory = request.form.get('category_title').lower()
         if inputCategory:
             try:
@@ -537,6 +538,7 @@ def run_flask():
     @login_required
     def edit_menu():
         if request.method == 'POST':
+            session['menu_choice'] = 'Edit Menu'
             id = parseInt(request.form.get('id'))
             name = request.form.get('item_name')
             category = request.form.get('category')
@@ -765,10 +767,12 @@ def run_flask():
     def receive_html():
         if request.method == "POST":
             data = request.get_json()
+            business = dict(Business.get_business()) if Business.get_business() else Business()
+            
             receipt = data['orderitems']
             cls = data['cls']
             cls = Ticket if cls == 'view' else Receipt
-            multiprocessing.Process(target=Printable.printer_window, args=(cls,receipt)).start()
+            multiprocessing.Process(target=Printable.printer_window, args=(cls,receipt, business)).start()
             # Send a success response
             return jsonify({"message": "HTML received successfully"}), 200
         

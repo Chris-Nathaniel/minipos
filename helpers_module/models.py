@@ -4,10 +4,10 @@ from helpers_module.__init__ import *
 
 
 class Business:
-    def __init__(self, name, address, contact, email):
+    def __init__(self, name="Sleeping Giant Inn", address="location", contact="", email=""):
         self.name = name
-        self.address = address
-        self.contact = contact
+        self.address = address 
+        self.contact = contact 
         self.email = email
 
     def insert_business(self):
@@ -469,14 +469,14 @@ if gui:
             painter.end()
 
         
-        def printer_window(cls,orders):
+        def printer_window(cls,orders, business):
             app = QApplication([])
-            window = cls(orders)
+            window = cls(orders, business)
             window.show()
             app.exec()
 
     class Receipt(Printable):
-        def __init__(self, orders):
+        def __init__(self, orders, business):
             super().__init__()
             
             self.setWindowTitle("Receipt")
@@ -499,9 +499,9 @@ if gui:
             # ======= Header (Cafe Info) =======
             if orders[0]["payment_method"]:
                 header = QVBoxLayout()
-                title = QLabel("<b>Mini Cafe</b>")
+                title = QLabel(f"<b>{business['name'] if isinstance(business, dict) else business.name}</b>")
                 title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                address = QLabel("Jl. Kembang Harum XI xy-2\nPhone: 1234567890\nJakarta Barat")
+                address = QLabel(f"{business['address'] if isinstance(business, dict) else business.address}\nPhone: {business['contact'] if isinstance(business, dict) else business.contact}\nEmail: {business['email'] if isinstance(business, dict) else business.email}")
                 address.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 header.addWidget(title)
                 header.addWidget(address)
