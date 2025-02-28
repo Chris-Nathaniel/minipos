@@ -481,10 +481,12 @@ def run_flask():
 
     @app.route('/sync_payment/<on>', methods=['GET'])
     def sync_payment(on):
+        on = formatOrderNumber(on)
         transaction_status = core.transactions.status(on)['transaction_status']
         # If the transaction is successful
         if transaction_status == 'settlement':
             # Update the payment status to 'paid' in the database
+            on = reverseFormatOrderNumber(on)
             Billing.update_payment_status(on)
 
         return redirect('/orders')

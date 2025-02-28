@@ -89,16 +89,16 @@ def generate_order_number(prefix):
     return new_order_number
 
 def formatOrderNumber(orderNumber):
-    result = f"{orderNumber}{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    result = f"{orderNumber}{date.today()}"
     return result
 
 def reverseFormatOrderNumber(formattedOrderNumber):
-    today_str = datetime.now().strftime('%Y%m%d%H%M%S')
+    today_str = str(date.today())
     orderNumber = formattedOrderNumber.removesuffix(today_str)
     return orderNumber
 
 def clear_session():
-    keys_to_keep = ['user_id']  # List of keys you want to keep
+    keys_to_keep = ['user_id']
     keys_to_delete = [key for key in session.keys() if key not in keys_to_keep]
     
     for key in keys_to_delete:
