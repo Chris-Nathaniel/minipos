@@ -32,14 +32,18 @@ def run_flask():
         query = request.args.get('search')
         # fetch menu list by category
         categories = Menu.get_category()
+        # put the category into a list
         valid_categories = [row[0].title() for row in categories]
 
         tickets = Discount.get_active_discount_ticket()
         if query:
+            # if query return the search result
             main = Menu.search_menu(query)
         elif category == 'menu':
+            # if category is menu return all menu
             main = Menu.get_all_menu()
         elif category in valid_categories:
+            # if category is chosen return the menu to that category
             main = Menu.search_menu_category(category)
         else:
             session['categories'] = [dict(item) for item in categories]
@@ -48,6 +52,7 @@ def run_flask():
         if not main:
             session['category'] = category
 
+        # initialize billing
         billing = Billing(session)
         billing.format_currency()
 
@@ -97,7 +102,7 @@ def run_flask():
         
         if request.method == "POST":
             """Register user"""
-            # Ensure username was submitted
+            # get all users input
             username = request.form.get('username')
             password = request.form.get('password')
             confirmation = request.form.get('confirmation')
@@ -127,7 +132,6 @@ def run_flask():
             
             return render_template("register.html")
 
-
     @app.route("/logout")
     def logout():
         """Log user out"""
@@ -141,47 +145,57 @@ def run_flask():
     @app.route('/add_to_cart', methods=['POST'])
     @login_required
     def add_to_cart():
+        # check if cart is in session
         if 'cart' not in session:
             session['cart'] = []
         # retrieving data
         data = request.json
+        # add item to cart
         Cart.update_cart_item(data, session)
+        # calculate the cart total
         Cart.calculate_cart_totals(session)
-        cash = session.get('cashPaid', 0)
+        # load the billing
         billing = Billing(session)
+        # Apply the discount to the new total
         billing.discount = billing.discount/100
         if billing.discount:
             billing.total = Discount.addDiscount(parseInt(billing.total), parseInt(billing.tax), billing.discount)
             session['total'] = '{:,.0f}'.format(billing.total)
             
-        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount'], 'voucher': billing.voucherDetail}), 200
+        return jsonify({'cart': billing.cart, 'total': billing.total, 'tax': billing.tax, 'cashPaid': billing.cashValue, 'itemCount': billing.itemCount, 'voucher': billing.voucherDetail}), 200
 
 
     @app.route('/remove_from_cart', methods=['POST'])
     @login_required
     def remove_from_cart():
+        # retrieving data
         data = request.json
+        # remove item from cart
         Cart.remove_cart_item(data, session)
+        # calculate the cart total
         Cart.calculate_cart_totals(session)
-        cash = session.get('cashPaid', 0)
+        # load the billing       
         billing = Billing(session)
+        # Apply the discount to the new total
         billing.discount = billing.discount/100
         if billing.discount:
             billing.total = Discount.addDiscount(parseInt(billing.total), parseInt(billing.tax), billing.discount)
             session['total'] = '{:,.0f}'.format(billing.total)
 
-        return jsonify({'cart': session['cart'], 'total': session['total'], 'tax': session['tax'], 'cashPaid': cash, 'itemCount': session['itemCount'], 'voucher': billing.voucherDetail}), 200
+        return jsonify({'cart': billing.cart, 'total': billing.total, 'tax': billing.tax, 'cashPaid': billing.cash, 'itemCount': billing.itemCount, 'voucher': billing.voucherDetail}), 200
 
 
     @app.route('/process_order', methods=['POST', 'GET'])
     @login_required
     def confirm_order():
-
-        orders = session.get("cart", [])
+        # load the cart
         billing = Billing(session, request.form)
+        orders = billing.cart
         billing.total = parseInt(billing.total)
+        # generate order number
         order_number = generate_order_number("TESTORD-")
         
+        # handle if cashpaid is less than the invoice total and payment method is cash
         if int(billing.cashValue) < billing.total and billing.payment_method == "Cash":
             flash("Invalid paid amount!", "error")
             return redirect('/menu')
@@ -194,9 +208,8 @@ def run_flask():
         if billing.deliveryType == "take out" and not billing.payment_method:
             flash("Error: Takeaway orders must provide a payment method", "error")
             return redirect("/menu")
+        
         #process payments
-        print(f"Process Order Cash Value: {billing.cashValue}")
-        print(f"Process Order total {billing.total}")
         payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
         if isinstance(payment_status, dict):
                 status = next(iter(payment_status), None) 
@@ -250,6 +263,7 @@ def run_flask():
 
     @app.route("/payment_status/<on>", methods=['POST', 'GET'])
     def check_payment_status(on):
+        # checking payment status
         status = Billing.check_payment_status(on)
 
         return jsonify({'payment_status': status})
@@ -262,9 +276,13 @@ def run_flask():
             # initalize orders
             orderType = request.args.get('type', 'dine in')
             status = request.args.get('status')
-            cashValue = parseInt(session.get('cashPaid', 0))
             payment = request.args.get('payment')
+            cashValue = parseInt(session.get('cashPaid', 0))
+            
+            # get discount tickets
             tickets = Discount.get_active_discount_ticket()
+
+            # load the orders based on status, ordertype
             billing = Billing(session)
             billing.reset()
             if orderType:
@@ -273,11 +291,12 @@ def run_flask():
             if status:
                 orders = Orders.search_orders_status(status)
                 orderType = ""
-
+            # if payment, load the billing details and load it to the  cart
             if payment:
                 order_details = Orders.fetch_order_details(payment)
                 billing.cart = billing.load_order_details(order_details)
 
+            # save the cart in session if exist
             if billing.cart:
                 session['billings'] = billing.cart
 
@@ -292,15 +311,17 @@ def run_flask():
         # check if request came from app gui or browser
         user_agent = request.headers.get('User-Agent', '')
         window = True if "QtWebEngine" in user_agent else False
+        # get the business details if exist else return the default business details
         business = dict(Business.get_business()) if Business.get_business() else Business()
+        # get the order number
         order_number = request.json['order_number']
         order_items = []
+        # get the order details
         data = Orders.fetch_invoice_details(order_number)
         
         # Convert the result into a list of dictionaries
         for row in data:
             order_items.append(dict(row))
-        print(order_items)
 
         return jsonify({'items': order_items, 'number': order_number, 'window':window, 'business':business})
 
@@ -356,24 +377,30 @@ def run_flask():
     @login_required
     def complete_payment():
         if request.method == 'POST':
+            # load everyhingto update the payments
             billings = session.get('billings', [])
             payment_method = request.form.get('paymentMethod')
             order_number = billings[0]['order_number']
             totalValue = parseInt(billings[0]['grand_total'])
             amount = request.form.get('cashValue')
-            order_type = Orders.fetch_order_details(order_number)[0]['type']
-
+            
             # set current Tab
+            order_type = Orders.fetch_order_details(order_number)[0]['type']
             current_Tab = order_type
 
+            # check if cashPaid is less than total invoice
             if int(amount) < parseInt(totalValue) and payment_method == "Cash":
                 flash("Invalid paid amount!", "error")
                 return redirect('/orders')
+            
+            # check status of payment
             status = Billing.update_payments(order_number, payment_method, totalValue, amount, core)
             if isinstance(status, dict):
                 status = next(iter(status), None) 
+                # handle if status failed
                 if status == "failed":
                     return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
+            # handle if status success
             if status != "success" and status != "not payment":
                 va_number, bank_name = status
                 return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=totalValue)
@@ -440,6 +467,7 @@ def run_flask():
     @app.route('/thank', methods=['POST'])
     def thank():
         order_number = request.form.get('order_number')
+        # check payment status
         status = Billing.check_payment_status(order_number)
         if status == 'paid':
             clear_session()
@@ -480,11 +508,13 @@ def run_flask():
         if request.method == 'POST':
             session['menu'] = 'menu'
             session['menu_choice'] = 'Add Menu'
+            # get the input request
             product_title = request.form.get('title')
             product_image = request.files['image']
             product_description = request.form.get('description')
             product_price = request.form.get('price')
             product_category = request.form.get('category')
+            # insert product if exist
             if product_title and product_price and product_category and product_image:
                 try:
                     product_image_url = saveImage(product_image)
@@ -502,7 +532,9 @@ def run_flask():
     def add_category():
         session['menu'] = 'category'
         session['menu_choice'] = 'Add Category'  
+        # get input from category
         inputCategory = request.form.get('category_title').lower()
+        # insert category if exist
         if inputCategory:
             try:
                 Menu.add_category(inputCategory)
@@ -514,7 +546,7 @@ def run_flask():
     @login_required
     def remove_category():
         session['menu'] = 'category'
-        session['menu_choice'] = 'Add Category'  # Store the selected menu choice
+        session['menu_choice'] = 'Add Category'  
         deleteCategory = request.form.get('category').lower()
         if deleteCategory:
             try:
@@ -564,6 +596,7 @@ def run_flask():
     @login_required
     def discount():
         if request.method == "POST":
+            # get discount inpu
             title = request.form.get('title')
             discount = request.form.get('discAmount')
             description = request.form.get('discDescription')
@@ -571,6 +604,7 @@ def run_flask():
             discountCode = generate_random_string().upper()
             imageUrl = createImageUrl("https://www.casacenina.com/catalog/images/img_192/rico-99000-0421.jpg", f'{discount}% off')
 
+            # insert discount voucher to database
             try:
                 Discount.insert_discount(title, description, discount, expiration, discountCode, imageUrl)
             except Exception as e:
@@ -647,6 +681,7 @@ def run_flask():
     @app.route("/business-settings", methods=['POST'])
     @login_required
     def businessdetails():
+        # get all business details input from form
         business_name = request.form.get("businessName")
         business_address = request.form.get("businessAddress")
         business_contact = request.form.get("businessContact")
@@ -654,8 +689,10 @@ def run_flask():
         emailer = Emailer(business_email)
         business = Business(business_name, business_address, business_contact, business_email)
         if Business.get_business():
+            # if exist update business
             business.update_business()
         else:
+            # if not exist insert business
             business.insert_business()
         flash("business settings has been updated!")
         emailer.send_registration_email(business_name)
@@ -664,6 +701,7 @@ def run_flask():
     @app.route("/midtrans-integration", methods=["POST"])
     @login_required
     def midtransIntegration():
+        # get the input from request
         clk, svk = request.form.get("clk"), request.form.get('svk')
         dotenv_path = '.env'
         if not os.path.exists(dotenv_path):
@@ -671,6 +709,7 @@ def run_flask():
                 f.write("") 
         set_key(dotenv_path, 'PUBLIC_CLIENT', clk)
         set_key(dotenv_path, 'SERVER_KEY', svk)
+        # set key in environmental variable
         os.environ['PUBLIC_CLIENT'] = clk
         os.environ['SERVER_KEY'] = svk
         flash("Conecting to Midtrans, Please restart the app again to apply the changes!")
@@ -679,11 +718,13 @@ def run_flask():
     @app.route("/ngrok-settings", methods=["POST"])
     @login_required
     def ngrok_setup():
+        # get input from request
         domain, auth = request.form.get("domain"), request.form.get('auth')
         dotenv_path = '.env'
         if not os.path.exists(dotenv_path):
             with open(dotenv_path, 'w') as f:
                 f.write("") 
+        # set key in environmental variable
         set_key(dotenv_path, 'NGROK_DOMAIN', domain)
         set_key(dotenv_path, 'NGROK_AUTH', auth)
         os.environ['NGROK_DOMAIN'] = domain
@@ -713,10 +754,12 @@ def run_flask():
     def password_reset():
         if request.method == "POST":
             token = request.args.get('token')
+            # check token if exist in database
             dbtoken = Emailer.search_token(token)
             if not dbtoken:
                 flash("Token has expired, please request another from email!")
             else:
+                # get the users new password
                 password = request.form.get('new_password')
                 confirmation = request.form.get('confirm_password')
                 if not password:
@@ -763,11 +806,13 @@ def run_flask():
     @app.route("/receive-html", methods=["POST", "GET"])
     def receive_html():
         if request.method == "POST":
+            # get the data from request
             data = request.get_json()
             business = dict(Business.get_business()) if Business.get_business() else Business()
             receipt = data['orderitems']
             cls = data['cls']
             cls = Ticket if cls == 'view' else Receipt
+            # load the print window and receipt/ticket
             multiprocessing.Process(target=Printable.printer_window, args=(cls,receipt, business)).start()
             # Send a success response
             return jsonify({"message": "HTML received successfully"}), 200
