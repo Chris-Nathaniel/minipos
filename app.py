@@ -822,8 +822,8 @@ def run_flask():
 
 if __name__ == '__main__':
     # Run Flask in a separate thread
-    threading.Thread(target=run_flask, daemon=True).start() if gui else run_flask()
     threading.Thread(target=connect_ngrok, daemon=True).start()
-
+    threading.Thread(target=run_flask, daemon=True).start() if gui else run_flask()
+    
     # Run the PyQt6 GUI
     MainWindow.run_gui() if gui else None
