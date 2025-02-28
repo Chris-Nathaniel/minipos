@@ -5,6 +5,9 @@ set "SCRIPT_DIR=%~dp0"
 :: Change to the script directory
 cd /d "%SCRIPT_DIR:~0,-1%\.."
 
+:: Activate the .venv
+call .venv\Scripts\activate
+
 :: Run the Python application
 python app.py
 
