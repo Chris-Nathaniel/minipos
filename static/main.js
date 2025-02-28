@@ -350,7 +350,6 @@ function receiptActionButtons() {
 
             try {
                 const {source, orderitems} = await retrieveOrderDetails(orderNumber, 'receipt');
-                console.log(`${window}`);
 
                 setTimeout(async () => {
                     await retrieveOrderDetails(orderNumber, 'receipt', "hidden");
@@ -381,21 +380,22 @@ async function retrieveOrderDetails(orderNumber, actionType, display="show") {
 
         const data = await response.json();
         console.log(data.number);
+        console.log(data.business);
       
 
         if (document.title === 'thankyou') {
             result.innerHTML = receiptHtml(data.items, data.number);
         } else {
-            updateDetails(data.items, data.number, actionType, display);
+            updateDetails(data.items, data.number, actionType, display, data.business);
         }
-        return { source: data.window, orderitems: data.items }; 
+        return { source: data.window, orderitems: data.items}; 
     } catch (error) {
         console.error('Error:', error);
         return null; 
     }
 }
 
-function updateDetails(orderItems, orderNumber, actionType, display){
+function updateDetails(orderItems, orderNumber, actionType, display, business){
     const tbody = document.querySelector('tbody');
     var rows = Array.from(document.querySelectorAll('.orderitem'));
     const storedDataItem = localStorage.getItem('data-item');
@@ -409,10 +409,10 @@ function updateDetails(orderItems, orderNumber, actionType, display){
         // open the selected element and close the previous element if exist
         }else if (element){
             element.remove()
-            createOrderView(orderItems, orderNumber, tbody, rows, actionType, display);
+            createOrderView(orderItems, orderNumber, tbody, rows, actionType, display, business);
         // open the selected element
         }else{
-            createOrderView(orderItems, orderNumber, tbody, rows, actionType, display);
+            createOrderView(orderItems, orderNumber, tbody, rows, actionType, display, business);
         }
 
     } catch (error) {
@@ -421,7 +421,7 @@ function updateDetails(orderItems, orderNumber, actionType, display){
 
 }
 
-function createOrderView(orderItems, orderNumber, tbody, rows, actionType, display){
+function createOrderView(orderItems, orderNumber, tbody, rows, actionType, display, business){
     rows.forEach((row) => {
         const selectedRow = row.getAttribute('data-item');
         const collapseRow = document.createElement('tr');
@@ -435,7 +435,7 @@ function createOrderView(orderItems, orderNumber, tbody, rows, actionType, displ
             collapseRow.className = 'order-details-row theReceipt';
         }
         collapseRow.id = `collapseOrder${orderNumber}`;
-        let orderDetailsHTML = actionType == "view"? orderTicketHtml(orderItems, orderNumber) : receiptHtml(orderItems, orderNumber);
+        let orderDetailsHTML = actionType == "view"? orderTicketHtml(orderItems, orderNumber) : receiptHtml(orderItems, orderNumber, business);
         colspan.innerHTML = orderDetailsHTML;
 
         if (selectedRow == orderNumber) {
@@ -448,31 +448,40 @@ function createOrderView(orderItems, orderNumber, tbody, rows, actionType, displ
     });
 }
 
-function receiptHtml(orderItems, orderNumber){
+function receiptHtml(orderItems, orderNumber, business){
     return `
             <div class="d-flex justify-content-center">
                 <div class="card mb-3" style="width: 100%; max-width: 350px; font-family: monospace; border: 1px dashed #000;">
                     <div class="card-header text-center" style="border-bottom: 1px dashed #000; font-size: 10px;">
-                        <h5 class="mb-0">${orderItems[0].payment_method?'Mini Cafe':'Temporary Invoice'}</h5>
+                        <h5 class="mb-0">${orderItems[0].payment_method?business.name:'Temporary Invoice'}</h5>
                         ${orderItems[0].payment_method ? `
-                            <p>Jl. Kembang Harum XI xy-2</p>
-                            <p>Phone: 1234567890</p>
-                            <p>Jakarta Barat</p>
+                            <p>${business.address}</p>
+                            <p>${business.contact}</p>
+                            <p>${business.email}</p>
                         ` : ''}
                     </div>
                     <div class="card-body p-2" style="text-align:left; font-size: 11px;">
                         <p class="mb-0">Order #${orderNumber}</p>
                         <p class="mb-0">Invoice Number: ${orderItems[0].invoice_number}</p>
                         <hr style="border-top: 1px dashed #000; margin-bottom:3px; margin-top: 4px;">
-
                         <div class="detailWrapper" style="display:flex; flex-direction:row; padding: 5px 5px;">
                             <div class="col" style="max-width:100%; text-align:left; font-size: 11px;">
                                 <p class="mb-1">Items</p>
                                 ${orderItems.map((order, i) => `
                                     <p style="margin-bottom:2px;">${i+1}.${order.item_name}</p>
                                     <small style="position:relative; top:-8px; text-align:left">${formatCurrency(order.price)}/pcs x ${order.quantity}</small>
-                                `).join('')}
-                                <p class="mt-2 mb-0">Tax:</p>
+                                `).join('')}                              
+                            </div>
+                            <div class="col" style="max-width:30%; text-align:end; font-size: 11px;">
+                                <p class="mb-1">Total</p>
+                                ${orderItems.map(order => `
+                                    <p style="margin-bottom:23px;">${formatCurrency(order.total)}</p>
+                                `).join('')}           
+                            </div>
+                        </div>
+                        <div class="detailWrapper" style="display:flex; flex-direction:row; padding: 5px 5px;">
+                            <div class="col" style="max-width:100%; text-align:left; font-size: 11px;">
+                                <p class="mt-0 mb-0">Tax:</p>
                                 <p class="mt-0 mb-0">Payment method:</p>
                                 <p class="mt-0 mb-0">Paid amount:</p>
                                 <p class="mt-0 mb-0">Change:</p>
@@ -480,11 +489,7 @@ function receiptHtml(orderItems, orderNumber){
                                 <p class="mt-0 mb-0">Grand Total:</p>
                             </div>
                             <div class="col" style="max-width:30%; text-align:end; font-size: 11px;">
-                                <p class="mb-1">Total</p>
-                                ${orderItems.map(order => `
-                                    <p style="margin-bottom:23px;">${formatCurrency(order.total)}</p>
-                                `).join('')}
-                                <hr style="margin-bottom: 5px;">
+                                <hr style="margin: 0px;">
                                 <p class="mb-0">${formatCurrency(orderItems.reduce((sum, order) => sum + order.total, 0)*0.10)}</p>
                                 <p class="mb-0">${orderItems[0].payment_method?orderItems[0].payment_method:"-"}</p>
                                 <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].payment_amount): "-"}</p>

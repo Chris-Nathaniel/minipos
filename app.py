@@ -291,11 +291,8 @@ def run_flask():
     def retrieve_details():
         # check if request came from app gui or browser
         user_agent = request.headers.get('User-Agent', '')
-        window = False
-        if "QtWebEngine" in user_agent:
-            window = True
-        else:
-            window = False
+        window = True if "QtWebEngine" in user_agent else False
+        business = dict(Business.get_business()) if Business.get_business() else Business()
         order_number = request.json['order_number']
         order_items = []
         data = Orders.fetch_invoice_details(order_number)
@@ -305,7 +302,7 @@ def run_flask():
             order_items.append(dict(row))
         print(order_items)
 
-        return jsonify({'items': order_items, 'number': order_number, 'window':window})
+        return jsonify({'items': order_items, 'number': order_number, 'window':window, 'business':business})
 
 
     @app.route("/update/<on>/<status>", methods=['POST', 'GET'])
@@ -768,7 +765,6 @@ def run_flask():
         if request.method == "POST":
             data = request.get_json()
             business = dict(Business.get_business()) if Business.get_business() else Business()
-            
             receipt = data['orderitems']
             cls = data['cls']
             cls = Ticket if cls == 'view' else Receipt
