@@ -255,7 +255,8 @@ class Billing:
             db.connection.commit()
             return "success"
         if payment_method == "m-banking":
-            param = bankTransfer(order_number, int(totalValue))
+            formattedordernumber = formatOrderNumber(order_number)
+            param = bankTransfer(formattedordernumber, int(totalValue))
             try:
                 charge_response = core.charge(param)
             except Exception as e:
@@ -471,7 +472,7 @@ if gui:
         
         def printer_window(cls,orders, business):
             app = QApplication([])
-            window = cls(orders, business)
+            window = cls(orders, business) if cls == Receipt else cls(orders)
             window.show()
             app.exec()
 
