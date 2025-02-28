@@ -31,7 +31,7 @@ there are a few things that installation.bat does:
 - install all dependencies from requirements.txt
 - set up env and sqlite3 database tables.
 
-## compatibality
+## Compatibality
 Since Minipos was developed for Windows, it is fully compatible with that operating system. Some functionality (such as .bat and .exe files) may not work properly on other operating systems.
 
 - Windows - fully-compatible.
@@ -40,15 +40,22 @@ Since Minipos was developed for Windows, it is fully compatible with that operat
 ## interface
 The program can run in windowed GUI mode or via a web browser, making it a flexible choice for different usage scenarios.
 
-## Features
-- Menu system - Allows users to create Orders
-- Cart system - Enables easy order selection before finalizing transactions.
+## App Features
+- Menu and Cart system- Allows users to create Orders, enables easy order selection before finalizing transactions.
+![alt text](http://url/to/img.png)
 - Order tracking - Keeps a record of past orders for easy reference.
+![alt text](http://url/to/img.png)
+- payment tracking - Keep track of orders payment status.
+![alt text](http://url/to/img.png)
 - Discount vouchers - Provides the ability to apply promotional discounts.
-- Menu customization - Allows full control over menu pricing
+![alt text](http://url/to/img.png)
+- Menu customization - Allows full control over menu pricing, description, name, category and images.
+![alt text](http://url/to/img.png)
 - Order management- Facilitates modifying or canceling orders as needed.
+![alt text](http://url/to/img.png)
 - Midtrans integration - Automate online banking transaction validation.
-- SMTP email support - Enables email receipts and notifications.
+![alt text](http://url/to/img.png)
+- SMTP email support - Email based password resets.
 
 ## Source Files
 
