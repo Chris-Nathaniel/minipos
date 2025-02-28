@@ -182,7 +182,7 @@ def run_flask():
             billing.total = Discount.addDiscount(parseInt(billing.total), parseInt(billing.tax), billing.discount)
             session['total'] = '{:,.0f}'.format(billing.total)
 
-        return jsonify({'cart': billing.cart, 'total': billing.total, 'tax': billing.tax, 'cashPaid': billing.cash, 'itemCount': billing.itemCount, 'voucher': billing.voucherDetail}), 200
+        return jsonify({'cart': billing.cart, 'total': billing.total, 'tax': billing.tax, 'cashPaid': billing.cashValue, 'itemCount': billing.itemCount, 'voucher': billing.voucherDetail}), 200
 
 
     @app.route('/process_order', methods=['POST', 'GET'])
@@ -299,6 +299,9 @@ def run_flask():
             # save the cart in session if exist
             if billing.cart:
                 session['billings'] = billing.cart
+                session['total'] = billing.total
+                session['tax'] = billing.tax
+                
 
             return render_template("orders.html", orders=orders, deliveryType=billing.deliveryType, cart=billing.cart, orderType=orderType, 
                                 cashValue=cashValue, tax=billing.tax, total=billing.total, status=status, cash=billing.cashValue, change=billing.change, 
@@ -648,7 +651,9 @@ def run_flask():
         session['discount'] = int(data['discount'])
         discount = session['discount']/100
         total = parseInt(session.get('total', 0))
+        print(total)
         tax = parseInt(session.get('tax', 0))
+        print(tax)
         discountedTotal = Discount.addDiscount(total, tax, discount)
         session['total'] = '{:,.0f}'.format(discountedTotal)
 
