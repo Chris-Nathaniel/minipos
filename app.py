@@ -481,13 +481,21 @@ def run_flask():
 
     @app.route('/sync_payment/<on>', methods=['GET'])
     def sync_payment(on):
-        on = formatOrderNumber(on)
-        transaction_status = core.transactions.status(on)['transaction_status']
-        # If the transaction is successful
-        if transaction_status == 'settlement':
-            # Update the payment status to 'paid' in the database
-            on = reverseFormatOrderNumber(on)
-            Billing.update_payment_status(on)
+        on = formatOrderNumber(on) 
+        try:
+            transaction_status = core.transactions.status(on).get('transaction_status', None)
+            
+            if transaction_status == 'settlement':
+                on = reverseFormatOrderNumber(on)  
+                Billing.update_payment_status(on)
+                flash("Payment successfully updated.", "success")
+            else:
+                flash(f"Payment status: {transaction_status}", "info")
+
+        except Exception as e:
+            logging.error(f"Error syncing payment for order {on}: {str(e)}")
+            flash("An error occurred while syncing payment.", "danger")
+            
 
         return redirect('/orders')
 
