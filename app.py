@@ -826,6 +826,7 @@ def run_flask():
             data = request.get_json()
             business = dict(Business.get_business()) if Business.get_business() else Business()
             receipt = data['orderitems']
+            print(receipt)
             cls = data['cls']
             cls = Ticket if cls == 'view' else Receipt
             # load the print window and receipt/ticket

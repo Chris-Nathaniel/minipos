@@ -951,13 +951,17 @@ function removeDiscountListener() {
 window.onload = function() {
     // Get the full text content of the paragraph
     let orderNumberText = document.getElementById('pro-order-number');
-    orderNumberText = orderNumberText? orderNumberText.textContent : 0;
+    if (orderNumberText){
+        orderNumberText = orderNumberText.textContent;
 
-    // Extract the actual order number by trimming and removing the label part
-    const orderNumber = orderNumberText.replace('Order ID:', '').trim();
-    console.log('Getting order number...');
-    console.log('Order Number:', orderNumber); // Output the order number to console
-    startPolling(orderNumber); // Start polling with the extracted order number
+        // Extract the actual order number by trimming and removing the label part
+        const orderNumber = orderNumberText.replace('Order ID:', '').trim();
+        console.log('Getting order number...');
+        console.log('Order Number:', orderNumber); // Output the order number to console
+        startPolling(orderNumber); // Start polling with the extracted order number
+
+    }
+    o
 
 };
 

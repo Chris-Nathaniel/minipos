@@ -143,6 +143,7 @@ class Cart:
     
 class Billing:
     def __init__(self, session, form=None):
+        # initialize everything
         self.cart = session.get('cart', [])
         self.total = session.get('total', 0)
         self.tax = session.get('tax', 0)
@@ -356,7 +357,7 @@ class Orders:
     def fetch_invoice_details(orderNumber):
         return db.execute("""
             SELECT orderitems.order_number, orderitems.item_id, orderitems.quantity,
-                orderitems.price, orderitems.total, menu_list.item_name,
+                orderitems.price, orderitems.total, menu_list.item_name, orderitems.created_at,
                 payments.invoice_number, payments.payment_method,
                 payments.payment_amount, payments.change, payments.payment_date, orders.total_amount, orders.discount
             FROM orderitems
@@ -481,7 +482,7 @@ if gui:
             super().__init__()
             
             self.setWindowTitle("Receipt")
-            self.setFixedWidth(330)   # Adjusted for print button
+            self.setFixedWidth(330) 
             self.adjustSize()
 
             # ======= Main Layout =======
@@ -520,11 +521,12 @@ if gui:
                 payment_method = orders[0]["payment_method"]
                 payment_amount = orders[0]["payment_amount"]
                 discount = orders[0]["discount"]
+                payment_date = orders[0]["payment_date"]
                 change =  0 if orders[0]["change"] < 0 else orders[0]["change"]  
             else:
                 order_number, invoice_number, total_amount, payment_method, payment_amount, discount, change = ("-", "-", 0, "-", "-", 0, 0)
 
-            order_info = QLabel(f"Order #{order_number}\nInvoice Number: {invoice_number}")
+            order_info = QLabel(f"Order #{order_number}\nInvoice Number: {invoice_number}\nPayment Date: {payment_date}")
             order_info.setAlignment(Qt.AlignmentFlag.AlignLeft)
             order_info.setStyleSheet("border-bottom: 1px dashed black; padding: 5px 0px; font-size: 11px; border-top: 1px dashed black;")
 
@@ -628,8 +630,12 @@ if gui:
             header = QVBoxLayout()
             title = QLabel("<h2>Order Summary</h2>")
             title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            title.setStyleSheet("border-bottom:1px dashed black; padding: 5px;")
+            date = QLabel(f"<small>Order Time: {orders[0]['created_at']}</small>")
+            date.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            date.setStyleSheet("border-bottom:1px dashed black; padding: 5px;")
+            
             header.addWidget(title)
+            header.addWidget(date)
 
             # ======= Items List =======
             items_layout = QHBoxLayout()
