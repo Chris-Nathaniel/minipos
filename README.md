@@ -42,20 +42,20 @@ The program can run in windowed GUI mode or via a web browser, making it a flexi
 
 ## App Features
 - Menu and Cart system- Allows users to create Orders, enables easy order selection before finalizing transactions.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/Menu.png)
 - Order tracking - Keeps a record of past orders for easy reference.
-![alt text](http://url/to/img.png)
 - payment tracking - Keep track of orders payment status.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/Orders.png)
 - Discount vouchers - Provides the ability to apply promotional discounts.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/Discount.png)
 - Menu customization - Allows full control over menu pricing, description, name, category and images.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/Customization.png)
 - Order management- Facilitates modifying or canceling orders as needed.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/action.png)
 - Midtrans integration - Automate online banking transaction validation.
-![alt text](http://url/to/img.png)
+![alt text](/static/images/midtransinter.png)
 - SMTP email support - Email based password resets.
+
 
 ## Source Files
 
