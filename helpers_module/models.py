@@ -234,25 +234,26 @@ class Billing:
             return "success"
         
     def update_payments(order_number, payment_method, totalValue, cashValue, core):
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # check if payment is cash
         if payment_method == "Cash":
             # save payments to database and generate invoice
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", cashValue, order_number))
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ?, payment_date = ? WHERE order_number = ?",
+                       (payment_method, "paid", cashValue, current_timestamp, order_number))
             db.connection.commit()
             return "success"
         
         # check if payment is card
         if payment_method == "Card":
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", totalValue, order_number))
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ?, payment_date = ? WHERE order_number = ?",
+                       (payment_method, "paid", totalValue, current_timestamp, order_number))
             db.connection.commit()
             return "success"
         
         # check if payment is Bca Qris
         if payment_method == "BCA Qris":
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "paid", totalValue, order_number))
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ?, payment_date = ? WHERE order_number = ?",
+                       (payment_method, "paid", totalValue, current_timestamp, order_number))
             db.connection.commit()
             return "success"
         if payment_method == "m-banking":
@@ -265,8 +266,8 @@ class Billing:
                 return message    
             va_number = charge_response['va_numbers'][0]['va_number']
             bank_name = charge_response['va_numbers'][0]['bank']
-            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ? WHERE order_number = ?",
-                       (payment_method, "pending", totalValue, order_number))
+            db.execute("UPDATE payments SET payment_method = ?, payment_status = ?, payment_amount = ?, payment_date = ? WHERE order_number = ?",
+                       (payment_method, "pending", totalValue, current_timestamp, order_number))
             db.connection.commit()
 
             return va_number, bank_name
@@ -584,7 +585,7 @@ if gui:
             # ======= Thank You Note =======
             footer = QLabel("<small>Thank you, please come again!</small>")
             footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            footer.setStyleSheet("padding: 5px 0px; font-size: 11px; border-top: 1px dashed black; display:block")
+            footer.setStyleSheet("padding: 5px 0px; font-size: 11px; border-top: 1px dashed black;")
 
             # ======= Print Button =======
             print_button = QPushButton("Print Receipt")
