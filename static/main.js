@@ -397,7 +397,7 @@ async function retrieveOrderDetails(orderNumber, actionType, display="show") {
 
 function updateDetails(orderItems, orderNumber, actionType, display, business){
     const tbody = document.querySelector('tbody');
-    var rows = Array.from(document.querySelectorAll('.orderitem'));
+    let rows = Array.from(document.querySelectorAll('.orderitem'));
     const storedDataItem = localStorage.getItem('data-item');
     const prevActionType = localStorage.getItem('actionType');
     try {
@@ -544,7 +544,7 @@ function receiptContent(){
         alert("No order details found to print!");
         return "";
     }
-    var html_content = 
+    let html_content = 
     `<html>
         <head>
             <title>Print Order</title>
@@ -629,15 +629,16 @@ function payment(){
 };
 
 document.addEventListener("DOMContentLoaded", function(){
-    var check = localStorage.getItem('form-check');
-    var cashAmount = document.querySelector('.cash_payment').textContent;
+    let check = localStorage.getItem('form-check');
+    let cashAmount = document.querySelector('.cash_payment')
+    cashAmount = cashAmount ? cashAmount.textContent : 0;
     if (check === 'open' && cashAmount != 0) {
         payment();
     }
 });
 
 function showpayment(){
-    var paymethod = document.querySelectorAll(".form-check");
+    let paymethod = document.querySelectorAll(".form-check");
     localStorage.setItem('form-check', 'open');
     if (typeof paymentOpen == 'undefined'){
         paymentOpen = false;
@@ -658,7 +659,7 @@ function showpayment(){
 function showModal(){
     document.getElementById('cash').addEventListener('click', function() {
         if (this.checked) {
-            var myModal = new bootstrap.Modal(document.getElementById('paidAmount'));
+            let myModal = new bootstrap.Modal(document.getElementById('paidAmount'));
             myModal.show();
         }
     });
@@ -667,12 +668,12 @@ function showModal(){
 function paymentSubmission(){
     document.getElementById('cashAmountForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        var cashAmount = parseInt(document.getElementById('cashAmount').value);
-        var formatted_cashAmount = formatCurrency(parseInt(cashAmount));
-        var totalValue = parseCurrency(document.querySelector("#cart-total .list-group-item .row .col-md-4 span").textContent.trim());
-        var change = formatCurrency(cashAmount - totalValue);
-        var paymentMethodSelection = document.querySelector('.form-check');
-        var cashInput = paymentMethodSelection.querySelector('input[name="cashValue"]');
+        let cashAmount = parseInt(document.getElementById('cashAmount').value);
+        let formatted_cashAmount = formatCurrency(parseInt(cashAmount));
+        let totalValue = parseCurrency(document.querySelector("#cart-total .list-group-item .row .col-md-4 span").textContent.trim());
+        let change = formatCurrency(cashAmount - totalValue);
+        let paymentMethodSelection = document.querySelector('.form-check');
+        let cashInput = paymentMethodSelection.querySelector('input[name="cashValue"]');
 
         // Set the HTML of the "Paid Amount" span to the input value
         document.querySelector('.cash_payment').innerHTML = formatted_cashAmount;
@@ -702,26 +703,27 @@ function addCashPaid(cashPaid){
 /* ========== Discount Vouchers ========== */
 document.addEventListener("DOMContentLoaded", function(){
     const voucherSearchForm = document.getElementById("voucherSearch")
-    voucherSearchForm.addEventListener('submit', function(e){
-        e.preventDefault();
-        const code = document.getElementById('codeSearch').value;
-
-        fetch('/searchVoucher', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({code: code})
-        }).then(response => response.json())
-        .then(data =>{
-            discountVouchers(data.tickets)
+    if (voucherSearchForm) {
+        voucherSearchForm.addEventListener('submit', function(e){
+            e.preventDefault();
+            const code = document.getElementById('codeSearch').value;
+    
+            fetch('/searchVoucher', {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({code: code})
+            }).then(response => response.json())
+            .then(data =>{
+                discountVouchers(data.tickets);
+            })
+    
         })
-
-    })
+    } 
 })
 function discountVouchers(tickets) {
     const modalBody = document.querySelector("#discountSelection .modal-body");
-
 
     // Clear previous content
     const existingOffers = modalBody.querySelectorAll('.offer-item');
@@ -807,8 +809,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     </div>
                 `;
 
-                var myModal = document.getElementById('discountSelection');
-                var backdrop = document.querySelector('.modal-backdrop.show');
+                let myModal = document.getElementById('discountSelection');
+                let backdrop = document.querySelector('.modal-backdrop.show');
                 if (myModal) myModal.classList.remove('show');
                 if (backdrop) backdrop.classList.remove('show');
                 
@@ -948,7 +950,8 @@ function removeDiscountListener() {
 
 window.onload = function() {
     // Get the full text content of the paragraph
-    const orderNumberText = document.getElementById('pro-order-number').textContent;
+    let orderNumberText = document.getElementById('pro-order-number');
+    orderNumberText = orderNumberText? orderNumberText.textContent : 0;
 
     // Extract the actual order number by trimming and removing the label part
     const orderNumber = orderNumberText.replace('Order ID:', '').trim();
@@ -1072,12 +1075,13 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteButton.classList.toggle("showdeletebutton", anyChecked);
         deleteButton.classList.toggle("hidedeletebutton", !anyChecked);
     }
-
-    selectAll.addEventListener("click", function () {
-        checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
-        toggleDeleteButton();
-    });
-
+    if (selectAll){
+        selectAll.addEventListener("click", function () {
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+            toggleDeleteButton();
+        });
+    }
+    
     checkboxes.forEach(checkbox => checkbox.addEventListener("click", toggleDeleteButton));
 });
 
@@ -1132,19 +1136,19 @@ function parseCurrency(currencyStr) {
 }
 /*========== Modals ==========*/
 function showDiscount(){
-    var myModal = new bootstrap.Modal(document.getElementById('discountSelection'));
+    let myModal = new bootstrap.Modal(document.getElementById('discountSelection'));
     myModal.show();
 }
 
 function confirm_changes(){
     const confirmSaveButton = document.getElementById('confirmSaveButton');
-    var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
+    let myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
     myModal.show();
 
     document.getElementById('saveChangesButton').setAttribute('form','editForm');
 
-     // Handle the confirmation button click
-    confirmSaveButton.addEventListener('click', function() {
+        // Handle the confirmation button click
+        confirmSaveButton.addEventListener('click', function() {
         // Submit the form
         form.submit();
     });
@@ -1153,17 +1157,23 @@ function confirm_changes(){
 document.addEventListener('DOMContentLoaded', function(){
     const saveChangesButton = document.querySelector('.confirm-changes');
     const confirmSaveButton = document.getElementById('confirmSaveButton');
-    saveChangesButton.addEventListener('click', function(event){
-        event.preventDefault()
-        var myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
-        myModal.show();
-
-    })
-     // Handle the confirmation button click
-     confirmSaveButton.addEventListener('click', function() {
+    if(saveChangesButton){
+        saveChangesButton.addEventListener('click', function(event){
+            event.preventDefault()
+            let myModal = new bootstrap.Modal(document.getElementById('saveChangesModal'));
+            myModal.show();
+    
+        })
+    }
+    if(confirmSaveButton){
+        // Handle the confirmation button click
+        confirmSaveButton.addEventListener('click', function() {
         // Submit the form
         form.submit();
     });
+
+    }
+     
 
 })
 
