@@ -89,11 +89,12 @@ def generate_order_number(prefix):
     return new_order_number
 
 def formatOrderNumber(orderNumber):
-    result = f"{orderNumber}{date.today()}"
+    today_str = date.today().strftime("%Y%m%d")
+    result = f"{orderNumber}{today_str}"
     return result
 
 def reverseFormatOrderNumber(formattedOrderNumber):
-    today_str = str(date.today())
+    today_str = date.today().strftime("%Y%m%d")
     orderNumber = formattedOrderNumber.removesuffix(today_str)
     return orderNumber
 
