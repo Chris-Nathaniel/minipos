@@ -315,9 +315,10 @@ def run_flask():
         user_agent = request.headers.get('User-Agent', '')
         window = True if "QtWebEngine" in user_agent else False
         # get the business details if exist else return the default business details
-        business = dict(Business.get_business()) if Business.get_business() else Business()
+        business = dict(Business.get_business()) if Business.get_business() else Business().__dict__
         # get the order number
         order_number = request.json['order_number']
+        print(order_number)
         order_items = []
         # get the order details
         data = Orders.fetch_invoice_details(order_number)
