@@ -314,11 +314,11 @@ class Billing:
         return status
     
     def update_payment_status(orderNumber):
-        db.execute("UPDATE payments SET payment_status = 'paid' WHERE order_number = ?", (orderNumber,))
+        db.execute("UPDATE payments SET payment_status = ? WHERE order_number = ?", ("paid", orderNumber,))
         db.connection.commit()
 
     def revert_pending(orderNumber):
-        db.execute("UPDATE payments SET payment_status = 'unpaid' WHERE order_number = ?", (orderNumber,))
+        db.execute("UPDATE payments SET payment_status = ? WHERE order_number = ?", ("unpaid", orderNumber,))
         db.connection.commit()
 
     def insert_virtual_accounts(order_number, va_number, bank_name, total_amount):
@@ -330,8 +330,6 @@ class Billing:
         result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= DATETIME('now')",
                     (order_number,)).fetchone()
         return result 
-
-        
 
     def reset(self):
         self.cashValue = 0
@@ -377,7 +375,7 @@ class Orders:
         return db.execute("""
             SELECT orderitems.order_number, orderitems.item_id, orderitems.quantity,
                 orderitems.price, orderitems.total, menu_list.item_name, orderitems.created_at,
-                payments.invoice_number, payments.payment_method,
+                payments.invoice_number, payments.payment_method, payments.payment_status,
                 payments.payment_amount, payments.change, payments.payment_date, orders.total_amount, orders.discount
             FROM orderitems
             JOIN menu_list ON orderitems.item_id = menu_list.id
@@ -519,7 +517,7 @@ if gui:
             card_layout.setContentsMargins(10, 10, 10, 10)
 
             # ======= Header (Cafe Info) =======
-            if orders[0]["payment_method"]:
+            if orders[0]["payment_method"] and orders[0]["payment_status"] != "pending":
                 header = QVBoxLayout()
                 title = QLabel(f"<b>{business['name'] if isinstance(business, dict) else business.name}</b>")
                 title.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -538,7 +536,7 @@ if gui:
                 order_number = orders[0]["order_number"]
                 invoice_number = orders[0]["invoice_number"]
                 total_amount = orders[0]["total_amount"]
-                payment_method = orders[0]["payment_method"]
+                payment_method = '-' if orders[0]["payment_status"] == "pending" else orders[0]["payment_method"] 
                 payment_amount = orders[0]["payment_amount"]
                 discount = orders[0]["discount"]
                 payment_date = orders[0]["payment_date"]

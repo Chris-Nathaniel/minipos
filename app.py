@@ -229,6 +229,7 @@ def run_flask():
             return redirect(f"/waiting_for_payment/{order_number}")
 
     @app.route("/waiting_for_payment/<on>", methods=['GET'])
+    @login_required
     def waiting_for_payment(on):
         result = Billing.search_virtual_accounts(on)
         if not result:
@@ -240,9 +241,13 @@ def run_flask():
         order_number = result["order_number"]
         total_amount = formatCurrency("Rp", result["total_amount"])
         
-
         return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=total_amount)
 
+    @app.route("/cancel_payment", method=["POST"])
+    @login_required
+    def cancel_payment():
+        on = request.form.get("order_number")
+        Billing.revert_pending(on)
 
     @app.route('/midtrans/notification', methods=['POST'])
     def midtrans_notification():

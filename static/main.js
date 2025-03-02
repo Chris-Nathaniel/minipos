@@ -453,8 +453,8 @@ function receiptHtml(orderItems, orderNumber, business){
             <div class="d-flex justify-content-center">
                 <div class="card mb-3" style="width: 100%; max-width: 350px; font-family: monospace; border: 1px dashed #000;">
                     <div class="card-header text-center" style="border-bottom: 1px dashed #000; font-size: 10px;">
-                        <h5 class="mb-0">${orderItems[0].payment_method?business.name:'Temporary Invoice'}</h5>
-                        ${orderItems[0].payment_method ? `
+                        <h5 class="mb-0">${orderItems[0].payment_method && orderItems[0].payment_status != 'pending'?business.name:'Temporary Invoice'}</h5>
+                        ${orderItems[0].payment_method && orderItems[0].payment_status != 'pending'? `
                             <p>${business.address}</p>
                             <p>${business.contact}</p>
                             <p>${business.email}</p>

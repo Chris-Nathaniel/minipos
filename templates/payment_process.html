@@ -41,9 +41,10 @@
             <button class="btn btn-dark btn-proceed" id="proceed">Check Payment</button>
         </form>
         <!-- Cancel Payment Button -->
-        <a href="/orders">
+        <form action="/cancel_payment" method="POST">
             <button class="btn btn-danger btn-cancel">Cancel Payment</button>
-        </a>
+            <input type="hidden" name="order_number" value="{{ order_number }}">
+        </form>
     </div>
 </div>
 {% endblock %}
