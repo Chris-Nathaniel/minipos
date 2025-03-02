@@ -71,12 +71,12 @@
                                             <li>
                                                 {% if order['payment_status'] == 'unpaid' and order['status'] == 'new' %}
                                                 <a href="/edit_order?orders={{ order['order_number'] }}" style="text-decoration: none;">
-                                                    <button class="dropdown-item edit-order" type="button" data-order="{{ order['order_number'] }}">
+                                                    <button class="dropdown-item edit-order" type="button">
                                                         <i class="fas fa-pen"></i> Edit Order
                                                     </button>
                                                 </a>
                                                 {% endif %}
-                                            </li>                                            
+                                            </li>                             
                                             <li>
                                                 <button class="dropdown-item view-button" type="button" data-order="{{ order['order_number'] }}">
                                                     <i class="fas fa-eye"></i> View Order
@@ -104,6 +104,15 @@
                                                     </button>
                                                 </a>
                                             </li>
+                                            {% if order['payment_status'] == 'pending' %}    
+                                            <li>
+                                                <a href="/waiting_for_payment/{{order['order_number']}} " style="text-decoration: none;">
+                                                    <button class="dropdown-item continue-payment" type="button" data-order="{{ order['order_number'] }}">
+                                                        <i class="fas fa-hourglass-half"></i> Continue Payment
+                                                    </button>
+                                                </a>
+                                            </li>          
+                                            {% endif %} 
                                             <li><hr class="dropdown-divider"></li>
                                             <li>
                                                 <a class="dropdown-item" href="/update/{{ order['order_number'] }}/completed">

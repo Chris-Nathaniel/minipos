@@ -178,9 +178,10 @@ class Billing:
             self.cash = self.cashValue
     
     def insertOrders(orders, orderNumber, deliveryType, tableNumber, total, discount):
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # save order to database
-        result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount) VALUES (?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
-                        (orderNumber, deliveryType, tableNumber, "new", total, discount,)).fetchone()
+        result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount, order_date) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
+                        (orderNumber, deliveryType, tableNumber, "new", total, discount, current_timestamp)).fetchone()
         
         # Fetch the returned order number and order_date
         order_number, order_date = result
@@ -193,23 +194,24 @@ class Billing:
         
 
     def process_payments(orderNumber, paymentMethod, total, cashValue, core):
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # check if payment is cash
         if paymentMethod == "Cash":
         # save payments to database and generate invoice
-            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                    (orderNumber, paymentMethod, "paid", total, cashValue))
+            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount, payment_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (orderNumber, paymentMethod, "paid", total, cashValue, current_timestamp))
             db.connection.commit()
             return "success"
         # check if payment is card
         if paymentMethod == "Card":
-            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                    (orderNumber, paymentMethod, "paid", total, total))
+            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount, payment_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (orderNumber, paymentMethod, "paid", total, total, current_timestamp))
             db.connection.commit()
             return "success"
         # check if payment is Bca Qris
         if paymentMethod == "BCA Qris":
-            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                    (orderNumber, paymentMethod, "paid", total, total ))
+            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount, payment_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (orderNumber, paymentMethod, "paid", total, total, current_timestamp ))
             db.connection.commit()
             return "success"
         # check if payment is m-banking
@@ -223,13 +225,13 @@ class Billing:
                 return message    
             va_number = charge_response['va_numbers'][0]['va_number']
             bank_name = charge_response['va_numbers'][0]['bank']
-            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?, ?)",
-                    (orderNumber, paymentMethod, "pending", total, total))
+            db.execute("INSERT INTO payments (order_number, payment_method, payment_status, invoice_amount, payment_amount, payment_date) VALUES (?, ?, ?, ?, ?, ?)",
+                    (orderNumber, paymentMethod, "pending", total, total, current_timestamp))
             db.connection.commit()
             return va_number, bank_name
         if not paymentMethod:
-            db.execute("INSERT INTO payments (order_number, payment_status, invoice_amount, payment_amount) VALUES (?, ?, ?, ?)",
-                    (orderNumber, "unpaid", total, 0,))
+            db.execute("INSERT INTO payments (order_number, payment_status, invoice_amount, payment_amount, payment_date) VALUES (?, ?, ?, ?, ?)",
+                    (orderNumber, "unpaid", total, 0, current_timestamp))
             db.connection.commit()
             return "success"
         
@@ -315,6 +317,22 @@ class Billing:
         db.execute("UPDATE payments SET payment_status = 'paid' WHERE order_number = ?", (orderNumber,))
         db.connection.commit()
 
+    def revert_pending(orderNumber):
+        db.execute("UPDATE payments SET payment_status = 'unpaid' WHERE order_number = ?", (orderNumber,))
+        db.connection.commit()
+
+    def insert_virtual_accounts(order_number, va_number, bank_name, total_amount):
+        db.execute("INSERT INTO virtual_accounts (order_number, va_number, bank_name, total_amount) VALUES (?, ?, ?, ?)",
+                   (order_number, va_number, bank_name, total_amount))
+        db.connection.commit()
+
+    def search_virtual_accounts(order_number):
+        result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= DATETIME('now')",
+                    (order_number,)).fetchone()
+        return result 
+
+        
+
     def reset(self):
         self.cashValue = 0
         self.change = 0
@@ -378,14 +396,15 @@ class Orders:
         db.connection.commit()
 
     def update_order_items(cart, orderNumber):
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for order in cart:
             if 'order_time' in order:
                 db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
                            (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), order['order_time']))
                 db.connection.commit()
             else:
-                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, datetime('now'))",
-                           (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", ""))))
+                db.execute("INSERT INTO orderitems (order_number, item_id, quantity, price, order_time) VALUES (?, ?, ?, ?, ?)",
+                           (orderNumber, order['item_id'], order['item_quantity'], int(order['item_price'].replace(",", "")), current_timestamp))
                 db.connection.commit()
 class Ev:
     def __init__(self):

@@ -223,20 +223,23 @@ def run_flask():
         else:
             va_number, bank_name = payment_status
             clear_session()
-            session['va_number'] = va_number
-            session['bank_name'] = bank_name
-            session['order_number'] = order_number
-            session['total_amount'] = billing.total
+            Billing.insert_virtual_accounts(order_number, va_number, bank_name, billing.total)
+           
 
-            return redirect("/waiting_for_payment")
+            return redirect(f"/waiting_for_payment/{order_number}")
 
-    @app.route("/waiting_for_payment", methods=['GET'])
-    def waiting_for_payment():
-
-        va_number = session.get("va_number", 0)
-        bank_name = session.get("bank_name", 0)
-        order_number = session.get("order_number", 0)
-        total_amount = session.get("total_amount", 0)
+    @app.route("/waiting_for_payment/<on>", methods=['GET'])
+    def waiting_for_payment(on):
+        result = Billing.search_virtual_accounts(on)
+        if not result:
+            Billing.revert_pending(on)
+            return apology("the payment has expired")
+        result = dict(result)
+        va_number = result["va_number"]
+        bank_name = result["bank_name"]
+        order_number = result["order_number"]
+        total_amount = formatCurrency("Rp", result["total_amount"])
+        
 
         return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=total_amount)
 
