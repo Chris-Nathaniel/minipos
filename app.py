@@ -243,11 +243,12 @@ def run_flask():
         
         return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=total_amount)
 
-    @app.route("/cancel_payment", method=["POST"])
+    @app.route("/cancel_payment", methods=["POST"])
     @login_required
     def cancel_payment():
         on = request.form.get("order_number")
         Billing.revert_pending(on)
+        return redirect("/orders")
 
     @app.route('/midtrans/notification', methods=['POST'])
     def midtrans_notification():
@@ -486,7 +487,7 @@ def run_flask():
 
             return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
         else:
-            return redirect('/waiting_for_payment')
+            return redirect(f'/waiting_for_payment/{order_number}')
 
     @app.route('/sync_payment/<on>', methods=['GET'])
     def sync_payment(on):

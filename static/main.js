@@ -453,8 +453,8 @@ function receiptHtml(orderItems, orderNumber, business){
             <div class="d-flex justify-content-center">
                 <div class="card mb-3" style="width: 100%; max-width: 350px; font-family: monospace; border: 1px dashed #000;">
                     <div class="card-header text-center" style="border-bottom: 1px dashed #000; font-size: 10px;">
-                        <h5 class="mb-0">${orderItems[0].payment_method && orderItems[0].payment_status != 'pending'?business.name:'Temporary Invoice'}</h5>
-                        ${orderItems[0].payment_method && orderItems[0].payment_status != 'pending'? `
+                        <h5 class="mb-0">${orderItems[0].payment_method && !['pending', 'unpaid'].includes(orderItems[0].payment_status)?business.name:'Temporary Invoice'}</h5>
+                        ${orderItems[0].payment_method && !['pending', 'unpaid'].includes(orderItems[0].payment_status)? `
                             <p>${business.address}</p>
                             <p>${business.contact}</p>
                             <p>${business.email}</p>
@@ -491,7 +491,7 @@ function receiptHtml(orderItems, orderNumber, business){
                             <div class="col" style="max-width:30%; text-align:end; font-size: 11px;">
                                 <hr style="margin: 0px;">
                                 <p class="mb-0">${formatCurrency(orderItems.reduce((sum, order) => sum + order.total, 0)*0.10)}</p>
-                                <p class="mb-0">${orderItems[0].payment_method?orderItems[0].payment_method:"-"}</p>
+                                <p class="mb-0">${orderItems[0].payment_method && !['pending', 'unpaid'].includes(orderItems[0].payment_status)?orderItems[0].payment_method:"-"}</p>
                                 <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].payment_amount): "-"}</p>
                                 <p class="mb-0">${orderItems[0].payment_method?formatCurrency(orderItems[0].change): "-"}</p>
                                 <p class="mb-0">${orderItems[0].discount}%</p>

@@ -517,7 +517,8 @@ if gui:
             card_layout.setContentsMargins(10, 10, 10, 10)
 
             # ======= Header (Cafe Info) =======
-            if orders[0]["payment_method"] and orders[0]["payment_status"] != "pending":
+            if orders[0]["payment_method"] and orders[0]["payment_status"] not in ["pending", "unpaid"]:
+                print(orders[0]["payment_status"])
                 header = QVBoxLayout()
                 title = QLabel(f"<b>{business['name'] if isinstance(business, dict) else business.name}</b>")
                 title.setAlignment(Qt.AlignmentFlag.AlignCenter)
