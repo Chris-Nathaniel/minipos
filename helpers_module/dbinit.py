@@ -104,11 +104,11 @@ def create_database(name="database"):
             used BOOLEAN DEFAULT 0,
             FOREIGN KEY (business_id) REFERENCES business(id) ON DELETE CASCADE
         );
-        """
+        """,
         """
         CREATE TABLE virtual_accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            order_number TEXT NOT NULL UNIQUE,
+            order_number TEXT NOT NULL,
             va_number TEXT NOT NULL,
             bank_name TEXT NOT NULL,
             total_amount DECIMAL(10,2) NOT NULL,
