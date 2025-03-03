@@ -326,8 +326,9 @@ class Billing:
         db.connection.commit()
 
     def search_virtual_accounts(order_number):
-        result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= DATETIME('now')",
-                    (order_number,)).fetchone()
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= ?",
+                    (order_number, current_timestamp)).fetchone()
         return result 
 
     def reset(self):
