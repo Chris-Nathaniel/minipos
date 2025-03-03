@@ -177,8 +177,7 @@ class Billing:
             self.change = 0
             self.cash = self.cashValue
     
-    def insertOrders(orders, orderNumber, deliveryType, tableNumber, total, discount):
-        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    def insertOrders(orders, orderNumber, deliveryType, tableNumber, total, discount, current_timestamp):
         # save order to database
         result = db.execute("INSERT INTO orders (order_number, type, table_number, status, total_amount, discount, order_date) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING order_number, order_date",
                         (orderNumber, deliveryType, tableNumber, "new", total, discount, current_timestamp)).fetchone()
@@ -193,8 +192,7 @@ class Billing:
             db.connection.commit()
         
 
-    def process_payments(orderNumber, paymentMethod, total, cashValue, core):
-        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    def process_payments(orderNumber, paymentMethod, total, cashValue, core, current_timestamp):
         # check if payment is cash
         if paymentMethod == "Cash":
         # save payments to database and generate invoice
@@ -217,6 +215,7 @@ class Billing:
         # check if payment is m-banking
         if paymentMethod == "m-banking":
             formattedordernumber = formatOrderNumber(orderNumber)
+            print(formattedordernumber)
             param = bankTransfer(formattedordernumber, total)
             try:
                 charge_response = core.charge(param)
@@ -235,8 +234,7 @@ class Billing:
             db.connection.commit()
             return "success"
         
-    def update_payments(order_number, payment_method, totalValue, cashValue, core):
-        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    def update_payments(order_number, payment_method, totalValue, cashValue, core, current_timestamp):
         # check if payment is cash
         if payment_method == "Cash":
             # save payments to database and generate invoice
@@ -260,6 +258,7 @@ class Billing:
             return "success"
         if payment_method == "m-banking":
             formattedordernumber = formatOrderNumber(order_number)
+            print(formattedordernumber)
             param = bankTransfer(formattedordernumber, int(totalValue))
             try:
                 charge_response = core.charge(param)

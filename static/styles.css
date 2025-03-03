@@ -46,6 +46,15 @@
   display: none;
 }
 
+.container-fluid::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+.container-fluid {
+  scrollbar-width: none; 
+
+}
+
 .secondcol {
   width: 60%;
   background-color: #92a0a9;

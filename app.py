@@ -194,6 +194,7 @@ def run_flask():
         billing.total = parseInt(billing.total)
         # generate order number
         order_number = generate_order_number("TESTORD-")
+        current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # handle if cashpaid is less than the invoice total and payment method is cash
         if int(billing.cashValue) < billing.total and billing.payment_method == "Cash":
@@ -210,13 +211,13 @@ def run_flask():
             return redirect("/menu")
         
         #process payments
-        payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core)
+        payment_status = Billing.process_payments(order_number, billing.payment_method, billing.total, billing.cashValue, core, current_timestamp)
         if isinstance(payment_status, dict):
                 status = next(iter(payment_status), None) 
                 if status == "failed":
                     return apology("There was an issue connecting to midtrans, please check your connection or your midtrans keys")
         #save the order to database
-        Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount)
+        Billing.insertOrders(orders, order_number, billing.deliveryType, billing.tableNumber, billing.total, billing.discount, current_timestamp)
         if payment_status == "success":
             clear_session()
             return thankYou("Your order has been successfully placed, we hope you enjoy your meal!", order_number)
@@ -401,7 +402,8 @@ def run_flask():
             order_number = billings[0]['order_number']
             totalValue = parseInt(billings[0]['grand_total'])
             amount = request.form.get('cashValue')
-            
+            current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
             # set current Tab
             order_type = Orders.fetch_order_details(order_number)[0]['type']
             current_Tab = order_type
@@ -412,7 +414,7 @@ def run_flask():
                 return redirect('/orders')
             
             # check status of payment
-            status = Billing.update_payments(order_number, payment_method, totalValue, amount, core)
+            status = Billing.update_payments(order_number, payment_method, totalValue, amount, core, current_timestamp)
             if isinstance(status, dict):
                 status = next(iter(status), None) 
                 # handle if status failed
