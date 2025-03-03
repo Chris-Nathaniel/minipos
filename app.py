@@ -505,7 +505,7 @@ def run_flask():
     def sync_payment(on):
         count = Billing.max_count(on)
         rand = os.getenv('secret')
-        on = generate_order_number(on, rand, count) 
+        on = generate_unique_order_number(on, rand, count) 
         print(on)
         try:
             transaction_status = core.transactions.status(on).get('transaction_status', None)
