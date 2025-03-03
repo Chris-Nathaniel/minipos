@@ -253,7 +253,16 @@ def run_flask():
     @login_required
     def cancel_payment():
         on = request.form.get("order_number")
+        count = Billing.max_count(on)
+        rand = os.getenv('secret')
+        formatted_order_number = generate_unique_order_number(on, rand, count)
         Billing.revert_pending(on)
+        try:
+            # Cancel the transaction
+            response = core.transactions.cancel(formatted_order_number)
+            print("Transaction Canceled:", response)
+        except Exception as e:
+            print("Error:", e)
         return redirect("/orders")
 
     @app.route('/midtrans/notification', methods=['POST'])
