@@ -62,13 +62,11 @@ def generate_unique_order_number(order_number, rand, count):
     Generates a unique formatted order number using the original order number,
     the highest count from the database, and a hashed secret.
     """
-
-
     # Hash the secret to make it consistent and unique
     hashed_part = hashlib.sha1(rand.encode()).hexdigest()[:6]  # Shorten the hash
     
     # Construct the unique order number
-    formatted_order_number = f"{order_number}-{hashed_part}-{count:03d}"
+    formatted_order_number = f"{order_number}-{hashed_part}{count:03d}"
     
     return formatted_order_number
 
@@ -77,8 +75,8 @@ def reverse_order_number(formatted_order_number):
     Reverses the formatted order number to extract the original order number.
     the format: 'orderNumber-hash-count'
     """
-    parts = formatted_order_number.rsplit("-", 2)  
-    if len(parts) == 3:
+    parts = formatted_order_number.rsplit("-", 1)  
+    if len(parts) == 2:
         return parts[0] 
     return None  
 

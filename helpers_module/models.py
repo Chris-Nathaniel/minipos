@@ -331,7 +331,7 @@ class Billing:
 
     def search_virtual_accounts(order_number):
         current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= ?",
+        result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= ? ORDER BY count DESC LIMIT 1",
                     (order_number, current_timestamp)).fetchone()
         return result 
     
