@@ -57,17 +57,30 @@ def generate_random_string(length=5):
     letters_and_digits = string.ascii_letters + string.digits
     return ''.join(random.choice(letters_and_digits) for _ in range(length))
 
-def generate_order_id():
-    # Generate a random string
-    random_string = generate_random_string()
+def generate_unique_order_number(order_number, rand, count):
+    """
+    Generates a unique formatted order number using the original order number,
+    the highest count from the database, and a hashed secret.
+    """
+
+
+    # Hash the secret to make it consistent and unique
+    hashed_part = hashlib.sha1(rand.encode()).hexdigest()[:6]  # Shorten the hash
     
-    # Get the current time as a formatted string (YearMonthDayHourMinSec)
-    current_time = time.strftime("%Y%m%d%H%M%S")
+    # Construct the unique order number
+    formatted_order_number = f"{order_number}-{hashed_part}-{count:03d}"
     
-    # Combine the random string and the current time to create an order ID
-    order_id = f"{random_string}{current_time}"
-    
-    return order_id
+    return formatted_order_number
+
+def reverse_order_number(formatted_order_number):
+    """
+    Reverses the formatted order number to extract the original order number.
+    the format: 'orderNumber-hash-count'
+    """
+    parts = formatted_order_number.rsplit("-", 2)  
+    if len(parts) == 3:
+        return parts[0] 
+    return None  
 
 def generate_order_number(prefix):
     

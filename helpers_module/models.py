@@ -193,6 +193,8 @@ class Billing:
         
 
     def process_payments(orderNumber, paymentMethod, total, cashValue, core, current_timestamp):
+        count = 1 if not Billing.max_count(orderNumber) else Billing.max_count(orderNumber) + 1
+        rand = os.getenv("secret")
         # check if payment is cash
         if paymentMethod == "Cash":
         # save payments to database and generate invoice
@@ -214,7 +216,7 @@ class Billing:
             return "success"
         # check if payment is m-banking
         if paymentMethod == "m-banking":
-            formattedordernumber = formatOrderNumber(orderNumber)
+            formattedordernumber = generate_unique_order_number(orderNumber, rand, count)
             print(formattedordernumber)
             param = bankTransfer(formattedordernumber, total)
             try:
@@ -235,6 +237,8 @@ class Billing:
             return "success"
         
     def update_payments(order_number, payment_method, totalValue, cashValue, core, current_timestamp):
+        count = 1 if not Billing.max_count(order_number) else Billing.max_count(order_number) + 1
+        rand = os.getenv("secret")
         # check if payment is cash
         if payment_method == "Cash":
             # save payments to database and generate invoice
@@ -257,7 +261,7 @@ class Billing:
             db.connection.commit()
             return "success"
         if payment_method == "m-banking":
-            formattedordernumber = formatOrderNumber(order_number)
+            formattedordernumber = generate_unique_order_number(order_number, rand, count)
             print(formattedordernumber)
             param = bankTransfer(formattedordernumber, int(totalValue))
             try:
@@ -320,9 +324,9 @@ class Billing:
         db.execute("UPDATE payments SET payment_status = ? WHERE order_number = ?", ("unpaid", orderNumber,))
         db.connection.commit()
 
-    def insert_virtual_accounts(order_number, va_number, bank_name, total_amount, current_timestamp):
-        db.execute("INSERT INTO virtual_accounts (order_number, va_number, bank_name, total_amount, expiration) VALUES (?, ?, ?, ?, ?)",
-                   (order_number, va_number, bank_name, total_amount, current_timestamp))
+    def insert_virtual_accounts(order_number, va_number, bank_name, total_amount, count, current_timestamp):
+        db.execute("INSERT INTO virtual_accounts (order_number, va_number, bank_name, total_amount, count, expiration) VALUES (?, ?, ?, ?, ?, ?)",
+                   (order_number, va_number, bank_name, total_amount, count,  current_timestamp))
         db.connection.commit()
 
     def search_virtual_accounts(order_number):
@@ -330,7 +334,11 @@ class Billing:
         result = db.execute("SELECT * FROM virtual_accounts WHERE order_number = ? AND expiration >= ?",
                     (order_number, current_timestamp)).fetchone()
         return result 
-
+    
+    def max_count(order_number):
+        max_count = db.execute("SELECT MAX(count) AS max_count FROM virtual_accounts WHERE order_number = ?", (order_number,)).fetchone()[0]
+        return max_count
+    
     def reset(self):
         self.cashValue = 0
         self.change = 0

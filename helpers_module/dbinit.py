@@ -1,6 +1,8 @@
 import sqlite3
 import os
+from dotenv import load_dotenv
 import logging
+import secrets
 
 # Configure logging
 '''
@@ -113,6 +115,7 @@ def create_database(name="database"):
             bank_name TEXT NOT NULL,
             total_amount DECIMAL(10,2) NOT NULL,
             expiration DATETIME DEFAULT (DATETIME('now', '+1 hour')),
+            count INTEGER,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (order_number) REFERENCES orders(id) ON DELETE CASCADE
         );
@@ -135,23 +138,38 @@ def create_database(name="database"):
 def update_env(db_name):
     env_file = ".env"
     app_pass = "desp snde octd wudy"
-    env_data = {}
-    if os.path.exists(env_file):
-        with open(env_file, "r") as f:
-            for line in f:
-                key, _, value = line.partition("=")
-                env_data[key.strip()] = value.strip()
+    token = secrets.token_urlsafe(5)
 
-        env_data["OLD_DB_URL"] = env_data["DATABASE_URL"]  
-        
-    else:
-        env_data["OLD_DB_URL"] = ""
+    # Ensure the .env file exists
+    if not os.path.exists(env_file):
+        open(env_file, "w").close()  # Create an empty .env file if it doesn't exist
 
-    env_data["DATABASE_URL"] = db_name
-    env_data["APP_PASS"] = app_pass
+    # Load existing environment variables
+    load_dotenv(env_file)
 
-    with open(env_file, "w") as f:
-        for key, value in env_data.items():
-            f.write(f"{key}={value}\n")
+    # Retrieve the old DATABASE_URL if it exists
+    old_db_url = os.getenv("DATABASE_URL", "")
+
+    # Use set_key() to update the .env file
+    set_key(env_file, "secret", token)
+    set_key(env_file, "OLD_DB_URL", old_db_url)
+    set_key(env_file, "DATABASE_URL", db_name)
+    set_key(env_file, "APP_PASS", app_pass)
 
     print(".env file updated successfully.")
+
+def set_key(dotenv_path, key, value):
+    """Update or add a key-value pair in the .env file without quotes."""
+    lines = []
+    if os.path.exists(dotenv_path):
+        with open(dotenv_path, 'r') as f:
+            lines = f.readlines()
+
+    # Remove any existing key
+    lines = [line for line in lines if not line.startswith(f"{key}=")]
+
+    # Add new key-value pair
+    lines.append(f"{key}={value}\n")
+
+    with open(dotenv_path, 'w') as f:
+        f.writelines(lines)

@@ -226,7 +226,8 @@ def run_flask():
             clear_session()
             current_timestamp = datetime.now() + timedelta(hours=1)
             current_timestamp = current_timestamp.strftime('%Y-%m-%d %H:%M:%S')
-            Billing.insert_virtual_accounts(order_number, va_number, bank_name, billing.total, current_timestamp)
+            count = 1 if not Billing.max_count(order_number) else Billing.max_count(order_number) + 1
+            Billing.insert_virtual_accounts(order_number, va_number, bank_name, billing.total, count, current_timestamp)
            
             return redirect(f"/waiting_for_payment/{order_number}")
 
@@ -264,7 +265,7 @@ def run_flask():
         notification = core.transactions.notification(notification_json)
 
         # Extract necessary data from the notification
-        order_id = reverseFormatOrderNumber(notification['order_id'])
+        order_id = reverse_order_number(notification['order_id'])
         transaction_status = notification['transaction_status']
 
         # If the transaction is successful
@@ -425,7 +426,8 @@ def run_flask():
                 clear_session()
                 current_timestamp = datetime.now() + timedelta(hours=1)
                 current_timestamp = current_timestamp.strftime('%Y-%m-%d %H:%M:%S')
-                Billing.insert_virtual_accounts(order_number, va_number, bank_name, totalValue, current_timestamp)
+                count = 1 if not Billing.max_count(order_number) else Billing.max_count(order_number) + 1
+                Billing.insert_virtual_accounts(order_number, va_number, bank_name, totalValue, count, current_timestamp)
                 return redirect(f"/waiting_for_payment/{order_number}")
                 
             session['cashPaid'] = 0
@@ -501,12 +503,15 @@ def run_flask():
 
     @app.route('/sync_payment/<on>', methods=['GET'])
     def sync_payment(on):
-        on = formatOrderNumber(on) 
+        count = Billing.max_count(on)
+        rand = os.getenv('secret')
+        on = generate_order_number(on, rand, count) 
+        print(on)
         try:
             transaction_status = core.transactions.status(on).get('transaction_status', None)
             
             if transaction_status == 'settlement':
-                on = reverseFormatOrderNumber(on)  
+                on = reverse_order_number(on)  
                 Billing.update_payment_status(on)
                 flash("Payment successfully updated.", "success")
             else:
