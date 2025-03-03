@@ -1,5 +1,31 @@
 {% extends 'layout.html' %}
 {% block main %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let countdown = parseInt("{{ countdown }}");
+        let countdownElement = document.getElementById("countdown");
+
+        if (!countdownElement) {
+            console.error("Countdown element not found!");
+            return;
+        }
+
+        function updateCountdown() {
+            if (countdown <= 0) {
+                countdownElement.innerText = "Expired";
+                clearInterval(timer);
+                return;
+            }
+            let minutes = Math.floor(countdown / 60);
+            let seconds = countdown % 60;
+            countdownElement.innerText = `${minutes} minutes ${seconds} seconds`;
+            countdown--;
+        }
+
+        let timer = setInterval(updateCountdown, 1000);
+        updateCountdown(); 
+    });
+</script>
 <div class="container-fluid p-5" style="background-color: #92a0a9; height: 100vh;">
     <div class="container payment-container" style="background-color:white; border: 1px solid var(--lg); border-radius: 10px;">
         <div class="payment-status-icon mb-4">
@@ -24,8 +50,8 @@
                     Bank Transfer Details
                 </div>
                 <div class="card-body">
-                    <p><strong>Bank Name:</strong> {{ bank_name }}</p>
-                    <p class="va-number">{{ va_number }}</p>
+                    <p><strong>Bank name:</strong> {{ bank_name }}</p>
+                    <p class="va-number">Account number: {{ va_number }}</p>
                     <p class="text-muted">Please use the above virtual account number to complete the payment.</p>
                 </div>
             </div>
@@ -36,6 +62,7 @@
         <p class="mt-4 text-muted" id="payment-status">Please wait while we process your payment...</p>
         <p class="text-muted" id="message">Once the payment is completed, it will be confirmed automatically.</p>
 
+        <p>Time Remaining: <span id="countdown">{{ countdown }}</span></p>
         <form action="/thank" method="POST">
             <input type="hidden" name="order_number" value="{{ order_number }}">
             <button class="btn btn-dark btn-proceed" id="proceed">Check Payment</button>

@@ -223,7 +223,9 @@ def run_flask():
         else:
             va_number, bank_name = payment_status
             clear_session()
-            Billing.insert_virtual_accounts(order_number, va_number, bank_name, billing.total)
+            current_timestamp = datetime.now() + timedelta(hours=1)
+            current_timestamp = current_timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            Billing.insert_virtual_accounts(order_number, va_number, bank_name, billing.total, current_timestamp)
            
 
             return redirect(f"/waiting_for_payment/{order_number}")
@@ -240,8 +242,11 @@ def run_flask():
         bank_name = result["bank_name"]
         order_number = result["order_number"]
         total_amount = formatCurrency("Rp", result["total_amount"])
+        expiration = datetime.strptime(result["expiration"], "%Y-%m-%d %H:%M:%S")
+        current_time = datetime.now()
+        countdown = countdowndate(expiration, current_time)
         
-        return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=total_amount)
+        return render_template('payment_process.html', va_number=va_number, bank_name=bank_name, order_number=order_number, total_amount=total_amount, countdown=countdown)
 
     @app.route("/cancel_payment", methods=["POST"])
     @login_required

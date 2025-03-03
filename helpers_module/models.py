@@ -321,9 +321,9 @@ class Billing:
         db.execute("UPDATE payments SET payment_status = ? WHERE order_number = ?", ("unpaid", orderNumber,))
         db.connection.commit()
 
-    def insert_virtual_accounts(order_number, va_number, bank_name, total_amount):
-        db.execute("INSERT INTO virtual_accounts (order_number, va_number, bank_name, total_amount) VALUES (?, ?, ?, ?)",
-                   (order_number, va_number, bank_name, total_amount))
+    def insert_virtual_accounts(order_number, va_number, bank_name, total_amount, current_timestamp):
+        db.execute("INSERT INTO virtual_accounts (order_number, va_number, bank_name, total_amount, expiration) VALUES (?, ?, ?, ?, ?)",
+                   (order_number, va_number, bank_name, total_amount, current_timestamp))
         db.connection.commit()
 
     def search_virtual_accounts(order_number):

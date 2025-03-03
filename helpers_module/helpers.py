@@ -173,3 +173,9 @@ def saveImage(image):
             image.save(image_path)
 
         return f'/static/images/{image.filename}'
+
+def countdowndate(expiration, current_time):
+    # Get countdown in total seconds
+    countdown_seconds = int((expiration - current_time).total_seconds())
+
+    return countdown_seconds
