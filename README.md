@@ -1,5 +1,5 @@
 # Minipos
-#### Video Demo:
+#### Video Demo: https://youtu.be/a2nO6ZCf9Ao
 
 ## Description
 Minipos is a standalone, simple Point of Sale (POS) system designed for small cafes and restaurants. This project was developed as my final submission for CS50x - Introduction to Computer Science. The goal of Minipos is to provide an easy-to-use, lightweight, and functional POS system that helps small business owners manage orders, track sales, and streamline their daily operations.
