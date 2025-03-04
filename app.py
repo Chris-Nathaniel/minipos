@@ -317,6 +317,12 @@ def run_flask():
                 orderType = ""
             # if payment, load the billing details and load it to the  cart
             if payment:
+                # check first if the orders had been paid
+                payment_status = Orders.fetch_invoice_details(payment)[0]["payment_status"]
+                print(payment_status)
+                if payment_status == "paid" and payment_status:
+                    flash("The orders have been paid")
+                    return redirect(url_for('orders'))
                 order_details = Orders.fetch_order_details(payment)
                 billing.cart = billing.load_order_details(order_details)
 
