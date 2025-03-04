@@ -5,13 +5,12 @@ import logging
 import secrets
 
 # Configure logging
-'''
 logging.basicConfig(
     filename="app.log",  
     level=logging.info,  
     format="%(asctime)s [%(levelname)s]: %(message)s",  
 )    
-'''
+
 def create_database(name="database"):
     db_name = f"{name}.db"
     tables = [

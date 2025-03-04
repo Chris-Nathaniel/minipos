@@ -260,9 +260,9 @@ def run_flask():
         try:
             # Cancel the transaction
             response = core.transactions.cancel(formatted_order_number)
-            print("Transaction Canceled:", response)
+            logging.error("Transaction Canceled:", response)
         except Exception as e:
-            print("Error:", e)
+            logging.error("Error:", e)
         return redirect("/orders")
 
     @app.route('/midtrans/notification', methods=['POST'])
@@ -319,7 +319,6 @@ def run_flask():
             if payment:
                 # check first if the orders had been paid
                 payment_status = Orders.fetch_invoice_details(payment)[0]["payment_status"]
-                print(payment_status)
                 if payment_status == "paid" and payment_status:
                     flash("The orders have been paid")
                     return redirect(url_for('orders'))
@@ -348,7 +347,6 @@ def run_flask():
         business = dict(Business.get_business()) if Business.get_business() else Business().__dict__
         # get the order number
         order_number = request.json['order_number']
-        print(order_number)
         order_items = []
         # get the order details
         data = Orders.fetch_invoice_details(order_number)
@@ -521,7 +519,6 @@ def run_flask():
         count = Billing.max_count(on)
         rand = os.getenv('secret')
         on = generate_unique_order_number(on, rand, count) 
-        print(on)
         try:
             transaction_status = core.transactions.status(on).get('transaction_status', None)
             
@@ -592,7 +589,7 @@ def run_flask():
             try:
                 Menu.add_category(inputCategory)
             except Exception as e:
-                print("Error adding category: " + str(e))
+                logging.error("Error adding category: " + str(e))
         return redirect('/customization')
 
     @app.route('/remove_category', methods=['POST'])
@@ -605,7 +602,7 @@ def run_flask():
             try:
                 Menu.remove_category(deleteCategory)
             except Exception as e:
-                print("Error removing category: " + str(e))
+                logging.error("Error removing category: " + str(e))
         return redirect('/customization')
 
     @app.route('/delete_menu', methods=['GET'])
@@ -701,9 +698,7 @@ def run_flask():
         session['discount'] = int(data['discount'])
         discount = session['discount']/100
         total = parseInt(session.get('total', 0))
-        print(total)
         tax = parseInt(session.get('tax', 0))
-        print(tax)
         discountedTotal = Discount.addDiscount(total, tax, discount)
         session['total'] = '{:,.0f}'.format(discountedTotal)
 
@@ -865,7 +860,6 @@ def run_flask():
             data = request.get_json()
             business = dict(Business.get_business()) if Business.get_business() else Business()
             receipt = data['orderitems']
-            print(receipt)
             cls = data['cls']
             cls = Ticket if cls == 'view' else Receipt
             # load the print window and receipt/ticket
