@@ -44,12 +44,12 @@ The program can run in windowed GUI mode or via a web browser, making it a flexi
 1) Menu and Cart system- Allows users to create Orders, enables easy order selection before finalizing transactions.
 ![alt text](/static/images/Menu.png)
 The first page I built for Minipos was the menu and cart system, which included layout.html, category.html, menu.html, and billing.html. One of the challenges I faced while developing the cart system was preventing the page from refreshing whenever an item was added to the cart. To solve this, I learned how to send and receive data between the front end and back end using JavaScript’s fetch function along with the .then() method. This allowed for a smoother user experience by updating the cart dynamically without requiring a full page reload.
-
 The menu data is taken from the menu_list table in the database, and each item added to the cart is stored in a "cart" session variable. The cart data is then processed to calculate the total, total quantity, tax, and discount, which are displayed in the billing section. The tax that are used in this app assumes 10% VAT. although indonesian policy had changed this into 11%, for convenience purposes i'll stick with 10%. although in the future i might have changed this into a more configurable.
 
 2) Order and payment tracking - Keeps a record of past orders for easy reference, Keep track of orders payment status.
 ![alt text](/static/images/Orders.png)
 ![alt text](/static/images/action.png)
+
 Designing the orders table is one i am proud of. I wanted a table design that doesn't take a lot of space, mobile user friendly and has a lot of functionality.
 - edit and cancel orders
 there are certain limitations i implement here to ensure security, you cannot cancel and edit orders that where status is paid or pending. i have also added different time for new orders that got added later on. Although it is not being displayed anywhere on the current state of the project, it is stored on the orderitems database. I think this will be a good method in the future to tell the kitchen how long ago the orders was made.
@@ -72,7 +72,6 @@ The orders data here are split into two tables, orders and orderitems. The order
 3) Discount vouchers - Provides the ability to apply promotional discounts.
 ![alt text](/static/images/Discount.png)
 I implemented a simple discount system that allows users to apply and remove discount codes from their orders. One of the toughest challenges was ensuring that the total bill was displayed correctly, especially when users added or removed items after applying a discount.
-
 How Discounts Are Calculated:
 The discount is percentage-based (e.g., 10% off).
 Since tax is not discounted, it is always calculated on the original subtotal before applying the discount.
